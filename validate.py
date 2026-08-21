@@ -12,9 +12,9 @@ FAILが出たらそのチェックの説明に従って修正してください�
 import sys, io, re, pathlib
 sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
 
-_win_path = pathlib.Path(r'C:\Users\toyota shinnnosuke\guitar_app.html')
-_local    = pathlib.Path('index.html')
-HTML_PATH = _win_path if _win_path.exists() else _local
+_repo_path = pathlib.Path(r'C:\Users\toyota shinnnosuke\guitar-lesson-repo\index.html')
+_local     = pathlib.Path('index.html')
+HTML_PATH  = _repo_path if _repo_path.exists() else _local
 html = HTML_PATH.read_text(encoding='utf-8')
 
 errors   = []
