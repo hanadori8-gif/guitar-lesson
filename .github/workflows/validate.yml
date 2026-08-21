@@ -1,0 +1,16 @@
+name: Validate before deploy
+
+on:
+  push:
+    branches: [master]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run validate.py
+        run: |
+          pip install beautifulsoup4 --quiet
+          python validate.py
