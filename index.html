@@ -633,9 +633,6 @@ body{font-family:'Zen Maru Gothic','Helvetica Neue','Hiragino Sans','Meiryo',san
 .iken-item{background:#f8fafc;border-radius:12px;padding:12px 14px;margin-bottom:8px;border:1px solid #e2e8f0;}
 .iken-item-meta{font-size:11px;color:#94a3b8;margin-bottom:4px;}
 .iken-item-text{font-size:14px;color:#1a3a5c;line-height:1.6;white-space:pre-wrap;}
-.like-btn{background:none;border:none;font-size:26px;cursor:pointer;padding:6px;line-height:1;transition:transform .15s;flex-shrink:0;opacity:.8;}
-.like-btn:active{transform:scale(1.35);}
-.like-btn.liked{filter:drop-shadow(0 0 4px rgba(255,80,80,.7));opacity:1;}
 /* 曲リストポップアップ（タイムライン投稿タップ時） */
 .post-songs-ov{position:fixed;inset:0;z-index:350;background:rgba(0,0,0,.45);display:none;align-items:flex-end;justify-content:center;}
 .post-songs-ov.show{display:flex;}
@@ -754,7 +751,6 @@ details.prt-sq-card .prt-sq-detail{padding:0 14px 12px;border-top:1px solid rgba
 .title-opt:last-child{border-bottom:none;}
 .title-opt.title-opt-sel{color:#fff;background:rgba(0,180,220,.35);}
 /* DEV LvUPボタン */
-.dev-lvup-btn{display:inline-block;margin-top:6px;background:rgba(255,200,0,.25);border:1px solid rgba(255,200,0,.5);color:#ffe066;font-size:11px;font-weight:700;border-radius:8px;padding:4px 10px;cursor:pointer;letter-spacing:.5px;}
 /* 大きなゴール */
 .goals-list{display:flex;flex-direction:column;gap:8px;}
 .goal-item{display:flex;align-items:center;gap:12px;background:rgba(255,255,255,.85);border-radius:12px;padding:12px 14px;border:1.5px solid rgba(0,100,180,.12);}
@@ -765,9 +761,6 @@ details.prt-sq-card .prt-sq-detail{padding:0 14px 12px;border-top:1px solid rgba
 .goal-item.achieved .goal-label{color:#92400e;}
 .goal-item.achieved .goal-pts{color:#d97706;font-weight:700;}
 .goal-icon-big{font-size:22px;}/* いまの目標ピッカー */.goal-pick-btn{width:100%;background:rgba(255,255,255,.92);border:1.5px solid rgba(0,100,180,.18);border-radius:14px;padding:14px 16px;display:flex;align-items:center;gap:12px;cursor:pointer;margin-bottom:10px;box-shadow:0 2px 8px rgba(0,0,0,.06);font-size:15px;font-weight:700;color:var(--text-dark);text-align:left;}.goal-pick-btn:active{background:rgba(235,245,255,.95);}.goal-pick-placeholder{color:var(--ocean-mid);font-weight:700;}.goal-pick-overlay{position:fixed;inset:0;z-index:400;display:none;align-items:flex-end;justify-content:center;background:rgba(0,0,0,.45);}.goal-pick-sheet{background:white;border-radius:24px 24px 0 0;width:100%;max-width:480px;padding:0 0 32px;max-height:80vh;overflow-y:auto;}.goal-pick-hdr{display:flex;align-items:center;justify-content:space-between;padding:18px 20px 12px;border-bottom:1px solid rgba(0,0,0,.08);font-size:16px;font-weight:900;color:var(--ocean-deep);}.goal-pick-item{display:flex;align-items:center;gap:12px;padding:14px 20px;border-bottom:1px solid rgba(0,0,0,.05);cursor:pointer;}.goal-pick-item:active{background:rgba(0,100,180,.05);}.goal-pick-item.goal-sel{background:rgba(0,150,220,.07);}
-/* いいね数 */
-.s-likes-row{display:flex;align-items:center;justify-content:center;gap:8px;padding:8px 0 4px;color:rgba(255,255,255,.85);font-size:13px;font-weight:700;}
-.s-likes-cnt{font-size:20px;font-weight:900;color:white;min-width:24px;text-align:center;}
 /* 教科書タブ — 目標ボタン */
 .tbook-goal-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px;}
 .tbook-goal-btn{background:rgba(255,255,255,.12);border:1.5px solid rgba(255,255,255,.2);border-radius:12px;padding:14px 10px;color:white;font-size:13px;font-weight:700;text-align:center;cursor:pointer;line-height:1.4;transition:background .15s,border-color .15s,box-shadow .15s;display:flex;flex-direction:column;align-items:center;gap:5px;-webkit-tap-highlight-color:transparent;width:100%;}
@@ -1383,20 +1376,6 @@ body{background:#f0ebe0!important;}
   </div>
 </div>
 
-<!-- レベルアップ演出 (preview9) -->
-<div class="lv-overlay" id="lvOverlay" onclick="tapLvOverlay()">
-  <canvas id="lvCanvas"></canvas>
-  <div class="lv-badge-btn">LEVEL UP!</div>
-  <div class="lv-char-new" id="lvCharNew"><span style="font-size:52px">🌊</span></div>
-  <div class="lv-num-row">
-    <div class="lv-num-old" id="lvNumOld">1</div>
-    <div class="lv-num-arrow">→</div>
-    <div class="lv-num-new" id="lvNumNew">2</div>
-  </div>
-  <div class="lv-unlocks-new" id="lvUnlocks"></div>
-  <div class="lv-continue-hint" id="lvContinueHint">✨ タップして続ける</div>
-</div>
-
 <!-- 生徒詳細オーバーレイ -->
 <div class="detail-ov" id="studentDetailOv">
   <div class="detail-card">
@@ -1639,7 +1618,7 @@ body{background:#f0ebe0!important;}
       <div class="guest-cta-title">生徒さんになると使えること</div>
       <div class="guest-cta-item">📚 宿題・メッセージが届く</div>
       <div class="guest-cta-item">🐚 レッスンの記録・目標</div>
-      <div class="guest-cta-item">❤️ タイムラインに投稿・いいね</div>
+      <div class="guest-cta-item">❤️ タイムラインに投稿</div>
       <div class="guest-cta-item">🎁 レベルアップでご褒美アンロック</div>
       <div class="guest-cta-item">✨ スペシャルテキスト（準備中）</div>
     </div>
@@ -2092,7 +2071,6 @@ body{background:#f0ebe0!important;}
           <div class="next-lesson-val" id="nextLessonVal">—</div>
         </div>
       </div>
-      <button class="dev-lvup-btn" style="position:absolute;top:8px;left:10px;z-index:10;" onclick="(function(){const _cl=lvInfo(currentStudentData?.total_exp||0);showLevelup(LEVELS[Math.min(_cl.level,LEVELS.length-1)]);})()">LvUP</button>
       <div style="position:absolute;top:8px;right:10px;z-index:10;">
         <button class="iken-btn" onclick="openIken()">📮 意見箱</button>
       </div>
@@ -2388,7 +2366,7 @@ body{background:#f0ebe0!important;}
       </div>
       <!-- いきもの選択シート -->
       <div id="subCharSheet" onclick="if(event.target===this)this.style.display='none'" style="display:none;position:absolute;inset:0;z-index:30;background:rgba(0,0,0,.45);flex-direction:column;justify-content:flex-end;">
-        <div style="background:white;border-radius:24px 24px 0 0;padding:0 0 24px;max-height:75%;overflow-y:auto;">
+        <div style="background:var(--ocean-grad);border-radius:24px 24px 0 0;padding:0 0 24px;max-height:75%;overflow-y:auto;">
           <div style="width:40px;height:4px;background:#ddd;border-radius:2px;margin:12px auto 14px;"></div>
           <div style="padding:0 16px;">
             <div style="font-size:15px;font-weight:900;color:#003D52;margin-bottom:14px;">🐠 いきものを選ぶ</div>
@@ -2622,17 +2600,17 @@ const _aoSangoImg  = 'images/ao_sango.png';
 const _fuguImg = 'images/fugu.png';
 const _chinanagozuImg = 'images/chinanagozu.png';
 const CHARS = [
-  {id:'kumanomi',    name:'クマノミ',     img:_kumanomiImg,    minLv:1,  size:92,  offsetY:-40, startCm:3},
-  {id:'kani',        name:'カニ',         img:_kaniImg,        minLv:3,  size:170,              startCm:1},
-  {id:'kurage',      name:'クラゲ',       img:_kurageImg,      minLv:6,  size:140, offsetY:-25, startCm:2},
-  {id:'kame',        name:'カメ',         img:_kameImg,        minLv:9,  size:215, offsetX:12, offsetY:12, startCm:5},
-  {id:'penguin',     name:'ペンギン',      img:_penguinImg,     minLv:12, size:190,              startCm:8},
-  {id:'fugu',        name:'フグ',          img:_fuguImg,        minLv:15, size:130,              startCm:2},
-  {id:'shumokuzame', name:'シュモクザメ', img:_shumokuzameImg, minLv:18, size:185,              startCm:30},
-  {id:'manta',       name:'マンタ',       img:_mantaImg,       minLv:21, size:230,              startCm:50},
-  {id:'kurione',     name:'クリオネ',     img:_kurioneImg,     minLv:24, size:150,              startCm:1},
-  {id:'sunameri',    name:'スナメリ',     img:_sunameriImg,    minLv:27, size:200,              startCm:40},
-  {id:'chinanagozu', name:'チンアナゴ', img:_chinanagozuImg, minLv:1, size:210},
+  {id:'kumanomi',    name:'クマノミ',     img:_kumanomiImg,    size:92,  offsetY:-40, startCm:3},
+  {id:'kani',        name:'カニ',         img:_kaniImg,        size:170,              startCm:1},
+  {id:'kurage',      name:'クラゲ',       img:_kurageImg,      size:140, offsetY:-25, startCm:2},
+  {id:'kame',        name:'カメ',         img:_kameImg,        size:215, offsetX:12, offsetY:12, startCm:5},
+  {id:'penguin',     name:'ペンギン',      img:_penguinImg,     size:190,              startCm:8},
+  {id:'fugu',        name:'フグ',          img:_fuguImg,        size:130,              startCm:2},
+  {id:'shumokuzame', name:'シュモクザメ', img:_shumokuzameImg, size:185,              startCm:30},
+  {id:'manta',       name:'マンタ',       img:_mantaImg,       size:230,              startCm:50},
+  {id:'kurione',     name:'クリオネ',     img:_kurioneImg,     size:150,              startCm:1},
+  {id:'sunameri',    name:'スナメリ',     img:_sunameriImg,    size:200,              startCm:40},
+  {id:'chinanagozu', name:'チンアナゴ', img:_chinanagozuImg, size:210},
 ];
 
 // スターター候補（3択）とキャラ別ミッション定義
@@ -2653,7 +2631,7 @@ const CHAR_MISSIONS = [
   { id:'shumokuzame', label:'レッスンを10回受ける',      check:(s)=>(s.timeline||[]).filter(e=>e.type==='lesson').length>=10 },
   { id:'manta',       label:'練習を50回記録する',        check:(s,n)=>n>=50 },
   { id:'kurione',     label:'14日連続で練習する',        check:(s)=>(s.practice_streak||0)>=14 },
-  { id:'sunameri',   label:'発表会に参加する',           check:(s)=>!!localStorage.getItem('sub_fes_done_'+(currentStudentId||'')) },
+  { id:'sunameri',   label:'ライブに出場する',           check:(s)=>(s.bonus_given||[]).includes('live_performed') },
 ];
 
 // スターターキャラ（初ログイン時にランダム1体が相棒になる）
@@ -2669,20 +2647,10 @@ function _getStarterCharId(sid) {
   return id;
 }
 function _effectiveChars(sid) {
-  const starterId = _getStarterCharId(sid);
   // キャラ制限チェック（先生画面で設定したID配列）
   const limitRaw = localStorage.getItem('char_limit_' + sid);
   const limitIds = limitRaw ? JSON.parse(limitRaw) : null;
-  const baseChars = limitIds ? CHARS.filter(c => limitIds.includes(c.id)) : CHARS;
-  if (starterId === 'kumanomi') return baseChars;
-  const starterBase = baseChars.find(c => c.id === starterId);
-  if (!starterBase) return baseChars;
-  const swapLv = starterBase.minLv;
-  return baseChars.map(c => {
-    if (c.id === 'kumanomi') return Object.assign({}, c, {minLv: swapLv});
-    if (c.id === starterId)  return Object.assign({}, c, {minLv: 1});
-    return c;
-  });
+  return limitIds ? CHARS.filter(c => limitIds.includes(c.id)) : CHARS;
 }
 
 function _saveCharLimit(sid) {
@@ -2706,12 +2674,12 @@ function _resetCharLimit(sid) {
 }
 
 const STAGE_BKGS = [
-  {id:'isogi',    name:'イソギンチャク', img:_isogiBgImg,    size:330,              minLv:1},
-  {id:'yuugure',  name:'夕暮れビーチ',   img:_yuugureBgImg,  size:360, offsetY:-20, minLv:5},
-  {id:'sangosho', name:'サンゴ礁',       img:_sangoshoBgImg, size:450, offsetY:-25, minLv:10},
-  {id:'kai',      name:'大きな貝',       img:_kaiBgImg,      size:310,              minLv:15},
-  {id:'shinkai',  name:'深海洞窟',       img:_shinkaiBgImg,  size:360, offsetY:-20, minLv:20},
-  {id:'kaigara',  name:'貝殻の舞台',     img:_kaigaraBgImg,  size:360, offsetY:-20, minLv:25},
+  {id:'isogi',    name:'イソギンチャク', img:_isogiBgImg,    size:330},
+  {id:'yuugure',  name:'夕暮れビーチ',   img:_yuugureBgImg,  size:360, offsetY:-20},
+  {id:'sangosho', name:'サンゴ礁',       img:_sangoshoBgImg, size:450, offsetY:-25},
+  {id:'kai',      name:'大きな貝',       img:_kaiBgImg,      size:310},
+  {id:'shinkai',  name:'深海洞窟',       img:_shinkaiBgImg,  size:360, offsetY:-20},
+  {id:'kaigara',  name:'貝殻の舞台',     img:_kaigaraBgImg,  size:360, offsetY:-20},
 ];
 
 const BADGES_DEF = [
@@ -2721,11 +2689,7 @@ const BADGES_DEF = [
   {id:'streak_30',  label:'一ヶ月連続',     icon:'👑', desc:'30日連続で練習した',          check: s => (s.practice_streak||0) >= 30},
   {id:'songs_3',    label:'3曲レパートリー',icon:'🎵', desc:'3曲以上登録した',             check: s => (s.songs||[]).length >= 3},
   {id:'songs_10',   label:'10曲レパートリー',icon:'🎸',desc:'10曲以上登録した',            check: s => (s.songs||[]).length >= 10},
-  {id:'chars_2',    label:'なかま2体',      icon:'🐠', desc:'いきものを2体以上解放した',   check: s => CHARS.filter(c => lvInfo(s.total_exp||0).level >= c.minLv).length >= 2},
-  {id:'chars_all',  label:'全員集合',       icon:'🌊', desc:'全いきものを解放した',         check: s => CHARS.every(c => lvInfo(s.total_exp||0).level >= c.minLv)},
   {id:'tbook_1',    label:'教科書1冊クリア',icon:'📖', desc:'教科書1冊のミッションを全クリアした', check: s => TEXTBOOKS.some(tb => GOALS.filter(g=>g.cat===tb.id).every(g=>(s.bonus_given||[]).includes(g.id)) && GOALS.some(g=>g.cat===tb.id))},
-  {id:'lv10',       label:'Lv.10到達',      icon:'⭐', desc:'Lv.10以上になった',           check: s => lvInfo(s.total_exp||0).level >= 10},
-  {id:'lv20',       label:'Lv.20到達',      icon:'✨', desc:'Lv.20以上になった',           check: s => lvInfo(s.total_exp||0).level >= 20},
 ];
 
 const LOCAL_BADGES_DEF = [
@@ -2739,45 +2703,6 @@ const LOCAL_BADGES_DEF = [
   {id:'sushi_1',  icon:'🍣', label:'お寿司デビュー',  desc:'はじめてお寿司をあげた',                  check: () => parseInt(localStorage.getItem('sub_sushi_cnt')||'0') >= 1},
   {id:'sushi_5',  icon:'🍣', label:'お寿司5回',       desc:'お寿司を5回あげた（かなり贅沢！）',       check: () => parseInt(localStorage.getItem('sub_sushi_cnt')||'0') >= 5},
   {id:'all_chars',icon:'🐟', label:'全キャラ解放',    desc:'全いきもののアンロック条件を達成した',      check: () => CHARS.every(c => (localStorage.getItem('sub_unlocked_chars') ? JSON.parse(localStorage.getItem('sub_unlocked_chars')||'[]') : []).includes(c.id))},
-];
-
-const LEVELS = [
-  // ── 🏖️ サンドビーチ（Lv.1〜5：急成長期） ──
-  {level:1,  name:'ビーチの見習い',       stage:'🏖️ サンドビーチ',  min:0,     max:20,    charImg:_kumanomiImg},
-  {level:2,  name:'砂浜のギター弾き',     stage:'🏖️ サンドビーチ',  min:20,    max:45,    charImg:_kumanomiImg},
-  {level:3,  name:'波打ち際の奏者',       stage:'🏖️ サンドビーチ',  min:45,    max:75,    charImg:_kumanomiImg},
-  {level:4,  name:'海風のプレイヤー',     stage:'🏖️ サンドビーチ',  min:75,    max:110,   charImg:_kumanomiImg},
-  {level:5,  name:'港の音楽家',           stage:'🏖️ サンドビーチ',  min:110,   max:150,   charImg:_kumanomiImg},
-  // ── 🌊 大海原（Lv.6〜10：基礎固め） ──
-  {level:6,  name:'沖合の旅人',           stage:'🌊 大海原',         min:150,   max:200,   charImg:null},
-  {level:7,  name:'海流のギタリスト',     stage:'🌊 大海原',         min:200,   max:260,   charImg:null},
-  {level:8,  name:'蒼海のメロディスト',   stage:'🌊 大海原',         min:260,   max:330,   charImg:null},
-  {level:9,  name:'深海への挑戦者',       stage:'🌊 大海原',         min:330,   max:410,   charImg:null},
-  {level:10, name:'海の歌い手',           stage:'🌊 大海原',         min:410,   max:510,   charImg:null},
-  // ── 🐠 珊瑚礁（Lv.11〜15：中級成長） ──
-  {level:11, name:'珊瑚礁のプレイヤー',   stage:'🐠 珊瑚礁',        min:510,   max:620,   charImg:null},
-  {level:12, name:'南の島の奏者',         stage:'🐠 珊瑚礁',        min:620,   max:750,   charImg:null},
-  {level:13, name:'潮流のギタリスト',     stage:'🐠 珊瑚礁',        min:750,   max:900,   charImg:null},
-  {level:14, name:'星空の演奏家',         stage:'🐠 珊瑚礁',        min:900,   max:1060,  charImg:null},
-  {level:15, name:'海峡の語り部',         stage:'🐠 珊瑚礁',        min:1060,  max:1240,  charImg:null},
-  // ── 🌌 深海ステージ（Lv.16〜20：上級者への壁） ──
-  {level:16, name:'玄界灘の武者',         stage:'🌌 深海ステージ',   min:1240,  max:1440,  charImg:null},
-  {level:17, name:'関門の奏者',           stage:'🌌 深海ステージ',   min:1440,  max:1670,  charImg:null},
-  {level:18, name:'海のトルバドール',     stage:'🌌 深海ステージ',   min:1670,  max:1920,  charImg:null},
-  {level:19, name:'蒼天の演奏家',         stage:'🌌 深海ステージ',   min:1920,  max:2190,  charImg:null},
-  {level:20, name:'深海の達人',           stage:'🌌 深海ステージ',   min:2190,  max:2490,  charImg:null},
-  // ── ✨ 伝説のステージ（Lv.21〜25：カンストへの挑戦） ──
-  {level:21, name:'海洋のマエストロ',     stage:'✨ 伝説のステージ',  min:2490,  max:2840,  charImg:null},
-  {level:22, name:'七海の詩人',           stage:'✨ 伝説のステージ',  min:2840,  max:3240,  charImg:null},
-  {level:23, name:'伝説の漁師奏者',       stage:'✨ 伝説のステージ',  min:3240,  max:3700,  charImg:null},
-  {level:24, name:'下関の伝説',           stage:'✨ 伝説のステージ',  min:3700,  max:4210,  charImg:null},
-  {level:25, name:'海の見えるレジェンド', stage:'✨ 伝説のステージ',  min:4210,  max:4860,  charImg:null},
-  // ── 💎 神話の領域（Lv.26〜30：エンドコンテンツ） ──
-  {level:26, name:'海神の見習い',         stage:'💎 神話の領域',      min:4860,  max:5940,  charImg:null},
-  {level:27, name:'海神のギタリスト',     stage:'💎 神話の領域',      min:5940,  max:7560,  charImg:null},
-  {level:28, name:'海の王者',             stage:'💎 神話の領域',      min:7560,  max:9720,  charImg:null},
-  {level:29, name:'無双の奏者',           stage:'💎 神話の領域',      min:9720,  max:11880, charImg:null},
-  {level:30, name:'伝説の海神 ★',        stage:'💎 神話の領域',      min:11880, max:999999, charImg:null},
 ];
 
 // ── エリアイラスト（6エリア分） ──
@@ -3053,11 +2978,11 @@ async function teacherLogout() {
 let _seqMode = false, _seqStudents = [], _seqIdx = 0;
 
 function _todayKey() {
-  return 'today_list_' + new Date(Date.now() + 9*3600*1000).toISOString().slice(0,10);
+  return 'today_list_' + todayJST();
 }
 
 function _getTodayList() {
-  const todayStr = new Date(Date.now() + 9*3600*1000).toISOString().slice(0,10);
+  const todayStr = todayJST();
   const dbIds = students.filter(s => s.next_lesson_at && s.next_lesson_at.slice(0,10) === todayStr).map(s => s.id);
   const saved = JSON.parse(localStorage.getItem(_todayKey()) || 'null');
   let ids;
@@ -3077,7 +3002,7 @@ function _saveTodayList(list) {
 function _renderTodayCard() {
   const area = document.getElementById('todayListArea');
   if (!area) return;
-  const todayStr = new Date(Date.now() + 9*3600*1000).toISOString().slice(0,10);
+  const todayStr = todayJST();
   const list = _getTodayList();
   list.sort((a, b) => {
     if (!a.next_lesson_at) return 1;
@@ -3235,7 +3160,7 @@ function _todayAddById(sid) {
 }
 
 function _startLessonSeq() {
-  const todayStr = new Date(Date.now() + 9*3600*1000).toISOString().slice(0,10);
+  const todayStr = todayJST();
   const list = _getTodayList();
   list.sort((a, b) => {
     if (!a.next_lesson_at) return 1;
@@ -4523,6 +4448,8 @@ async function saveLesson() {
   if (!teacherSid) { toast('生徒を選んでください'); return; }
   const s = students.find(x => x.id === teacherSid);
   if (!s) return;
+  const _saveBtn = document.querySelector('#seqFormView .btn-primary');
+  if (_saveBtn) { if (_saveBtn.disabled) return; _saveBtn.disabled = true; _saveBtn.textContent = '登録中...'; }
   const checked = todayChecked[teacherSid] || [];
   const hw = document.getElementById('hwIn').value.trim();
 
@@ -4577,7 +4504,11 @@ async function saveLesson() {
     })(),
   }).eq('id', teacherSid);
 
-  if (error) { toast('保存に失敗しました。ネットを確認してください。'); return; }
+  if (error) {
+    toast('保存に失敗しました。ネットを確認してください。');
+    if (_saveBtn) { _saveBtn.disabled = false; _saveBtn.textContent = '登録する'; }
+    return;
+  }
 
   todayChecked[teacherSid] = [];
 
@@ -4591,6 +4522,7 @@ async function saveLesson() {
   }
   if (entries.some(e => e.type === 'bonus')) toast(`🏆 ボーナス！ +${exp} EXP`, 'bonus');
   else toast(`💾 保存しました！ +${exp} EXP`);
+  if (_saveBtn) { _saveBtn.disabled = false; _saveBtn.textContent = '登録する'; }
   if (_seqMode) { _seqNext(); }
   else {
     document.getElementById('seqFormView').style.display = 'none';
@@ -4630,7 +4562,7 @@ function renderStudentList() {
   if (!area) return;
   if (!students.length) { area.innerHTML = '<div class="empty">生徒がいません 🌊</div>'; return; }
   const now = Date.now();
-  const todayStr = new Date(Date.now() + 9*3600*1000).toISOString().slice(0,10);
+  const todayStr = todayJST();
 
   let sorted;
   if (_stuSort === 'recent') {
@@ -4750,12 +4682,11 @@ async function enterParent(studentData, selfData) {
   const switchBtn = document.getElementById('prtSwitchBtn');
   if (switchBtn) switchBtn.style.display = _parentSelf ? '' : 'none';
   const s = studentData;
-  const lv = lvInfo(s.total_exp || 0);
 
   // ヘッダー
   document.getElementById('prtChildName').textContent = s.name + 'さん';
-  document.getElementById('prtLvBadge').textContent = `Lv.${lv.level}`;
-  document.getElementById('prtLvName').textContent = lv.name;
+  document.getElementById('prtLvBadge').textContent = '';
+  document.getElementById('prtLvName').textContent = '';
 
   // 次のレッスン詳細 + 欠席ボタン（チケット型）
   const nlEl = document.getElementById('prtNextLesson');
@@ -4842,22 +4773,8 @@ async function enterParent(studentData, selfData) {
     if (_infoSheetChalList) _infoSheetChalList.innerHTML = _hwItems.length
       ? _hwItems.slice().reverse().map(e => `<div style="padding:10px 0;border-bottom:1px solid #f0f9ff;display:flex;align-items:flex-start;gap:8px;"><span style="font-size:14px;flex-shrink:0;">✅</span><div style="font-size:13px;font-weight:700;color:#334155;line-height:1.4;">${esc(e.text||'')}</div></div>`).join('')
       : `<div class="prt-empty">まだチャレンジがありません</div>`;
-    // いきもの表示（最高解放キャラ＋ステージ）
-    const _unlockedChars  = CHARS.filter(c => lv.level >= (c.minLv || 1));
-    const _unlockedStages = STAGE_BKGS.filter(b => lv.level >= (b.minLv || 1));
-    const _latestChar  = _unlockedChars[_unlockedChars.length - 1];
-    const _latestStage = _unlockedStages[_unlockedStages.length - 1];
-    if (ikiView) {
-      ikiView.style.display = '';
-      const bgEl  = document.getElementById('prtStageBgEl2');
-      const chrEl = document.getElementById('prtCharEl2');
-      if (bgEl && _latestStage?.img)  { bgEl.src  = _latestStage.img;  bgEl.style.display  = ''; }
-      if (chrEl && _latestChar?.img)  { chrEl.src = _latestChar.img;   chrEl.style.display = ''; }
-      const _snEl = document.getElementById('prtIkiStageName');
-      const _lvEl = document.getElementById('prtIkiLevel');
-      if (_snEl) _snEl.textContent = _latestStage?.name || '';
-      if (_lvEl) _lvEl.textContent = _latestChar?.size ? `${_latestChar.size}cm` : `Lv.${lv.level}`;
-    }
+    // いきもの表示（解放状態は生徒本人の端末にのみ保存されており、保護者画面からは確認できないため非表示）
+    if (ikiView) ikiView.style.display = 'none';
   } else {
     if (lockCard) lockCard.style.display = '';
     if (songChalCard) songChalCard.style.display = 'none';
@@ -4994,7 +4911,6 @@ function showStudentDetail(sid) {
   _lessonHwItems = [];
   _renderLessonHwList();
   document.getElementById('lessonExpInput').value = 50;
-  const lv = lvInfo(s.total_exp || 0);
   document.getElementById('detailName').textContent = s.name;
 
   // チャレンジした曲を最新の曲で自動入力
@@ -5037,21 +4953,6 @@ function showStudentDetail(sid) {
         <div style="display:flex;gap:6px;">${months.map(m => `<div style="flex:1;text-align:center;font-size:9px;color:#94a3b8;">${m.slice(5)}月</div>`).join('')}</div>`
       : '<div style="font-size:12px;color:#bbb;padding:4px 0;">まだ記録がありません</div>';
 
-    // キャラ解放 / ステージ解放
-    const unlockedChars  = CHARS.filter(c => lv.level >= (c.minLv || 1));
-    const unlockedStages = STAGE_BKGS.filter(b => lv.level >= (b.minLv || 1));
-    const charsHtml = unlockedChars.length
-      ? unlockedChars.map(c => `<span style="display:inline-block;font-size:12px;background:#f0fafb;border:1px solid #bae6fd;border-radius:20px;padding:4px 12px;color:#0369a1;font-weight:700;margin:3px;">${esc(c.name)} (Lv${c.minLv||1}〜)</span>`).join('')
-      : '<div style="font-size:12px;color:#bbb;padding:4px 0;">まだ解放なし</div>';
-    const stagesHtml = unlockedStages.length
-      ? unlockedStages.map(b => `<span style="display:inline-block;font-size:12px;background:#faf5ff;border:1px solid #d8b4fe;border-radius:20px;padding:4px 12px;color:#7c3aed;font-weight:700;margin:3px;">${esc(b.name)}</span>`).join('')
-      : '<div style="font-size:12px;color:#bbb;padding:4px 0;">まだ解放なし</div>';
-
-    // キャラのサイズ（EXPから推定）
-    const approxSize = Math.min(3 + Math.floor((s.total_exp || 0) / 200) * 0.5, 20).toFixed(1);
-    const sizeHtml = `<div style="font-size:22px;font-weight:900;color:#0077b6;">${approxSize} cm</div>
-      <div style="font-size:11px;color:#64748b;margin-top:4px;">累計 ${s.total_exp||0} EXP から推定</div>`;
-
     const savedLimit = JSON.parse(localStorage.getItem('char_limit_' + sid) || 'null');
     const charLimitHtml = `<div style="font-size:11px;color:#64748b;margin-bottom:10px;">使用可能なキャラにチェック。全チェック=制限なし。</div>
       <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:5px;" id="charLimitGrid_${sid}">
@@ -5062,13 +4963,19 @@ function showStudentDetail(sid) {
         <button onclick="_saveCharLimit('${sid}')" style="flex:1;background:linear-gradient(135deg,#e11d48,#fb7185);border:none;border-radius:10px;padding:8px;font-size:12px;font-weight:700;cursor:pointer;color:white;">保存</button>
       </div>`;
 
+    const _liveDone = (s.bonus_given || []).includes('live_performed');
+    const liveHtml = _liveDone
+      ? `<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
+          <span style="font-size:13px;font-weight:800;color:#0369a1;">✅ ライブ出場 認定済み（スナメリ解放）</span>
+          <button onclick="_setLivePerformed('${sid}', false)" style="background:none;border:none;font-size:11px;color:#94a3b8;text-decoration:underline;cursor:pointer;">取り消す</button>
+        </div>`
+      : `<button onclick="_setLivePerformed('${sid}', true)" style="width:100%;background:linear-gradient(135deg,#0ea5e9,#0369a1);border:none;border-radius:10px;padding:10px;font-size:13px;font-weight:800;cursor:pointer;color:white;">🎤 ライブ出場を認定する</button>`;
+
     accEl.innerHTML =
       _detailAccItem(`📚 ミッション（${hwItems.length}件）`, missionHtml, '#f59e0b', true) +
       _detailAccItem(`🎵 練習した曲（${songs.length}曲）`, songsHtml, '#3b82f6', true) +
       _detailAccItem('📈 レッスン来訪グラフ', graphHtml, '#10b981') +
-      _detailAccItem(`🐠 キャラ解放（${unlockedChars.length}体）`, charsHtml, '#38bdf8') +
-      _detailAccItem(`🏞 ステージ解放（${unlockedStages.length}種）`, stagesHtml, '#a78bfa') +
-      _detailAccItem('📏 キャラのサイズ', sizeHtml, '#0369a1') +
+      _detailAccItem('🎤 ライブ出場', liveHtml, '#0ea5e9') +
       _detailAccItem(`🔒 キャラ制限${savedLimit?'（'+savedLimit.length+'体）':'（制限なし）'}`, charLimitHtml, '#e11d48');
   }
 
@@ -5141,7 +5048,7 @@ function showStudentDetail(sid) {
   if (infoBar) {
     const streak = s.practice_streak || 0;
     const lastLsDate = s.last_lesson_at ? s.last_lesson_at.slice(5,10).replace('-','/') + '来訪' : null;
-    let ibHtml = `<div style="background:linear-gradient(135deg,#fffbeb,#fef3c7);border:1px solid #fcd34d;border-radius:20px;padding:5px 12px;font-size:11px;font-weight:800;color:#b45309;">Lv.${lv.level} ${lv.name}</div>`;
+    let ibHtml = '';
     if (streak > 0) ibHtml += `<div style="background:#fff7ed;border:1px solid #fed7aa;border-radius:20px;padding:5px 12px;font-size:11px;font-weight:800;color:#c2410c;">🔥 ${streak}日連続</div>`;
     if (lastLsDate) ibHtml += `<div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:20px;padding:5px 12px;font-size:11px;font-weight:800;color:#1d4ed8;">🎸 ${lastLsDate}</div>`;
     infoBar.innerHTML = ibHtml;
@@ -5181,6 +5088,19 @@ function closeStudentDetail() {
   detailStudentId = null;
 }
 
+async function _setLivePerformed(sid, val) {
+  const s = students.find(x => x.id === sid);
+  if (!s) return;
+  const given = new Set(s.bonus_given || []);
+  if (val) given.add('live_performed'); else given.delete('live_performed');
+  const newBonusGiven = [...given];
+  const {error} = await sb.from('students').update({bonus_given: newBonusGiven}).eq('id', sid);
+  if (error) { toast('保存に失敗しました 😢'); return; }
+  s.bonus_given = newBonusGiven;
+  toast(val ? '🎤 ライブ出場を認定しました！（スナメリ解放）' : 'ライブ出場の認定を取り消しました');
+  showStudentDetail(sid);
+}
+
 // =====================================================================
 // ★ 保護者アカウント紐づけ
 // =====================================================================
@@ -5192,11 +5112,9 @@ function openParentLinkPicker(childId) {
   const list = document.getElementById('parentPickerList');
   list.innerHTML = others.length
     ? others.map(s => {
-        const lv = lvInfo(s.total_exp || 0);
         return `<div onclick="selectParentStudent('${s.id}')" style="padding:13px 16px;border-bottom:1px solid #f5f5f5;cursor:pointer;display:flex;align-items:center;gap:10px;background:white;" onmouseover="this.style.background='#fef3c7'" onmouseout="this.style.background='white'">
           <span style="font-size:18px;flex-shrink:0;">👤</span>
           <span style="font-size:14px;font-weight:700;color:#1a1a1a;flex:1;">${esc(s.name)}</span>
-          <span style="font-size:11px;color:#aaa;">Lv.${lv.level}</span>
         </div>`;
       }).join('')
     : '<div style="padding:20px;text-align:center;color:#bbb;font-size:13px;">他に生徒がいません</div>';
@@ -5302,6 +5220,8 @@ function _renderLessonHwList() {
 
 async function addLessonRecord() {
   if (!detailStudentId) return;
+  const _recBtn = document.querySelector('.lesson-rec-save');
+  if (_recBtn) { if (_recBtn.disabled) return; _recBtn.disabled = true; }
   const exp  = parseInt(document.getElementById('lessonExpInput').value) || 50;
   const songInput = document.getElementById('lessonSongInput');
   const songVal = (songInput && songInput.value.trim()) || '';
@@ -5334,7 +5254,11 @@ async function addLessonRecord() {
   if (newSongs !== existingSongs) updateObj.songs = newSongs;
 
   const {error} = await sb.from('students').update(updateObj).eq('id', detailStudentId);
-  if (error) { toast('保存に失敗しました 😢'); return; }
+  if (error) {
+    toast('保存に失敗しました 😢');
+    if (_recBtn) _recBtn.disabled = false;
+    return;
+  }
 
   const goalMsg = goalEntries.length ? ` + ゴール達成 +${goalExp} EXP！` : '';
   toast(`💾 記録しました！ +${exp} EXP${goalMsg}`);
@@ -5346,6 +5270,7 @@ async function addLessonRecord() {
 
   await loadStudents();
   showStudentDetail(detailStudentId);
+  if (_recBtn) _recBtn.disabled = false;
 }
 
 function promptResetPin(sid, sname) {
@@ -5565,9 +5490,6 @@ async function enterStudent(data, {fromTeacher=false}={}) {
   goScreen('sStudent');
   applyTheme(data.theme || 'normal');
   renderStudent(data);
-  if (!isGuest) {
-    loadMyLikesCount();
-  }
   renderStageSelector(data.total_exp || 0);
   // Tutorial v2: 体験さんのみ即時起動（レンダリング直後にUI隠す）
   const _isTutStart = false;
@@ -5601,20 +5523,15 @@ function studentLogout() {
 
 function renderStudent(data) {
   const exp = data.total_exp || 0;
-  const lv  = lvInfo(exp);
   const tl  = typeof data.timeline === 'string' ? JSON.parse(data.timeline || '[]') : (data.timeline || []);
   const sHeaderNameEl = document.getElementById('sHeaderName');
   if (sHeaderNameEl) sHeaderNameEl.textContent = isGuest ? '👀 見学中' : ('🐬 ' + (data.name || '---'));
-  const customTitle = currentStudentId ? (localStorage.getItem('custom_title_' + currentStudentId) || lv.name) : lv.name;
   document.getElementById('sNameBig').innerHTML = isGuest ? '👀 見学中' : esc(data.name || '');
-  const _gtl = document.getElementById('sGaugeTitleLine'); if (_gtl) _gtl.innerHTML = isGuest ? '' : `<span style="background:linear-gradient(135deg,#ffe566,#fbbf24,#f59e0b);color:#4a2c00;border-radius:8px;padding:2px 9px;font-size:14px;font-weight:900;flex-shrink:0;text-shadow:none;">Lv.${lv.level}</span><span>${esc(customTitle)}</span>`;
-  const _lvBadgeEl = document.getElementById('sLvBadge'); if (_lvBadgeEl) _lvBadgeEl.textContent = `Lv.${lv.level}`;
-  const prefStage = (currentStudentId && localStorage.getItem('pref_stage_' + currentStudentId)) || lv.stage;
-  document.getElementById('sStage').textContent = prefStage;
-  const expIn = exp - lv.min, expNeed = lv.max - lv.min;
-  const pct = lv.level >= LEVELS.length ? 100 : Math.min(100, Math.round(expIn / expNeed * 100));
-  document.getElementById('sExpFill').style.width  = pct + '%';
-  document.getElementById('sExpLbl').textContent   = lv.level >= LEVELS.length ? 'MAX' : `次のLvまで ${lv.max - exp}P`;
+  const _gtl = document.getElementById('sGaugeTitleLine'); if (_gtl) _gtl.innerHTML = '';
+  const _lvBadgeEl = document.getElementById('sLvBadge'); if (_lvBadgeEl) _lvBadgeEl.textContent = '';
+  const _sStageEl = document.getElementById('sStage'); if (_sStageEl) _sStageEl.textContent = '';
+  const _sExpFillEl = document.getElementById('sExpFill'); if (_sExpFillEl) _sExpFillEl.style.width = '0%';
+  const _sExpLblEl = document.getElementById('sExpLbl'); if (_sExpLblEl) _sExpLblEl.textContent = '';
   // ── 新ビーチヘッダー更新 ──
   const _bName = document.getElementById('homeBeachName');
   const _bTitle = document.getElementById('homeBeachTitle');
@@ -5622,34 +5539,26 @@ function renderStudent(data) {
   const _bFill = document.getElementById('homeBeachGaugeFill');
   const _bNote = document.getElementById('homeBeachGaugeNote');
   if (_bName) _bName.textContent = isGuest ? '👀 見学中' : `🎸 ${data.name || '---'}さん`;
-  if (_bTitle) _bTitle.textContent = isGuest ? '' : `「${customTitle}」`;
-  if (_bLv) _bLv.textContent = `Lv. ${lv.level}`;
-  if (_bFill) _bFill.style.width = pct + '%';
-  if (_bNote) _bNote.textContent = lv.level >= LEVELS.length ? '🏆 MAX到達！' : `次のLvまで ${lv.max - exp}P`;
-  // キャラクターイラスト切り替え（カスタム選択 > レベルデフォルト > SVGイルカ）
+  if (_bTitle) _bTitle.textContent = '';
+  if (_bLv) _bLv.textContent = '';
+  if (_bFill) _bFill.style.width = '0%';
+  if (_bNote) _bNote.textContent = '';
+  // キャラクターイラスト切り替え（カスタム選択 > スターター > SVGイルカ）
   const charImgEl  = document.getElementById('charImgEl');
   const charBgEl   = document.getElementById('charBgEl');
   const dolphinSvg = document.getElementById('dolphinSvg');
-  // レベルアップ時にキャラ・ステージを自動切替
   const _effChars = _effectiveChars(currentStudentId);
-  if (!isGuest && currentStudentId && currentStudentData) {
-    const _autoOldLv = lvInfo(currentStudentData.total_exp || 0).level;
-    if (lv.level > _autoOldLv) {
-      const _autoChar = _effChars.find(c => c.minLv === lv.level && c.minLv < 99);
-      if (_autoChar) localStorage.setItem('custom_char_' + currentStudentId, _autoChar.id);
-      const _autoBg = STAGE_BKGS.find(b => (b.minLv||0) === lv.level);
-      if (_autoBg) localStorage.setItem('stage_bg_' + currentStudentId, _autoBg.id);
-    }
-  }
+  const _unlockedIds = _getSubUnlockedChars();
   const _savedCharId = currentStudentId ? localStorage.getItem('custom_char_' + currentStudentId) : null;
-  const _savedChar   = _savedCharId ? _effChars.find(c => c.id === _savedCharId) : null;
-  const _starterChar = _effChars.find(c => c.minLv <= 1) || CHARS.find(c => c.id === 'kumanomi');
-  const _charImg     = (_savedChar && lv.level >= (_savedChar.minLv || 1)) ? _savedChar.img : _starterChar?.img;
+  const _savedChar   = (_savedCharId && _unlockedIds.includes(_savedCharId)) ? _effChars.find(c => c.id === _savedCharId) : null;
+  const _starterId   = _getStarterCharId(currentStudentId);
+  const _starterChar = _effChars.find(c => c.id === _starterId) || CHARS.find(c => c.id === 'kumanomi');
   const _activeChar  = _savedChar || _starterChar;
+  const _charImg     = _activeChar?.img;
   let _savedBgId = currentStudentId ? localStorage.getItem('stage_bg_' + currentStudentId) : null;
-  if (!_savedBgId && currentStudentId) {
-    const _defBg = STAGE_BKGS.find(b => (b.minLv||0) <= lv.level);
-    if (_defBg) { _savedBgId = _defBg.id; localStorage.setItem('stage_bg_' + currentStudentId, _defBg.id); }
+  if (!_savedBgId && currentStudentId && STAGE_BKGS.length) {
+    _savedBgId = STAGE_BKGS[0].id;
+    localStorage.setItem('stage_bg_' + currentStudentId, _savedBgId);
   }
   const _bgEntry = _savedBgId ? STAGE_BKGS.find(b => b.id === _savedBgId) : null;
   const _charBg  = _bgEntry ? _bgEntry.img : null;
@@ -5679,29 +5588,14 @@ function renderStudent(data) {
       dolphinSvg.style.display = 'none';
     }
   }
-  // エリアイラスト切り替え（AREA_IMAGESに画像URLがあれば表示）
   const areaImgBanner = document.getElementById('areaImgBanner');
-  const areaUrl = AREA_IMAGES[lv.stage] || null;
-  if (areaImgBanner) {
-    if (areaUrl) {
-      areaImgBanner.src           = areaUrl;
-      areaImgBanner.style.display = '';
-    } else {
-      areaImgBanner.style.display = 'none';
-    }
-  }
-  // Lv.25以上のゴールド輝きエフェクト（SVG表示時のみ）
-  if (!lv.charImg) {
-    const guitarG     = document.getElementById('guitarG');
-    const dolphinBody = document.getElementById('dolphinBody');
-    if (guitarG && dolphinBody) {
-      const glow = lv.level >= 25;
-      guitarG.style.filter     = glow ? 'drop-shadow(0 0 6px gold)' : '';
-      dolphinBody.style.filter = glow ? 'drop-shadow(0 0 8px #FFD700)' : '';
-    }
-  }
+  if (areaImgBanner) areaImgBanner.style.display = 'none';
+  const guitarG     = document.getElementById('guitarG');
+  const dolphinBody = document.getElementById('dolphinBody');
+  if (guitarG) guitarG.style.filter = '';
+  if (dolphinBody) dolphinBody.style.filter = '';
   const _simpleLvNum = document.getElementById('simpleLvNum');
-  if (_simpleLvNum) _simpleLvNum.textContent = `Lv.${lv.level}`;
+  if (_simpleLvNum) _simpleLvNum.textContent = '';
   const _simpleStr = document.getElementById('simpleStreakNum');
   if (_simpleStr) _simpleStr.textContent = (data.practice_streak||0) >= 1 ? `🔥 ${data.practice_streak}日連続！` : '今日練習しよう';
   renderShells(tl);
@@ -6046,7 +5940,6 @@ function tutV2Next() {
         _hideEls9n2.forEach(sel => { const el = _homeP9n2 ? _homeP9n2.querySelector(sel) : null; if (el) el.style.visibility = ''; });
         _tutV2HideDim();
         _tutV2DoLevelUp();
-        _tutV2WaitAction = 'levelup';
       }, 2700);
       break;
     }
@@ -6069,9 +5962,7 @@ function _tutV2SkipConfirmed() {
   if (!_tutV2Active) return;
   _tutV2Active = false;
   _tutV2Step = -1;
-  const _prevWait = _tutV2WaitAction;
   _tutV2WaitAction = null;
-  if (_prevWait === 'levelup') { try { closeLevelup(); } catch(e) {} }
   const _bwSkip = document.getElementById('tut2BubbleWrap'); if (_bwSkip) _bwSkip.remove();
   document.querySelectorAll('.tut2-fake-entry').forEach(el => el.remove());
   _tutV2HideBubble();
@@ -6192,8 +6083,6 @@ function _tutV2ShowPracticeScreen() {
   ['goalPickBtn','goalVideoBtn','streakHint','sHomeworkMini','sPraiseMini'].forEach(id => {
     const el = document.getElementById(id); if (el) el.style.display = 'none';
   });
-  const _lcHide = document.getElementById('sLikeCountTab');
-  if (_lcHide && _lcHide.parentElement) _lcHide.parentElement.parentElement.style.visibility = 'hidden';
   const practiceWrap = document.getElementById('practiceCheckBtn');
   if (practiceWrap && practiceWrap.parentElement) practiceWrap.parentElement.style.marginTop = '24vh';
   const tl = document.getElementById('sSharedTimeline');
@@ -6232,13 +6121,6 @@ function _tutV2ShowFakeEntries() {
   if (!tl) { setTimeout(() => _tutV2GoStep(8), 500); return; }
   const _tlPanel = document.getElementById('sp-timeline');
   if (_tlPanel) { _tlPanel.style.position = 'relative'; _tlPanel.style.zIndex = '50'; }
-  // チュートリアル中はいいねボタンと応援数を非表示
-  const _likeStyle = document.createElement('style');
-  _likeStyle.id = 'tut2HideLikes';
-  _likeStyle.textContent = '#sSharedTimeline .like-btn{display:none!important;}';
-  document.head.appendChild(_likeStyle);
-  const _lcEl = document.getElementById('sLikeCountTab');
-  if (_lcEl && _lcEl.parentElement) _lcEl.parentElement.parentElement.style.visibility = 'hidden';
   _tutV2ShowDim();
   const _cbF = document.getElementById('practiceCheckBtn');
   const kame = CHARS.find(c => c.id === 'kame');
@@ -6332,13 +6214,9 @@ function _tutV2ShowExpBarHome() {
 function _tutV2DoLevelUp() {
   setTimeout(() => {
     if (!_tutV2Active) return;
-    showLevelup(LEVELS[0]);
+    toast('🎊 レベルアップ！', 'lv');
+    _tutV2GoStep(12);
   }, 600);
-}
-
-function _tutV2OnLevelupClose() {
-  if (_tutV2WaitAction !== 'levelup') return;
-  _tutV2WaitAction = null; _tutV2GoStep(12);
 }
 
 function _tutV2RevealAll() {
@@ -6366,10 +6244,6 @@ function _tutV2RevealAll() {
   setTimeout(async () => {
     document.getElementById('tutV2Skip').style.display = 'none';
     _tutV2Active = false; _tutV2Step = -1; _tutV2WaitAction = null;
-    // ハート非表示スタイルを解除・応援数を元に戻す
-    const _lsEl = document.getElementById('tut2HideLikes'); if (_lsEl) _lsEl.remove();
-    const _lcEl = document.getElementById('sLikeCountTab');
-    if (_lcEl && _lcEl.parentElement) _lcEl.parentElement.parentElement.style.visibility = '';
     // ゲージをいったん0%にリセットしてからrenderStudentで実際の値までアニメーション
     const _rvFill = document.getElementById('sExpFill');
     if (_rvFill) { _rvFill.style.transition = 'none'; _rvFill.style.width = '0%'; void _rvFill.offsetWidth; _rvFill.style.transition = ''; }
@@ -6926,8 +6800,7 @@ function selectSubBg(id) {
 })();
 
 let sharedPostsChannel = null;
-let _myLikes = new Set();
-let _tlCache = null; // {date, posts, likes, ts}
+let _tlCache = null; // {date, posts, ts}
 
 function todayJST() {
   return new Date(Date.now() + 9*3600*1000).toISOString().slice(0,10);
@@ -6996,7 +6869,6 @@ async function loadSharedPosts(forceRefresh) {
   const now = Date.now();
   // キャッシュが有効（同日・60秒以内）なら再利用
   if (!forceRefresh && _tlCache && _tlCache.date === d && (now - _tlCache.ts) < 60000) {
-    _myLikes = new Set(_tlCache.likes);
     _applyAlreadyPosted(_tlCache.posts);
     renderSharedPosts(_tlCache.posts);
     renderNakamaFeed(_tlCache.posts);
@@ -7015,16 +6887,8 @@ async function loadSharedPosts(forceRefresh) {
     .limit(30);
   if (error) { el.innerHTML = '<div class="empty">読み込みエラー 😢</div>'; return; }
   const list = posts || [];
-  // 自分のいいね取得
-  _myLikes = new Set();
-  if (currentStudentId && list.length) {
-    const ids = list.map(p => p.id);
-    const {data: likes} = await sb.from('post_likes').select('post_id')
-      .eq('student_id', currentStudentId).in('post_id', ids);
-    if (likes) likes.forEach(l => _myLikes.add(l.post_id));
-  }
   // キャッシュ保存
-  _tlCache = {date: d, posts: list, likes: new Set(_myLikes), ts: Date.now()};
+  _tlCache = {date: d, posts: list, ts: Date.now()};
   _applyAlreadyPosted(list);
   renderSharedPosts(list);
   renderNakamaFeed(list);
@@ -7053,10 +6917,9 @@ async function showPostSongs(charId, studentId) {
   ov.classList.add('show');
   if (studentId) {
     try {
-      const {data: _sd} = await sb.from('students').select('practice_streak,songs,total_exp,bonus_given').eq('id', studentId).single();
+      const {data: _sd} = await sb.from('students').select('name,practice_streak,songs,total_exp,bonus_given').eq('id', studentId).single();
       const _sdata = _sd || {};
-      const _popLv = lvInfo(_sdata.total_exp || 0);
-      document.getElementById('postSongsTitle').textContent = `Lv.${_popLv.level} ${_popLv.name}`;
+      document.getElementById('postSongsTitle').textContent = _sdata.name || '';
       const _songRow = n => `<div class="post-songs-item"><span class="post-songs-ico">🎵</span><span class="post-songs-name">${esc(n)}</span></div>`;
       if (_sdata.songs && _sdata.songs.length) {
         const _visSongs = _sdata.songs.slice(0, 3);
@@ -7111,15 +6974,11 @@ function renderSharedPosts(posts) {
   }
   el.innerHTML = posts.map(p => {
     const isOwn = p.student_id === currentStudentId;
-    const liked = _myLikes.has(p.id);
-    const likeBtn = isOwn ? '<div style="width:30px;"></div>'
-      : `<button class="like-btn${liked?' liked':''}" onclick="event.stopPropagation();toggleLike('${p.id}',this)">${liked?'❤️':'🤍'}</button>`;
     const charId = isOwn
       ? (localStorage.getItem('custom_char_' + currentStudentId) || p.char_id || 'kumanomi')
       : (p.char_id || 'kumanomi');
     const _cObj = CHARS.find(c => c.id === charId) || CHARS[0];
     const _songs = p.songs || [];
-    const _lvTag = (p.student_title || '').match(/Lv\.\d+/)?.[0] || '';
     const _songGrid = _songs.length ? `<div style="display:grid;grid-template-columns:1fr 1fr;gap:2px 6px;margin-top:5px;">${_songs.slice(0,4).map(s => `<div style="font-size:10px;color:rgba(255,255,255,.7);font-weight:600;line-height:1.3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${esc(s)}</div>`).join('')}</div>` : '';
     const _displayPhrase = (p.phrase||'')
       .replace(/^🎸 練習した！（(\d+)日連続🔥）$/, '$1日連続')
@@ -7128,11 +6987,9 @@ function renderSharedPosts(posts) {
     return `<div class="tl-post${isOwn ? ' own' : ''}" onclick="showPostSongs('${p.char_id||''}','${p.student_id}')" style="cursor:pointer;-webkit-tap-highlight-color:transparent;">
       <div class="tl-post-icon"><img src="${_cObj.img}" style="width:36px;height:36px;object-fit:contain;"></div>
       <div style="flex:1;min-width:0;">
-        ${_lvTag ? `<div style="font-size:10px;font-weight:800;color:rgba(255,220,80,.85);margin-bottom:2px;">${esc(_lvTag)}</div>` : ''}
         <div class="tl-post-phrase">${esc(_displayPhrase)}</div>
         ${_songGrid}
       </div>
-      ${likeBtn}
     </div>`;
   }).join('');
 }
@@ -7153,18 +7010,18 @@ function _openTlCharModal() {
   const modal = document.getElementById('tlCharModal');
   const grid  = document.getElementById('tlCharModalGrid');
   if (!modal || !grid) return;
-  const userLv = lvInfo((currentStudentData && currentStudentData.total_exp) || 0).level;
+  const unlockedIds = _getSubUnlockedChars();
   const chars = _effectiveChars(currentStudentId);
   const currentChar = localStorage.getItem('custom_char_' + currentStudentId) || _getStarterCharId(currentStudentId);
   grid.innerHTML = chars.map(c => {
-    const unlocked = c.minLv <= userLv;
+    const unlocked = unlockedIds.includes(c.id);
     const isSelected = c.id === currentChar;
     const silhouette = unlocked ? '' : 'filter:brightness(0) saturate(0);';
     const border = isSelected
       ? 'border:2px solid rgba(255,218,60,.9);box-shadow:0 0 0 3px rgba(255,200,40,.22);'
       : 'border:2px solid rgba(255,255,255,.15);';
     const onClick = unlocked ? 'onclick="_setTlChar(\'' + c.id + '\');_closeTlCharModal()"' : '';
-    const label = unlocked ? c.name : ('Lv.' + c.minLv);
+    const label = unlocked ? c.name : '🔒';
     return '<div style="display:flex;flex-direction:column;align-items:center;gap:6px;cursor:' + (unlocked ? 'pointer' : 'default') + ';" ' + onClick + '>'
       + '<div style="width:58px;height:58px;border-radius:50%;background:rgba(255,255,255,.1);' + border + 'display:flex;align-items:center;justify-content:center;">'
       + '<img src="' + c.img + '" style="width:40px;height:40px;object-fit:contain;' + silhouette + '">'
@@ -7238,12 +7095,6 @@ async function practiceCheckIn() {
   const streak    = s.practice_streak || 0;
   const newStreak = (s.last_practice_date === yesterday) ? streak + 1 : 1;
   const exp       = streakExp(newStreak);
-  const oldLv     = lvInfo(s.total_exp || 0).level;
-  const _freeCap  = (s.tier||'free') === 'free';
-  if (_freeCap && lvInfo((s.total_exp||0) + exp).level > FREE_TIER_LEVEL_CAP) {
-    toast('🔒 Lv.' + FREE_TIER_LEVEL_CAP + ' まで体験できます！レッスンで続きを♪');
-    return;
-  }
   const newExp = (s.total_exp || 0) + exp;
   const tlEntry = {
     type: 'practice',
@@ -7258,16 +7109,9 @@ async function practiceCheckIn() {
   _setLife(_LIFE_MAX);
   if (!_tutV2Active) {
     renderStudent(newData);
-    const newLv = lvInfo(newExp).level;
     const _isTutorial = !localStorage.getItem('tutorial_done_' + currentStudentId);
     if (_isTutorial) { localStorage.setItem('tutorial_done_' + currentStudentId, '1'); hideTutorial(); }
-    if (newLv > oldLv) {
-      showLevelup(lvInfo(newExp));
-    } else if (_isTutorial) {
-      showLevelup(LEVELS[0]);
-    } else {
-      toast(`🎸 練習チェック！ +${exp} EXP${newStreak >= 2 ? `（${newStreak}日連続🔥）` : ''}`, 'bonus');
-    }
+    toast(`🎸 練習チェック！ +${exp} EXP${newStreak >= 2 ? `（${newStreak}日連続🔥）` : ''}`, 'bonus');
   }
 
   // ── DB書き込みはバックグラウンドで（待たない）──────
@@ -7278,15 +7122,13 @@ async function practiceCheckIn() {
     if (error) toast('同期エラーが発生しました 😢');
   });
 
-  const lv = lvInfo(s.total_exp || 0);
-
   { const _cid0 = localStorage.getItem('custom_char_' + currentStudentId) || 'kumanomi';
     const _co0  = CHARS.find(c => c.id === _cid0) || CHARS[0];
     const _cm0  = (_co0.startCm || 3) + parseInt(localStorage.getItem('sub_cm_' + _cid0) || '0');
     const _hw0  = _getAllLatestHomeworks();
     sb.from('shared_posts').insert({
       student_id: currentStudentId, student_name: s.name || '生徒',
-      student_title: `Lv.${lv.level} ${lv.name}`,
+      student_title: '',
       phrase: JSON.stringify({ streak: newStreak, cm: _cm0, hw: _hw0 }),
       char_id: _cid0,
       songs: s.songs || [],
@@ -7304,7 +7146,6 @@ async function _simpleAutoCheckIn() {
   const streak    = s.practice_streak || 0;
   const newStreak = (s.last_practice_date === yesterday) ? streak + 1 : 1;
   const exp       = streakExp(newStreak);
-  const oldLv     = lvInfo(s.total_exp || 0).level;
   const newExp    = (s.total_exp || 0) + exp;
   const tlEntry   = {type:'practice', text:`自主練習！🔥${newStreak}日連続`, exp, date:dateStr()};
   const newTimeline = [tlEntry, ...(s.timeline || [])].slice(0, 50);
@@ -7314,51 +7155,6 @@ async function _simpleAutoCheckIn() {
     total_exp: newExp, practice_streak: newStreak,
     last_practice_date: today, timeline: newTimeline,
   }).eq('id', currentStudentId);
-}
-
-async function toggleLike(postId, btn) {
-  if (!currentStudentId) return;
-  if (String(postId).startsWith('dp')) {
-    if (_myLikes.has(postId)) { _myLikes.delete(postId); btn.textContent = '🤍'; btn.classList.remove('liked'); }
-    else { _myLikes.add(postId); btn.textContent = '❤️'; btn.classList.add('liked'); }
-    return;
-  }
-  if (_myLikes.has(postId)) {
-    await sb.from('post_likes').delete().eq('post_id', postId).eq('student_id', currentStudentId);
-    _myLikes.delete(postId);
-    btn.textContent = '🤍'; btn.classList.remove('liked');
-  } else {
-    await sb.from('post_likes').insert({post_id: postId, student_id: currentStudentId});
-    _myLikes.add(postId);
-    btn.textContent = '❤️'; btn.classList.add('liked');
-  }
-}
-
-function renderRewardMap(currentExp) {
-  const el = document.getElementById('sRewardMap');
-  if (!el) return;
-  let prevStage = '';
-  let html = '';
-  LEVELS.forEach(lv => {
-    if (lv.stage !== prevStage) {
-      html += `<div class="reward-stage-hdr">${lv.stage}</div>`;
-      prevStage = lv.stage;
-    }
-    const done    = currentExp >= lv.max && lv.level < 30;
-    const current = currentExp >= lv.min && (currentExp < lv.max || lv.level === 30);
-    const cls     = done ? 'rw-done' : current ? 'rw-current' : '';
-    const icon    = done ? '✅' : current ? '⭐' : '🔒';
-    const expTxt  = lv.level === 30 ? `${lv.min}+` : `${lv.min}〜${lv.max}`;
-    html += `<div class="reward-row ${cls}">
-      <span style="font-size:20px;">${icon}</span>
-      <div style="flex:1;">
-        <div style="font-weight:700;font-size:14px;color:var(--ocean-deep);">Lv.${lv.level} ${lv.name}</div>
-        <div style="font-size:11px;color:var(--text-mid);">${expTxt} EXP</div>
-      </div>
-      ${current ? '<span style="font-size:11px;font-weight:700;color:var(--ocean-mid);">← いまここ</span>' : ''}
-    </div>`;
-  });
-  el.innerHTML = html;
 }
 
 function renderNotices(tl) {
@@ -7445,15 +7241,6 @@ function renderPraiseMini(tl) {
   el.innerHTML = `<div style="display:flex;align-items:flex-start;gap:9px;margin-top:10px;padding-top:10px;border-top:1px solid rgba(200,184,160,.2);"><span style="font-size:15px;flex-shrink:0;line-height:1.4;">⭐</span><div style="font-size:13px;font-weight:700;color:#6b3a00;line-height:1.55;">${esc(_latest.text||'')}</div></div>`;
 }
 
-const STAGES = [
-  {ico:'🏖️', name:'サンドビーチ',   minLv:1},
-  {ico:'🌊',  name:'大海原',         minLv:6},
-  {ico:'🐠',  name:'珊瑚礁',         minLv:11},
-  {ico:'🌌',  name:'深海ステージ',   minLv:16},
-  {ico:'✨',  name:'伝説のステージ', minLv:21},
-  {ico:'💎',  name:'神話の領域',     minLv:26},
-];
-
 function toggleAcc(el) {
   const section = el.closest('.acc-section');
   const isOpen = section.classList.contains('open');
@@ -7477,69 +7264,6 @@ function fmtDate(d) {
 
 function openHomePanel(type, tab) {
   closeHomePanel();
-  const exp = currentStudentData ? (currentStudentData.total_exp || 0) : 0;
-  if (type === 'reward') {
-    if (!isGuest && currentStudentId) {
-      localStorage.setItem('reward_seen_lv_' + currentStudentId, String(lvInfo(exp).level));
-      const _rb = document.getElementById('rewardBadgeCnt');
-      if (_rb) _rb.style.display = 'none';
-    }
-    const lv = lvInfo(exp);
-    const currentLv = lv.level;
-    const el = document.getElementById('homeRewardContent');
-    if (!el) return;
-
-    // 図鑑（CHARS定義のキャラ一覧）
-    const _savedCid  = currentStudentId ? localStorage.getItem('custom_char_' + currentStudentId) : null;
-    const _effCid    = _savedCid || _getStarterCharId(currentStudentId);
-    const _effCharsZ = _effectiveChars(currentStudentId);
-    const zukanHtml = _effCharsZ.map(ch => {
-      const unlocked = currentLv >= ch.minLv;
-      const isSel = _effCid === ch.id && unlocked;
-      const cls = `zukan-card ${unlocked ? 'unlocked' : 'locked'}${isSel ? ' sel' : ''}`;
-      return `<div class="${cls}" ${unlocked ? `onclick="selectChar('${ch.id}')" style="cursor:pointer;"` : ''}>
-        <div class="zukan-ico"><img src="${ch.img}" style="width:46px;height:46px;object-fit:contain;${unlocked ? '' : 'filter:brightness(0);opacity:.5;'}"></div>
-        <div class="zukan-lv">${unlocked ? ch.name : `${ch.minLv}Lvで解放`}</div>
-        ${isSel ? '<div style="font-size:9px;color:var(--ocean-mid);font-weight:800;margin-top:2px;">使用中</div>' : ''}
-      </div>`;
-    }).join('');
-
-    // ステージ背景選択
-    const _selBgId = currentStudentId ? localStorage.getItem('stage_bg_' + currentStudentId) : null;
-    const stageBgHtml = STAGE_BKGS.map(bg => {
-      const bgUnlocked = currentLv >= (bg.minLv||0);
-      const isSel = bg.id === _selBgId && bgUnlocked;
-      const cls = `stage-bg-card${isSel ? ' selected' : ''}${bgUnlocked ? '' : ' locked'}`;
-      const _thumbEx = bg.id === 'sangosho' ? 'transform:scale(1.35) translateY(8px);transform-origin:center;' : '';
-      return `<div class="${cls}" ${bgUnlocked ? `onclick="selectStageBg('${bg.id}')" style="cursor:pointer;"` : ''}>
-        <img class="stage-bg-thumb" src="${bg.img}" alt="${esc(bg.name)}" style="${bgUnlocked ? '' : 'filter:brightness(0);opacity:.45;'}${_thumbEx}">
-        <div class="stage-bg-name">${bgUnlocked ? esc(bg.name) : `${bg.minLv}Lvで解放`}</div>
-        ${isSel ? '<div class="stage-bg-check">✓ 使用中</div>' : ''}
-      </div>`;
-    }).join('');
-
-    const _activeTab = tab || 'iki';
-    const _openIki   = _activeTab === 'iki'    ? ' open' : '';
-    const _openStage = _activeTab === 'stage'  ? ' open' : '';
-    el.innerHTML = `
-      <div style="padding:4px 0 8px;">
-        <div class="acc-section${_openIki}">
-          <div class="acc-header" onclick="toggleAcc(this)">
-            <span>いきもの</span><span class="acc-arrow">▼</span>
-          </div>
-          <div class="acc-body"><div class="zukan-grid">${zukanHtml}</div></div>
-        </div>
-        <div class="acc-section${_openStage}">
-          <div class="acc-header" onclick="toggleAcc(this)">
-            <span>ステージ</span><span class="acc-arrow">▼</span>
-          </div>
-          <div class="acc-body"><div class="stage-bg-grid">${stageBgHtml}</div></div>
-        </div>
-      </div>`;
-
-    document.getElementById('homeOvReward').classList.add('show');
-    return;
-  }
   if (type === 'homework') {
     const rawTl = currentStudentData ? currentStudentData.timeline : [];
     const tl = typeof rawTl === 'string' ? JSON.parse(rawTl || '[]') : (rawTl || []);
@@ -7617,69 +7341,9 @@ function openHomePanel(type, tab) {
       <div class="acc-body">${_badgeGrid}</div>
     </div>`;
 
-    // ── 称号（アコーディオン） ──
-    const _shellLv = lvInfo(currentStudentData ? (currentStudentData.total_exp || 0) : 0);
-    const _shellSelTitle = currentStudentId ? (localStorage.getItem('custom_title_' + currentStudentId) || null) : null;
-    const _currentTitle = _shellSelTitle || _shellLv.name;
-    const _titleHtml = `<div style="text-align:center;padding:10px 0 8px;"><span style="display:inline-block;background:linear-gradient(135deg,#e0f2fe,#bae6fd);color:#0369a1;font-size:15px;font-weight:900;border-radius:20px;padding:7px 22px;border:1.5px solid #7dd3fc;">${esc(_currentTitle)}</span></div>` +
-      '<div class="katagi-list">' + LEVELS.map(l => {
-        const isUnlocked = l.level < _shellLv.level;
-        const isCurrent  = l.level === _shellLv.level;
-        const cls = (isCurrent ? 'current' : isUnlocked ? 'unlocked' : '');
-        return `<div class="katagi-item ${cls}" style="cursor:default;">
-          <span class="katagi-num">Lv${l.level}</span>
-          <span>${esc(l.name)}</span>
-          ${isCurrent ? '<span class="katagi-sel-badge">現在</span>' : ''}
-        </div>`;
-      }).join('') + '</div>';
-    html += `<div class="acc-section" style="margin-top:8px;">
-      <div class="acc-header" onclick="toggleAcc(this)"><span>🏷️ 称号</span><span class="acc-arrow">▼</span></div>
-      <div class="acc-body">${_titleHtml}</div>
-    </div>`;
-
     el.innerHTML = html;
     document.getElementById('homeOvShells').classList.add('show');
   }
-}
-
-function selectChar(id) {
-  if (!currentStudentId) return;
-  const lv = lvInfo(currentStudentData ? (currentStudentData.total_exp || 0) : 0);
-  const ch = CHARS.find(c => c.id === id);
-  if (!ch || lv.level < ch.minLv) return;
-  localStorage.setItem('custom_char_' + currentStudentId, id);
-  const el = document.getElementById('charImgEl');
-  if (el) {
-    el.src = ch.img; el.style.display = 'block';
-    el.style.width    = ch.size    ? ch.size + 'px'    : '';
-    el.style.height   = ch.size    ? ch.size + 'px'    : '';
-    el.style.position = 'relative';
-    el.style.left     = ch.offsetX ? ch.offsetX + 'px' : '';
-    el.style.top      = ch.offsetY ? -ch.offsetY + 'px': '';
-  }
-  const svg = document.getElementById('dolphinSvg');
-  if (svg) svg.style.display = 'none';
-  closeHomePanel();
-  switchSTab('home');
-}
-
-function selectStageBg(id) {
-  if (!currentStudentId) return;
-  const bg = STAGE_BKGS.find(b => b.id === id);
-  if (!bg) return;
-  const _lv = lvInfo(currentStudentData ? (currentStudentData.total_exp || 0) : 0);
-  if (_lv.level < (bg.minLv||0)) return;
-  localStorage.setItem('stage_bg_' + currentStudentId, id);
-  const charBgEl = document.getElementById('charBgEl');
-  if (charBgEl) {
-    charBgEl.src = bg.img; charBgEl.style.display = 'block';
-    const _bgSize = bg.size ? bg.size + 'px' : '';
-    charBgEl.style.width     = _bgSize;
-    charBgEl.style.height    = _bgSize;
-    charBgEl.style.marginTop = bg.offsetY ? bg.offsetY + 'px' : '';
-  }
-  closeHomePanel();
-  switchSTab('home');
 }
 
 function spawnBubbles(e) {
@@ -7878,105 +7542,6 @@ function updateDots(cid, count, error=false) {
     if (error) d.classList.add('error');
   });
 }
-let _lvItems = [], _lvItemsShown = 0, _lvRevealTimer = null, _lvCanTap = false, _lvCanvasAnimId = null;
-
-function calcLvUnlocks(lv) {
-  const items = [{type:'level', label:'称号', name:`「${lv.name}」になった！`}];
-  _effectiveChars(currentStudentId).forEach(c => {
-    if (c.minLv === lv.level && c.minLv < 99)
-      items.push({type:'char', label:'✨ いきもの解放！', name:`${c.name}が選べるようになった！`, img:c.img});
-  });
-  STAGE_BKGS.forEach(b => {
-    if ((b.minLv||0) === lv.level)
-      items.push({type:'bg', label:'🏖️ ステージ解放！', name:`${b.name}が選べるようになった！`, img:b.img});
-  });
-  return items;
-}
-
-function revealNextLvItem() {
-  if (_lvItemsShown >= _lvItems.length) {
-    _lvCanTap = true;
-    _lvRevealTimer = setTimeout(() => {
-      document.getElementById('lvContinueHint').classList.add('visible');
-    }, 800);
-    return;
-  }
-  const item = _lvItems[_lvItemsShown++];
-  const el = document.createElement('div');
-  el.className = 'lv-unlock-item';
-  const ico = item.img
-    ? `<img src="${item.img}" style="width:36px;height:36px;object-fit:contain;border-radius:8px;flex-shrink:0;">`
-    : `<span style="font-size:24px;flex-shrink:0;">${item.type==='level'?'⭐':'✨'}</span>`;
-  el.innerHTML = `${ico}<div><div class="lv-unlock-item-label">${esc(item.label)}</div><div class="lv-unlock-item-name">${esc(item.name)}</div></div>`;
-  document.getElementById('lvUnlocks').appendChild(el);
-  requestAnimationFrame(() => requestAnimationFrame(() => el.classList.add('slide-in')));
-  _lvRevealTimer = setTimeout(revealNextLvItem, 900);
-}
-
-function tapLvOverlay() {
-  if (!_lvCanTap) return;
-  closeLevelup();
-  if (_tutV2Active && _tutV2WaitAction === 'levelup') _tutV2OnLevelupClose();
-}
-
-function _startLvCanvas() {
-  const canvas = document.getElementById('lvCanvas');
-  if (!canvas) return;
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
-  const ctx = canvas.getContext('2d');
-  const colors = ['#ff6b6b','#ffd93d','#6bcb77','#4d96ff','#ff9ff3','#48dbfb','#ff6348','#eccc68','#1dd1a1','#ffffff'];
-  const pieces = Array.from({length:70}, () => ({
-    x:Math.random()*canvas.width, y:-20-Math.random()*120,
-    w:6+Math.random()*9, h:10+Math.random()*12,
-    rot:Math.random()*Math.PI*2, rs:(Math.random()-.5)*.14,
-    vx:(Math.random()-.5)*1.8, vy:2.2+Math.random()*2.8,
-    color:colors[Math.floor(Math.random()*colors.length)],
-  }));
-  function draw() {
-    ctx.clearRect(0,0,canvas.width,canvas.height);
-    pieces.forEach(p => {
-      ctx.save(); ctx.translate(p.x,p.y); ctx.rotate(p.rot);
-      ctx.fillStyle = p.color; ctx.fillRect(-p.w/2,-p.h/2,p.w,p.h);
-      ctx.restore();
-      p.x+=p.vx; p.y+=p.vy; p.rot+=p.rs;
-      if (p.y > canvas.height+20) { p.y=-20; p.x=Math.random()*canvas.width; }
-    });
-    _lvCanvasAnimId = requestAnimationFrame(draw);
-  }
-  if (_lvCanvasAnimId) cancelAnimationFrame(_lvCanvasAnimId);
-  draw();
-}
-
-function showLevelup(lv) {
-  // 生徒画面が表示中でない場合は演出しない（先生画面での誤表示を防止）
-  const _sstu = document.getElementById('sStudent');
-  if (!_sstu || !_sstu.classList.contains('active')) return;
-  document.getElementById('lvNumOld').textContent = lv.level - 1;
-  document.getElementById('lvNumNew').textContent = lv.level;
-  const charEl = document.getElementById('lvCharNew');
-  const _lvSavedId = currentStudentId ? localStorage.getItem('custom_char_'+currentStudentId) : null;
-  const _lvChar = _lvSavedId ? CHARS.find(c => c.id === _lvSavedId) : null;
-  const _lvImg = _lvChar ? _lvChar.img : lv.charImg;
-  charEl.innerHTML = _lvImg ? `<img src="${_lvImg}" style="width:100%;height:100%;object-fit:contain;">` : `<span style="font-size:52px">🌊</span>`;
-  document.body.style.overflow = 'hidden';
-  document.getElementById('lvOverlay').classList.add('show');
-  _startLvCanvas();
-  if ('vibrate' in navigator) navigator.vibrate([200,100,300,100,200]);
-  if (currentStudentId) {
-    localStorage.setItem('custom_title_'+currentStudentId, lv.name);
-    document.getElementById('sNameBig').innerHTML = esc(currentStudentData ? (currentStudentData.name || '') : '');
-    const _gtl2 = document.getElementById('sGaugeTitleLine'); if (_gtl2) _gtl2.innerHTML = `<span style="background:linear-gradient(135deg,#ffe566,#fbbf24,#f59e0b);color:#4a2c00;border-radius:8px;padding:2px 9px;font-size:14px;font-weight:900;flex-shrink:0;text-shadow:none;">Lv.${lv.level}</span><span>${esc(lv.name)}</span>`;
-    const _lvBadgeEl2 = document.getElementById('sLvBadge'); if (_lvBadgeEl2) _lvBadgeEl2.textContent = `Lv.${lv.level}`;
-  }
-  _lvItems = calcLvUnlocks(lv);
-  _lvItemsShown = 0;
-  _lvCanTap = false;
-  if (_lvRevealTimer) { clearTimeout(_lvRevealTimer); _lvRevealTimer = null; }
-  document.getElementById('lvUnlocks').innerHTML = '';
-  document.getElementById('lvContinueHint').classList.remove('visible');
-  _lvRevealTimer = setTimeout(revealNextLvItem, 950);
-}
 const _redFishUrl = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgNTAiPjxwYXRoIGQ9Ik0yMiwyNSBMMiw1IEwyLDQ1WiIgZmlsbD0iI2IzMWIxYiIvPjxlbGxpcHNlIGN4PSI1NCIgY3k9IjI1IiByeD0iMzQiIHJ5PSIxOSIgZmlsbD0iI2U2MjkyOSIvPjxlbGxpcHNlIGN4PSI1OCIgY3k9IjMwIiByeD0iMjAiIHJ5PSIxMSIgZmlsbD0iI2YwNzg3OCIgb3BhY2l0eT0iMC40Ii8+PHBhdGggZD0iTTM4LDcgUTUyLDAgNjYsNyBMNjMsMTEgUTUyLDUgNDEsMTFaIiBmaWxsPSIjYjMxYjFiIi8+PGVsbGlwc2UgY3g9IjUyIiBjeT0iMzMiIHJ4PSIxMCIgcnk9IjUiIGZpbGw9IiNiMzFiMWIiIHRyYW5zZm9ybT0icm90YXRlKDIwLDUyLDMzKSIvPjxjaXJjbGUgY3g9Ijc3IiBjeT0iMjEiIHI9IjUuNSIgZmlsbD0id2hpdGUiLz48Y2lyY2xlIGN4PSI3OCIgY3k9IjIxIiByPSIzIiBmaWxsPSIjMWExYTJlIi8+PGNpcmNsZSBjeD0iNzkiIGN5PSIyMCIgcj0iMS4yIiBmaWxsPSJ3aGl0ZSIvPjxwYXRoIGQ9Ik04OSwyNiBROTMsMjkgODksMzIiIHN0cm9rZT0iI2IzMWIxYiIgc3Ryb2tlLXdpZHRoPSIxLjgiIGZpbGw9Im5vbmUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjxwYXRoIGQ9Ik00OCwxNCBRNTMsMjAgNDgsMjYiIHN0cm9rZT0iI2NjMjIyMiIgc3Ryb2tlLXdpZHRoPSIxIiBmaWxsPSJub25lIiBvcGFjaXR5PSIwLjM1Ii8+PHBhdGggZD0iTTYwLDEyIFE2NSwxOCA2MCwyNCIgc3Ryb2tlPSIjY2MyMjIyIiBzdHJva2Utd2lkdGg9IjEiIGZpbGw9Im5vbmUiIG9wYWNpdHk9IjAuMzUiLz48L3N2Zz4=';
 function spawnWelcomeFish() {
   const wrap = document.createElement('div');
@@ -8045,43 +7610,6 @@ function _tutV2SpawnSplash() {
   document.body.appendChild(_fw);
   setTimeout(() => { if (_fw.parentNode) _fw.parentNode.removeChild(_fw); }, 3500);
 }
-function closeLevelup() {
-  if (_lvRevealTimer) { clearTimeout(_lvRevealTimer); _lvRevealTimer = null; }
-  if (_lvCanvasAnimId) { cancelAnimationFrame(_lvCanvasAnimId); _lvCanvasAnimId = null; }
-  document.body.style.overflow = '';
-  document.getElementById('lvOverlay').classList.remove('show');
-  document.getElementById('lvUnlocks').innerHTML = '';
-  document.getElementById('lvContinueHint').classList.remove('visible');
-  if (!_tutV2Active) toast('🎊 レベルアップ！', 'lv');
-}
-function selectTitleFromReward(el) {
-  const name = el.dataset.name;
-  if (!name || !currentStudentId) return;
-  localStorage.setItem('custom_title_' + currentStudentId, name);
-  const lv = lvInfo(currentStudentData ? (currentStudentData.total_exp || 0) : 0);
-  document.getElementById('sNameBig').innerHTML = esc(currentStudentData ? (currentStudentData.name || '') : '');
-  const _gtl3 = document.getElementById('sGaugeTitleLine'); if (_gtl3) _gtl3.innerHTML = `<span style="background:linear-gradient(135deg,#ffe566,#fbbf24,#f59e0b);color:#4a2c00;border-radius:8px;padding:2px 9px;font-size:14px;font-weight:900;flex-shrink:0;text-shadow:none;">Lv.${lv.level}</span><span>${esc(name)}</span>`;
-  const _lvBadgeEl3 = document.getElementById('sLvBadge'); if (_lvBadgeEl3) _lvBadgeEl3.textContent = `Lv.${lv.level}`;
-  // 称号の選択状態を更新
-  document.querySelectorAll('.katagi-item').forEach(e => {
-    e.classList.remove('title-sel');
-    const badge = e.querySelector('.katagi-sel-badge');
-    if (badge) badge.remove();
-  });
-  el.classList.add('title-sel');
-  const badge = document.createElement('span');
-  badge.className = 'katagi-sel-badge';
-  badge.textContent = '選択中';
-  el.appendChild(badge);
-  toast('🏷️ 「' + name + '」に変更しました！');
-}
-function devTestLevelup() {
-  const exp = currentStudentData ? (currentStudentData.total_exp || 0) : 0;
-  const curLv = lvInfo(exp).level;
-  const nextLv = LEVELS.find(l => l.level === curLv + 1) || LEVELS[LEVELS.length - 1];
-  showLevelup(nextLv);
-}
-
 // =====================================================================
 // ★ ゲスト画面
 // =====================================================================
@@ -8138,25 +7666,13 @@ function renderNextLesson(data) {
   if (rmDt) rmDt.textContent = dateStr2;
 }
 
-// いいね数取得
-async function loadMyLikesCount() {
-  if (!currentStudentId) return;
-  const {data: posts} = await sb.from('shared_posts').select('id').eq('student_id', currentStudentId);
-  const el = document.getElementById('sLikeCountTab');
-  if (!posts || !posts.length) { if (el) el.textContent = '0'; return; }
-  const ids = posts.map(p => p.id);
-  const {count} = await sb.from('post_likes').select('*', {count:'exact', head:true}).in('post_id', ids);
-  if (el) el.textContent = count || 0;
-}
-
 // ステージ切り替え
 const STAGE_ORDER = ['🏖️ サンドビーチ','🌊 大海原','🐠 珊瑚礁','🌌 深海ステージ','✨ 伝説のステージ','💎 神話の領域'];
-const STAGE_MIN_EXP = {'🏖️ サンドビーチ':0,'🌊 大海原':250,'🐠 珊瑚礁':910,'🌌 深海ステージ':2270,'✨ 伝説のステージ':4580,'💎 神話の領域':8980};
 
 function renderStageSelector(exp) {
   const wrap = document.getElementById('stageSelectorWrap');
   if (!wrap) return;
-  const savedStage = localStorage.getItem('pref_stage_' + currentStudentId) || lvInfo(exp).stage;
+  const savedStage = localStorage.getItem('pref_stage_' + currentStudentId) || STAGE_ORDER[0];
   wrap.innerHTML = STAGE_ORDER.map(s => {
     const isActive = savedStage === s;
     const cls = `stage-sel-btn${isActive?' active':' unlocked'}`;
@@ -8188,7 +7704,6 @@ function toast(msg, type='') {
   el.classList.add('show');
   setTimeout(() => el.classList.remove('show'), 2800);
 }
-function lvInfo(exp) { let lv=LEVELS[0]; for(const l of LEVELS){if(exp>=l.min)lv=l;} return lv; }
 function dateStr() { const d=new Date(); return `${d.getFullYear()}/${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')}`; }
 async function hashPin(pin) {
   const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(pin+'guitar-kaito-2025'));
@@ -8235,7 +7750,6 @@ function _tbookSvg(c) {
 const _TBOOK_TILTS  = [-1.8, 0.9, -0.6, 1.4, -1.1, 0.7, -1.5, 0.5];
 const _TBOOK_DELAYS = [0, 0.4, 0.8, 1.2, 0.2, 0.6, 1.0, 0.3];
 // ── アクセス制限 ──────────────────────────────────────────
-const FREE_TIER_LEVEL_CAP = 5; // フリー生徒のレベル上限（変更可）
 
 function _getAccessTier() {
   if (!currentStudentData) return 'free';
@@ -8945,24 +8459,6 @@ const _rmFeedPosts=[
   {char:'kurage',   name:'ひな ⭐Lv.7',  song:'夜に駆ける',    date:'7/15', msg:'全コードをマスターしました'},
   {char:'kumanomi', name:'まぴ ⭐Lv.4',  song:'マリーゴールド', date:'7/14', msg:'ビフォーアフター録音に挑戦 🎙️'},
 ];
-function openNakamaCharSheet(){
-  const sheet=document.getElementById('nakamaCharSheet');
-  if(!sheet) return;
-  const list=document.getElementById('nakamaCharSheetList');
-  const userLv = (currentStudentData && lvInfo(currentStudentData.total_exp||0).level) || 1;
-  // 4列グリッドに変更
-  if(list) list.style.gridTemplateColumns='repeat(4,1fr)';
-  if(list) list.innerHTML=CHARS.map(c=>{
-    const unlocked=(c.minLv||1)<=userLv;
-    const isSelected=c.id===_rmSelectedChar;
-    return `<div ${unlocked?`onclick="selectNakamaChar('${c.id}')"`:''}
-      style="background:${isSelected?'#EBF8FF':'transparent'};border:2px solid ${isSelected?'#0096C7':'transparent'};border-radius:14px;padding:6px 4px 8px;display:flex;flex-direction:column;align-items:center;cursor:${unlocked?'pointer':'default'};">
-      <img src="${c.img}" style="width:100%;max-width:64px;height:64px;object-fit:contain;${unlocked?'':'filter:brightness(0) saturate(0);opacity:.35;'}">
-      <div style="font-size:9px;font-weight:700;margin-top:4px;text-align:center;${unlocked?'color:#003D52;':'color:#ccc;'}">${unlocked ? c.name : ''}</div>
-    </div>`;
-  }).join('');
-  sheet.style.display='flex';
-}
 function closeNakamaCharSheet(){
   const sheet=document.getElementById('nakamaCharSheet');
   if(sheet) sheet.style.display='none';
@@ -9164,18 +8660,15 @@ async function _doRmCheckIn() {
   // EXP更新は未チェックインの場合のみ
   if (!alreadyDone) {
     const exp = streakExp(newStreak);
-    const _freeCap = (s.tier||'free') === 'free';
-    if (!(_freeCap && lvInfo((s.total_exp||0) + exp).level > FREE_TIER_LEVEL_CAP)) {
-      const newExp = (s.total_exp || 0) + exp;
-      const tlEntry = {type:'practice', text:`自主練習！${newStreak >= 14 ? '🏆MAX ' : '🔥'}${newStreak}日連続`, exp, date:dateStr()};
-      const newTimeline = [tlEntry, ...(s.timeline || [])].slice(0, 50);
-      const newData = {...s, total_exp: newExp, practice_streak: newStreak, last_practice_date: today, timeline: newTimeline};
-      renderStudent(newData);
-      sb.from('students').update({
-        total_exp: newExp, practice_streak: newStreak,
-        last_practice_date: today, timeline: newTimeline,
-      }).eq('id', currentStudentId).then(({error}) => { if (error) toast('同期エラーが発生しました 😢'); });
-    }
+    const newExp = (s.total_exp || 0) + exp;
+    const tlEntry = {type:'practice', text:`自主練習！${newStreak >= 14 ? '🏆MAX ' : '🔥'}${newStreak}日連続`, exp, date:dateStr()};
+    const newTimeline = [tlEntry, ...(s.timeline || [])].slice(0, 50);
+    const newData = {...s, total_exp: newExp, practice_streak: newStreak, last_practice_date: today, timeline: newTimeline};
+    renderStudent(newData);
+    sb.from('students').update({
+      total_exp: newExp, practice_streak: newStreak,
+      last_practice_date: today, timeline: newTimeline,
+    }).eq('id', currentStudentId).then(({error}) => { if (error) toast('同期エラーが発生しました 😢'); });
   }
   // shared_posts投稿は今日まだ「記録する！」を押していない場合のみ
   const _rmKey = 'rm_posted_' + today + '_' + currentStudentId;
@@ -9184,14 +8677,13 @@ async function _doRmCheckIn() {
     const _cntKey = 'sub_checkin_cnt_' + currentStudentId;
     localStorage.setItem(_cntKey, String(parseInt(localStorage.getItem(_cntKey)||'0') + 1));
     _updateSubMissionUnlocks();
-    const lv = lvInfo(s.total_exp || 0);
     const _cid1 = localStorage.getItem('custom_char_' + currentStudentId) || 'kumanomi';
     const _co1  = CHARS.find(c => c.id === _cid1) || CHARS[0];
     const _cm1  = (_co1.startCm || 3) + parseInt(localStorage.getItem('sub_cm_' + _cid1) || '0');
     const _hw1  = _getAllLatestHomeworks().slice(0, 1);
     sb.from('shared_posts').insert({
       student_id: currentStudentId, student_name: s.name || '生徒',
-      student_title: `Lv.${lv.level} ${lv.name}`,
+      student_title: '',
       phrase: JSON.stringify({ streak: newStreak, cm: _cm1, hw: _hw1 }),
       char_id: _cid1,
       songs: s.songs || [], tier: s.tier || 'free'
@@ -9539,10 +9031,6 @@ function setMastery(sid, song, stage) {
 function getGoalPhase(sid, song) {
   const v = localStorage.getItem('goal_phase_' + sid + '_' + song);
   if (v) return parseInt(v);
-  const lv = (currentStudentData && typeof getLevelInfo === 'function') ? getLevelInfo(currentStudentData.exp || 0).level : 1;
-  if (lv >= 26) return 5;
-  if (lv >= 17) return 4;
-  if (lv >= 9) return 3;
   return 2;
 }
 function setGoalOverride(sid, song, phase) {
@@ -9778,7 +9266,6 @@ function showMasteryAchieve(song, prev, stage, justCleared) {
 async function _postMasteryToTimeline(song, stage, justCleared) {
   const s = currentStudentData;
   if (!s) return;
-  const lv = lvInfo(s.total_exp || 0);
   const ICONS = ['🌱','🎸','🎵','🔥','⭐'];
   const NMS   = ['入門','初級','中級','上級','達人'];
   const icon  = ICONS[stage - 1] || '🎸';
@@ -9789,7 +9276,7 @@ async function _postMasteryToTimeline(song, stage, justCleared) {
   await sb.from('shared_posts').insert({
     student_id:    currentStudentId,
     student_name:  s.name || '生徒',
-    student_title: `Lv.${lv.level} ${lv.name}`,
+    student_title: '',
     phrase,
     char_id: localStorage.getItem('custom_char_' + currentStudentId) || 'kumanomi',
     songs:   s.songs || [],
@@ -10150,6 +9637,5 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 
 <div id="tlCharModal" onclick="if(event.target===this)_closeTlCharModal()" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.65);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);"><div style="position:absolute;bottom:0;left:0;right:0;background:linear-gradient(180deg,#1c2438,#101828);border-radius:24px 24px 0 0;padding:20px 16px 44px;"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;"><div style="font-size:15px;font-weight:900;color:#fff;letter-spacing:-.02em;">&#x30AD;&#x30E3;&#x30E9;&#x3092;&#x9078;&#x3076;</div><button onclick="_closeTlCharModal()" style="background:rgba(255,255,255,.12);border:none;color:rgba(255,255,255,.7);font-size:18px;cursor:pointer;width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;">&#x2715;</button></div><div id="tlCharModalGrid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;"></div></div></div>
-<!-- Cloudflare Web Analytics --><script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "24b84197fab447d99a883fa00d14dace"}'></script><!-- End Cloudflare Web Analytics -->
 </body>
 </html>
