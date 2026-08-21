@@ -268,14 +268,11 @@ body{font-family:'Zen Maru Gothic','Helvetica Neue','Hiragino Sans','Meiryo',san
 .si2-sorttab.active{color:var(--ocean-deep);border-bottom-color:var(--ocean-mid);}
 .si2-row{display:flex;align-items:center;gap:10px;padding:14px 8px;border-bottom:1px solid #eef3f4;cursor:pointer;-webkit-tap-highlight-color:transparent;}
 .si2-row:active{background:rgba(0,150,200,.05);}
-.si2-name{font-size:14.5px;font-weight:800;color:var(--text-dark);flex-shrink:0;max-width:38%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.si2-info{font-size:11px;color:var(--text-mid);font-weight:700;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.si2-name{font-size:14.5px;font-weight:800;color:var(--text-dark);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .si2-tag{font-size:10px;font-weight:800;padding:2px 7px;border-radius:10px;flex-shrink:0;white-space:nowrap;}
 .si2-tag.child{color:#2563eb;background:#dbeafe;}
 .si2-tag.parent{color:#ea580c;background:#fed7aa;}
 .si2-enterbtn{flex-shrink:0;font-size:11px;font-weight:900;padding:6px 13px;border-radius:20px;border:1.5px solid var(--ocean-mid);background:white;color:var(--ocean-mid);font-family:var(--hf);cursor:pointer;}
-.si2-chev{color:#c7d2d6;flex-shrink:0;display:flex;}
-.si2-chev svg{width:16px;height:16px;display:block;}
 .si2-empty{padding:40px 8px;text-align:center;color:var(--text-mid);font-size:13px;font-weight:700;}
 .si-act-btn{font-size:11px;font-weight:700;padding:5px 9px;border-radius:8px;border:1.5px solid var(--border);background:white;color:var(--text-mid);cursor:pointer;white-space:nowrap;}
 .si-act-btn.extend{border-color:#f59e0b;color:#b45309;}
@@ -4576,9 +4573,6 @@ function _setStuSort(s) {
   renderStudentList();
 }
 
-const _STU_CHEV_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>';
-const _STU_FLAME_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:11px;height:11px;vertical-align:-1.5px;"><path d="M12 2c1 3-3 4-3 8a3 3 0 0 0 6 0c0-1-1-2-1-3 2 1 3 3 3 5a5 5 0 0 1-10 0c0-5 4-6 5-10z"/></svg>';
-
 function renderStudentList() {
   const area = document.getElementById('studentListArea');
   if (!area) return;
@@ -4628,19 +4622,14 @@ function renderStudentList() {
   }
 
   const renderRow = (s, isParentRow) => {
-    const streakTxt = s.practice_streak > 0 ? `${_STU_FLAME_SVG}${s.practice_streak}日連続` : '';
-    const visitTxt = _relVisitText(s.last_lesson_at);
-    const infoTxt = streakTxt ? `${visitTxt}・${streakTxt}` : visitTxt;
     const tag = isParentRow
       ? `<span class="si2-tag parent">親</span>`
       : (s.parent_student_id ? `<span class="si2-tag child">子</span>` : '');
     const enterColor = isParentRow ? 'style="border-color:#f97316;color:#f97316;"' : '';
     return `<div class="si2-row" onclick="showStudentDetail('${s.id}')">
       ${tag}
-      <span class="si2-name">${esc(s.name)}</span>
-      <span class="si2-info">${infoTxt}</span>
+      <span class="si2-name" style="flex:1;">${esc(s.name)}</span>
       <button class="si2-enterbtn" ${enterColor} onclick="event.stopPropagation();_teacherEnterStudent('${s.id}')">入場</button>
-      <span class="si2-chev">${_STU_CHEV_SVG}</span>
     </div>`;
   };
 
@@ -6838,16 +6827,6 @@ function todayJST() {
 }
 function yesterdayJST() {
   return new Date(Date.now() + 9*3600*1000 - 86400000).toISOString().slice(0,10);
-}
-function _relVisitText(lastAt) {
-  if (!lastAt) return '来訪履歴なし';
-  const d = lastAt.slice(0,10);
-  if (d === todayJST()) return '今日来訪';
-  if (d === yesterdayJST()) return '昨日';
-  const diffDays = Math.round((new Date(todayJST()) - new Date(d)) / 86400000);
-  if (diffDays < 7) return diffDays + '日前';
-  if (diffDays < 30) return Math.floor(diffDays / 7) + '週間前';
-  return Math.floor(diffDays / 30) + 'ヶ月前';
 }
 function streakExp(streak) {
   if (streak >= 14) return 120;
