@@ -525,6 +525,17 @@ body{font-family:'Zen Maru Gothic','Helvetica Neue','Hiragino Sans','Meiryo',san
 .detail-sec{margin-bottom:20px;}
 .detail-sec-title{font-size:13px;font-weight:800;color:var(--text-mid);
   text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;}
+.detail-rail{width:72px;flex-shrink:0;background:#f6fafb;display:flex;flex-direction:column;
+  padding:8px 0;overflow-y:auto;border-right:1px solid #eef1f2;}
+.detail-rail-item{display:flex;flex-direction:column;align-items:center;gap:4px;padding:11px 4px;
+  cursor:pointer;border-left:3px solid transparent;-webkit-tap-highlight-color:transparent;}
+.detail-rail-item.active{background:white;border-left-color:var(--ocean-mid);}
+.detail-rail-ico{font-size:17px;}
+.detail-rail-lbl{font-size:9px;font-weight:800;color:var(--text-mid);text-align:center;line-height:1.2;}
+.detail-rail-item.active .detail-rail-lbl{color:var(--ocean-deep);}
+.detail-pane{flex:1;overflow-y:auto;padding:18px 20px 28px;min-width:0;}
+.detail-pane-title{font-size:14px;font-weight:900;color:var(--ocean-deep);margin-bottom:14px;
+  font-family:var(--hf);}
 .detail-tags{display:flex;flex-wrap:wrap;gap:6px;}
 .detail-tag{background:#eff6ff;color:var(--ocean-deep);border-radius:20px;
   padding:5px 12px;font-size:13px;font-weight:600;}
@@ -1395,56 +1406,24 @@ body{background:#f0ebe0!important;}
       </div>
       <button class="detail-close" onclick="closeStudentDetail()">✕</button>
     </div>
-    <div class="detail-body">
+    <div class="detail-body" style="display:flex;flex:1;overflow:hidden;padding:0;">
+      <div class="detail-rail" id="detailRail"></div>
+      <div class="detail-pane" id="detailPane"></div>
+    </div>
 
-      <!-- アコーディオン情報 -->
-      <div id="detailAccordions" style="margin-bottom:12px;"></div>
-
-      <!-- レッスン記録（たたんでおく） -->
-      <details style="margin-bottom:12px;">
-        <summary style="cursor:pointer;list-style:none;display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:linear-gradient(135deg,#f0fdf4,#dcfce7);border-radius:12px;border:1.5px solid #86efac;font-size:13px;font-weight:800;color:#166534;">
-          <span>📝 レッスン記録</span>
-          <span style="font-size:11px;font-weight:600;color:#4ade80;">▼ タップして開く</span>
-        </summary>
-        <div class="lesson-rec-form" style="margin-top:8px;">
-          <div class="lesson-rec-row">
-            <span>来訪EXP：</span>
-            <input type="number" id="lessonExpInput" value="50" min="1" max="500">
-            <span>EXP</span>
-          </div>
-          <div style="font-size:12px;font-weight:700;color:#166534;margin:8px 0 5px;">🎵 チャレンジした曲</div>
-          <input type="text" id="lessonSongInput" placeholder="例：チェリー" style="width:100%;box-sizing:border-box;border:1.5px solid #86efac;border-radius:10px;padding:9px 12px;font-size:13px;font-family:var(--hf);background:white;margin-bottom:10px;">
-          <div style="font-size:12px;font-weight:700;color:#166534;margin-bottom:5px;">📚 宿題・チャレンジ</div>
-          <div id="lessonHwList" style="margin-bottom:8px;"></div>
-          <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px;">
-            <input type="text" id="lessonHwInput" placeholder="宿題を入力して決定..." style="flex:1;border:1.5px solid #86efac;border-radius:10px;padding:9px 12px;font-size:13px;font-family:var(--hf);background:white;" onkeydown="if(event.key==='Enter'){_addLessonHwItem();event.preventDefault();}">
-            <button onclick="_addLessonHwItem()" style="flex-shrink:0;background:linear-gradient(135deg,#22c55e,#16a34a);border:none;border-radius:10px;padding:9px 14px;color:white;font-size:13px;font-weight:900;cursor:pointer;font-family:var(--hf);">決定</button>
-          </div>
-          <button class="lesson-rec-save" onclick="addLessonRecord()">💾 記録して保存</button>
-        </div>
-      </details>
-
-      <div id="detailTimeline" style="display:none;" aria-hidden="true"></div>
-
-      <div id="goalCheckArea" style="display:none;"></div>
-
-      <!-- 後方互換（非表示） -->
-      <div style="display:none;" aria-hidden="true">
-        <div id="detailLv"></div>
-        <div id="detailInfoBar"></div>
-        <div id="detailPraise"></div>
-        <div id="detailSongs"></div>
-        <div id="detailTrophies"></div>
-        <div id="detailTbookArea"></div>
-        <div id="detailMissionArea"></div>
-        <div id="detailSteps"></div>
-      </div>
-
-      <!-- 保護者アカウント（最下部） -->
-      <div class="detail-sec" style="margin-top:8px;margin-bottom:12px;">
-        <div class="detail-sec-title">👨‍👩‍👧 保護者アカウント</div>
-        <div id="detailParentInfo"></div>
-      </div>
+    <!-- 非表示（未使用・後方互換） -->
+    <div style="display:none;" aria-hidden="true">
+      <div id="detailTimeline"></div>
+      <div id="goalCheckArea"></div>
+      <div id="detailLv"></div>
+      <div id="detailInfoBar"></div>
+      <div id="detailPraise"></div>
+      <div id="detailSongs"></div>
+      <div id="detailTrophies"></div>
+      <div id="detailTbookArea"></div>
+      <div id="detailMissionArea"></div>
+      <div id="detailSteps"></div>
+      <div id="detailParentInfo"></div>
     </div>
   </div>
 </div>
@@ -4914,90 +4893,145 @@ function promptAddStudent() {
   });
 }
 
-function _detailAccItem(title, content, color, isOpen) {
-  const c = color || '#e2e8f0';
-  return `<details${isOpen ? ' open' : ''} style="border-radius:12px;border:1px solid ${c}55;overflow:hidden;margin-bottom:8px;">
-    <summary style="cursor:pointer;list-style:none;padding:10px 14px;background:white;font-size:13px;font-weight:800;color:#0f172a;display:flex;justify-content:space-between;align-items:center;border-left:4px solid ${c};">
-      <span>${title}</span><span style="font-size:11px;color:#94a3b8;font-weight:600;">▼</span>
-    </summary>
-    <div style="padding:10px 14px 12px;background:#fafafa;">${content}</div>
-  </details>`;
+// 生徒詳細のサイドナビ項目。追加・削除はこの配列を編集するだけでよい。
+const DETAIL_SECTIONS = [
+  {id:'mission', ico:'📚', lbl:'ミッション', render:_detailPaneMission},
+  {id:'songs',   ico:'🎵', lbl:'曲',        render:_detailPaneSongs},
+  {id:'graph',   ico:'📈', lbl:'グラフ',     render:_detailPaneGraph},
+  {id:'live',    ico:'🎤', lbl:'ライブ',     render:_detailPaneLive},
+  {id:'limit',   ico:'🔒', lbl:'制限',       render:_detailPaneLimit},
+  {id:'lesson',  ico:'📝', lbl:'記録',       render:_detailPaneLesson, after:_detailPaneLessonAfter},
+  {id:'parent',  ico:'👨‍👩‍👧', lbl:'保護者', render:_detailPaneParent},
+];
+let _detailActiveTab = 'mission';
+
+function _detailPaneMission(s) {
+  const hwItems = (s.timeline || []).filter(e => e.type === 'hw');
+  const html = hwItems.length
+    ? hwItems.slice(0, 10).map(e => `<div style="padding:8px 0;border-bottom:1px solid #f1f5f9;font-size:13px;font-weight:700;color:#334155;display:flex;gap:8px;align-items:flex-start;"><span>📚</span><div>${esc(e.text||'')}${e.date?`<span style="display:block;font-size:10px;color:#94a3b8;margin-top:2px;">${e.date}</span>`:''}</div></div>`).join('')
+    : '<div style="font-size:12px;color:#bbb;padding:4px 0;">まだチャレンジがありません</div>';
+  return `<div class="detail-pane-title">📚 ミッション（${hwItems.length}件）</div>${html}`;
+}
+function _detailPaneSongs(s) {
+  const songs = s.songs || [];
+  const html = songs.length
+    ? songs.map(n => `<span style="display:inline-flex;align-items:center;gap:4px;font-size:12px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:20px;padding:4px 12px;color:#1d4ed8;font-weight:700;margin:3px;">🎵 ${esc(n)}</span>`).join('')
+    : '<div style="font-size:12px;color:#bbb;padding:4px 0;">まだ曲がありません</div>';
+  return `<div class="detail-pane-title">🎵 練習した曲（${songs.length}曲）</div>${html}`;
+}
+function _detailPaneGraph(s) {
+  const lessonTl = (s.timeline || []).filter(e => e.type === 'lesson' && e.date);
+  const byMonth = {};
+  lessonTl.forEach(e => { const mo = e.date.slice(0, 7); byMonth[mo] = (byMonth[mo] || 0) + 1; });
+  const months = Object.keys(byMonth).sort().slice(-6);
+  const maxCount = Math.max(...months.map(m => byMonth[m]), 1);
+  const html = months.length
+    ? `<div style="display:flex;align-items:flex-end;gap:6px;height:60px;margin-bottom:6px;">${months.map(m => {
+        const cnt = byMonth[m];
+        const h = Math.round((cnt / maxCount) * 50);
+        return `<div style="display:flex;flex-direction:column;align-items:center;flex:1;gap:3px;">
+          <div style="font-size:9px;color:#64748b;font-weight:700;">${cnt}</div>
+          <div style="width:100%;background:linear-gradient(180deg,#38bdf8,#0077b6);border-radius:4px 4px 0 0;height:${h}px;min-height:4px;"></div>
+        </div>`;
+      }).join('')}</div>
+      <div style="display:flex;gap:6px;">${months.map(m => `<div style="flex:1;text-align:center;font-size:9px;color:#94a3b8;">${m.slice(5)}月</div>`).join('')}</div>`
+    : '<div style="font-size:12px;color:#bbb;padding:4px 0;">まだ記録がありません</div>';
+  return `<div class="detail-pane-title">📈 レッスン来訪グラフ</div>${html}`;
+}
+function _detailPaneLive(s, sid) {
+  const liveDone = (s.bonus_given || []).includes('live_performed');
+  const html = liveDone
+    ? `<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
+        <span style="font-size:13px;font-weight:800;color:#0369a1;">✅ ライブ出場 認定済み（スナメリ解放）</span>
+        <button onclick="_setLivePerformed('${sid}', false)" style="background:none;border:none;font-size:11px;color:#94a3b8;text-decoration:underline;cursor:pointer;">取り消す</button>
+      </div>`
+    : `<button onclick="_setLivePerformed('${sid}', true)" style="width:100%;background:linear-gradient(135deg,#0ea5e9,#0369a1);border:none;border-radius:10px;padding:10px;font-size:13px;font-weight:800;cursor:pointer;color:white;">🎤 ライブ出場を認定する</button>`;
+  return `<div class="detail-pane-title">🎤 ライブ出場</div>${html}`;
+}
+function _detailPaneLimit(s, sid) {
+  const savedLimit = JSON.parse(localStorage.getItem('char_limit_' + sid) || 'null');
+  return `<div class="detail-pane-title">🔒 キャラ制限${savedLimit?'（'+savedLimit.length+'体）':'（制限なし）'}</div>
+    <div style="font-size:11px;color:#64748b;margin-bottom:10px;">使用可能なキャラにチェック。全チェック=制限なし。</div>
+    <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:5px;" id="charLimitGrid_${sid}">
+      ${CHARS.map(c => `<label style="display:flex;align-items:center;gap:5px;cursor:pointer;padding:6px 8px;border:1.5px solid #e2e8f0;border-radius:9px;background:white;font-size:12px;font-weight:700;color:#1e293b;"><input type="checkbox" value="${c.id}" ${savedLimit===null||savedLimit.includes(c.id)?'checked':''}>${c.name}</label>`).join('')}
+    </div>
+    <div style="display:flex;gap:8px;margin-top:10px;">
+      <button onclick="_resetCharLimit('${sid}')" style="flex:1;background:#f1f5f9;border:none;border-radius:10px;padding:8px;font-size:12px;font-weight:700;cursor:pointer;color:#64748b;">全解放</button>
+      <button onclick="_saveCharLimit('${sid}')" style="flex:1;background:linear-gradient(135deg,#e11d48,#fb7185);border:none;border-radius:10px;padding:8px;font-size:12px;font-weight:700;cursor:pointer;color:white;">保存</button>
+    </div>`;
+}
+function _detailPaneLesson() {
+  return `<div class="detail-pane-title">📝 レッスン記録</div>
+    <div class="lesson-rec-form">
+      <div class="lesson-rec-row">
+        <span>来訪EXP：</span>
+        <input type="number" id="lessonExpInput" value="50" min="1" max="500">
+        <span>EXP</span>
+      </div>
+      <div style="font-size:12px;font-weight:700;color:#166534;margin:8px 0 5px;">🎵 チャレンジした曲</div>
+      <input type="text" id="lessonSongInput" placeholder="例：チェリー" style="width:100%;box-sizing:border-box;border:1.5px solid #86efac;border-radius:10px;padding:9px 12px;font-size:13px;font-family:var(--hf);background:white;margin-bottom:10px;">
+      <div style="font-size:12px;font-weight:700;color:#166534;margin-bottom:5px;">📚 宿題・チャレンジ</div>
+      <div id="lessonHwList" style="margin-bottom:8px;"></div>
+      <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px;">
+        <input type="text" id="lessonHwInput" placeholder="宿題を入力して決定..." style="flex:1;border:1.5px solid #86efac;border-radius:10px;padding:9px 12px;font-size:13px;font-family:var(--hf);background:white;" onkeydown="if(event.key==='Enter'){_addLessonHwItem();event.preventDefault();}">
+        <button onclick="_addLessonHwItem()" style="flex-shrink:0;background:linear-gradient(135deg,#22c55e,#16a34a);border:none;border-radius:10px;padding:9px 14px;color:white;font-size:13px;font-weight:900;cursor:pointer;font-family:var(--hf);">決定</button>
+      </div>
+      <button class="lesson-rec-save" onclick="addLessonRecord()">💾 記録して保存</button>
+    </div>`;
+}
+function _detailPaneLessonAfter(s) {
+  const songInput = document.getElementById('lessonSongInput');
+  if (songInput) songInput.value = (s.songs && s.songs.length) ? s.songs[0] : '';
+  _renderLessonHwList();
+}
+function _detailPaneParent(s, sid) {
+  let html = `<div class="detail-pane-title">👨‍👩‍👧 保護者アカウント</div>`;
+  if (s.parent_student_id) {
+    const parentStu = students.find(x => x.id === s.parent_student_id);
+    const pName = parentStu ? esc(parentStu.name) : '(不明)';
+    html += `<div style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:#fff7ed;border-radius:12px;border:1.5px solid #fed7aa;">
+      <span style="font-size:20px;">👨‍👩‍👧</span>
+      <span style="font-weight:700;font-size:14px;color:#92400e;">${pName}</span>
+      <button onclick="unlinkParentStudent('${sid}')" style="margin-left:auto;font-size:11px;padding:5px 10px;border:1.5px solid #f97316;border-radius:20px;background:white;color:#ea580c;font-weight:700;cursor:pointer;font-family:var(--hf);">解除</button>
+    </div>`;
+  } else {
+    html += `<button onclick="openParentLinkPicker('${sid}')" style="width:100%;padding:12px;border:1.5px dashed #f97316;border-radius:12px;background:rgba(249,115,22,.05);color:#ea580c;font-size:13px;font-weight:700;cursor:pointer;font-family:var(--hf);">＋ 保護者アカウントを設定</button>`;
+  }
+  return html;
+}
+function _showDetailTab(tabId) {
+  _detailActiveTab = tabId;
+  const s = students.find(x => x.id === detailStudentId);
+  if (!s) return;
+  document.querySelectorAll('#detailRail .detail-rail-item').forEach(el => {
+    el.classList.toggle('active', el.dataset.tab === tabId);
+  });
+  const sec = DETAIL_SECTIONS.find(x => x.id === tabId);
+  const pane = document.getElementById('detailPane');
+  if (!sec || !pane) return;
+  pane.innerHTML = sec.render(s, detailStudentId);
+  if (sec.after) sec.after(s, detailStudentId);
 }
 
 function showStudentDetail(sid) {
+  if (detailStudentId !== sid) _detailActiveTab = 'mission';
   detailStudentId = sid;
   const s = students.find(x => x.id === sid);
   if (!s) return;
   _lessonHwItems = [];
-  _renderLessonHwList();
-  document.getElementById('lessonExpInput').value = 50;
   document.getElementById('detailName').textContent = s.name;
-
-  // チャレンジした曲を最新の曲で自動入力
   const songs = s.songs || [];
-  const songInput = document.getElementById('lessonSongInput');
-  if (songInput) songInput.value = songs.length ? songs[0] : '';
 
-  // アコーディオン描画
-  const accEl = document.getElementById('detailAccordions');
-  if (accEl) {
-    // ミッション（hwエントリ）
-    const hwItems = (s.timeline || []).filter(e => e.type === 'hw');
-    const missionHtml = hwItems.length
-      ? hwItems.slice(0, 10).map(e => `<div style="padding:8px 0;border-bottom:1px solid #f1f5f9;font-size:13px;font-weight:700;color:#334155;display:flex;gap:8px;align-items:flex-start;"><span>📚</span><div>${esc(e.text||'')}${e.date?`<span style="display:block;font-size:10px;color:#94a3b8;margin-top:2px;">${e.date}</span>`:''}</div></div>`).join('')
-      : '<div style="font-size:12px;color:#bbb;padding:4px 0;">まだチャレンジがありません</div>';
-
-    // 練習した曲
-    const songsHtml = songs.length
-      ? songs.map(n => `<span style="display:inline-flex;align-items:center;gap:4px;font-size:12px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:20px;padding:4px 12px;color:#1d4ed8;font-weight:700;margin:3px;">🎵 ${esc(n)}</span>`).join('')
-      : '<div style="font-size:12px;color:#bbb;padding:4px 0;">まだ曲がありません</div>';
-
-    // ログイングラフ（レッスン来訪 by 月）
-    const lessonTl = (s.timeline || []).filter(e => e.type === 'lesson' && e.date);
-    const byMonth = {};
-    lessonTl.forEach(e => {
-      const mo = e.date.slice(0, 7);
-      byMonth[mo] = (byMonth[mo] || 0) + 1;
-    });
-    const months = Object.keys(byMonth).sort().slice(-6);
-    const maxCount = Math.max(...months.map(m => byMonth[m]), 1);
-    const graphHtml = months.length
-      ? `<div style="display:flex;align-items:flex-end;gap:6px;height:60px;margin-bottom:6px;">${months.map(m => {
-          const cnt = byMonth[m];
-          const h = Math.round((cnt / maxCount) * 50);
-          return `<div style="display:flex;flex-direction:column;align-items:center;flex:1;gap:3px;">
-            <div style="font-size:9px;color:#64748b;font-weight:700;">${cnt}</div>
-            <div style="width:100%;background:linear-gradient(180deg,#38bdf8,#0077b6);border-radius:4px 4px 0 0;height:${h}px;min-height:4px;"></div>
-          </div>`;
-        }).join('')}</div>
-        <div style="display:flex;gap:6px;">${months.map(m => `<div style="flex:1;text-align:center;font-size:9px;color:#94a3b8;">${m.slice(5)}月</div>`).join('')}</div>`
-      : '<div style="font-size:12px;color:#bbb;padding:4px 0;">まだ記録がありません</div>';
-
-    const savedLimit = JSON.parse(localStorage.getItem('char_limit_' + sid) || 'null');
-    const charLimitHtml = `<div style="font-size:11px;color:#64748b;margin-bottom:10px;">使用可能なキャラにチェック。全チェック=制限なし。</div>
-      <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:5px;" id="charLimitGrid_${sid}">
-        ${CHARS.map(c => `<label style="display:flex;align-items:center;gap:5px;cursor:pointer;padding:6px 8px;border:1.5px solid #e2e8f0;border-radius:9px;background:white;font-size:12px;font-weight:700;color:#1e293b;"><input type="checkbox" value="${c.id}" ${savedLimit===null||savedLimit.includes(c.id)?'checked':''}>${c.name}</label>`).join('')}
-      </div>
-      <div style="display:flex;gap:8px;margin-top:10px;">
-        <button onclick="_resetCharLimit('${sid}')" style="flex:1;background:#f1f5f9;border:none;border-radius:10px;padding:8px;font-size:12px;font-weight:700;cursor:pointer;color:#64748b;">全解放</button>
-        <button onclick="_saveCharLimit('${sid}')" style="flex:1;background:linear-gradient(135deg,#e11d48,#fb7185);border:none;border-radius:10px;padding:8px;font-size:12px;font-weight:700;cursor:pointer;color:white;">保存</button>
-      </div>`;
-
-    const _liveDone = (s.bonus_given || []).includes('live_performed');
-    const liveHtml = _liveDone
-      ? `<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
-          <span style="font-size:13px;font-weight:800;color:#0369a1;">✅ ライブ出場 認定済み（スナメリ解放）</span>
-          <button onclick="_setLivePerformed('${sid}', false)" style="background:none;border:none;font-size:11px;color:#94a3b8;text-decoration:underline;cursor:pointer;">取り消す</button>
-        </div>`
-      : `<button onclick="_setLivePerformed('${sid}', true)" style="width:100%;background:linear-gradient(135deg,#0ea5e9,#0369a1);border:none;border-radius:10px;padding:10px;font-size:13px;font-weight:800;cursor:pointer;color:white;">🎤 ライブ出場を認定する</button>`;
-
-    accEl.innerHTML =
-      _detailAccItem(`📚 ミッション（${hwItems.length}件）`, missionHtml, '#f59e0b', true) +
-      _detailAccItem(`🎵 練習した曲（${songs.length}曲）`, songsHtml, '#3b82f6', true) +
-      _detailAccItem('📈 レッスン来訪グラフ', graphHtml, '#10b981') +
-      _detailAccItem('🎤 ライブ出場', liveHtml, '#0ea5e9') +
-      _detailAccItem(`🔒 キャラ制限${savedLimit?'（'+savedLimit.length+'体）':'（制限なし）'}`, charLimitHtml, '#e11d48');
+  const railEl = document.getElementById('detailRail');
+  if (railEl) {
+    railEl.innerHTML = DETAIL_SECTIONS.map(sec =>
+      `<div class="detail-rail-item${sec.id===_detailActiveTab?' active':''}" data-tab="${sec.id}" onclick="_showDetailTab('${sec.id}')">
+        <div class="detail-rail-ico">${sec.ico}</div>
+        <div class="detail-rail-lbl">${sec.lbl}</div>
+      </div>`
+    ).join('');
   }
+  _showDetailTab(_detailActiveTab);
 
   const tl = (s.timeline || []).slice(0, 30);
   const tm = { comment:'💬', achievement:'⭐', bonus:'🏆', msg:'💬', hw:'📚', exp:'⭐' };
@@ -5074,21 +5108,6 @@ function showStudentDetail(sid) {
     infoBar.innerHTML = ibHtml;
   }
 
-  // 保護者アカウント
-  const parentEl = document.getElementById('detailParentInfo');
-  if (parentEl) {
-    if (s.parent_student_id) {
-      const parentStu = students.find(x => x.id === s.parent_student_id);
-      const pName = parentStu ? esc(parentStu.name) : '(不明)';
-      parentEl.innerHTML = `<div style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:#fff7ed;border-radius:12px;border:1.5px solid #fed7aa;">
-        <span style="font-size:20px;">👨‍👩‍👧</span>
-        <span style="font-weight:700;font-size:14px;color:#92400e;">${pName}</span>
-        <button onclick="unlinkParentStudent('${sid}')" style="margin-left:auto;font-size:11px;padding:5px 10px;border:1.5px solid #f97316;border-radius:20px;background:white;color:#ea580c;font-weight:700;cursor:pointer;font-family:var(--hf);">解除</button>
-      </div>`;
-    } else {
-      parentEl.innerHTML = `<button onclick="openParentLinkPicker('${sid}')" style="width:100%;padding:12px;border:1.5px dashed #f97316;border-radius:12px;background:rgba(249,115,22,.05);color:#ea580c;font-size:13px;font-weight:700;cursor:pointer;font-family:var(--hf);">＋ 保護者アカウントを設定</button>`;
-    }
-  }
 
   // textbook selector
   const curTbook = localStorage.getItem('_tbook_' + sid) || '';
