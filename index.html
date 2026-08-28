@@ -2462,9 +2462,25 @@ body{background:#f0ebe0!important;}
     <button class="s-tab-btn" id="stab-timeline" onclick="switchSTab('timeline')" style="display:none;"></button>
     <button class="s-tab-btn" id="stab-homework" onclick="switchSTab('homework')" style="display:none;"></button>
   </div>
+
+  <!-- おばあちゃんモード: シンプル表示オーバーレイ（先生の生徒詳細からON/OFF） -->
+  <div id="elderView" style="display:none;position:absolute;inset:0;z-index:200;background:var(--ocean-grad);flex-direction:column;align-items:center;justify-content:center;padding:32px 20px;box-sizing:border-box;overflow-y:auto;">
+    <div id="elderGreeting" style="font-size:17px;font-weight:800;color:white;text-shadow:0 1px 4px rgba(0,0,0,.18);margin-bottom:24px;text-align:center;word-break:break-word;overflow-wrap:anywhere;"></div>
+    <div style="background:white;border-radius:20px;padding:22px 20px;width:100%;max-width:340px;box-shadow:0 8px 30px rgba(0,0,0,.18);margin-bottom:18px;box-sizing:border-box;">
+      <div style="font-size:13px;font-weight:700;color:#0077a8;letter-spacing:.05em;margin-bottom:8px;text-align:center;">次回のレッスン</div>
+      <div id="elderNextDate" style="font-size:26px;font-weight:900;color:#003D52;text-align:center;line-height:1.35;word-break:break-word;overflow-wrap:anywhere;">—</div>
+      <div id="elderNextTime" style="font-size:18px;font-weight:800;color:#0096C7;text-align:center;margin-top:6px;"></div>
+    </div>
+    <div style="background:white;border-radius:20px;padding:20px 20px 8px;width:100%;max-width:340px;box-shadow:0 8px 30px rgba(0,0,0,.18);box-sizing:border-box;">
+      <div style="font-size:13px;font-weight:700;color:#0077a8;letter-spacing:.05em;margin-bottom:10px;text-align:center;">📚 宿題</div>
+      <div id="elderHwList"></div>
+    </div>
+  </div>
 </div>
 
 <style id="rm-styles">
+.elder-hw-item{padding:12px 8px;border-bottom:1px solid #f1f5f9;font-size:17px;font-weight:700;color:#0077a8;line-height:1.5;word-break:break-word;overflow-wrap:anywhere;}
+.elder-hw-item:last-child{border-bottom:none;}
 @keyframes dlBounce{0%{transform:translateY(0)}100%{transform:translateY(-8px)}}
 @keyframes confettiFall{0%{top:-40px;opacity:1;transform:rotate(0)}100%{top:110%;opacity:.2;transform:rotate(720deg)}}
 @keyframes foodGetPop{from{transform:scale(.5) translateY(20px);opacity:0;}to{transform:scale(1) translateY(0);opacity:1;}}
@@ -3241,7 +3257,7 @@ async function loadStudents() {
     }
   } catch(e) {}
   // 最新データをフェッチしてキャッシュ更新
-  const {data, error} = await sb.from('students').select('id,name,total_exp,practice_streak,last_practice_date,line_user_id,next_lesson,next_lesson_at,tier,last_lesson_at,access_extended_until,parent_line_id,parent_student_id,songs,timeline,bonus_given').order('name');
+  const {data, error} = await sb.from('students').select('id,name,total_exp,practice_streak,last_practice_date,line_user_id,next_lesson,next_lesson_at,tier,last_lesson_at,access_extended_until,parent_line_id,parent_student_id,songs,timeline,bonus_given,elder_mode').order('name');
   if (error) { if (!students.length) toast('生徒データの読み込みに失敗しました'); return; }
   students = data || [];
   try { localStorage.setItem('_tc_stu_v2', JSON.stringify(students)); } catch(e) {}
@@ -4842,6 +4858,7 @@ const DETAIL_SECTIONS = [
   {id:'graph',   ico:'📈', lbl:'グラフ',     render:_detailPaneGraph},
   {id:'live',    ico:'🎤', lbl:'ライブ',     render:_detailPaneLive},
   {id:'limit',   ico:'🔒', lbl:'制限',       render:_detailPaneLimit},
+  {id:'elder',   ico:'👵', lbl:'表示',       render:_detailPaneElder},
   {id:'lesson',  ico:'📝', lbl:'記録',       render:_detailPaneLesson, after:_detailPaneLessonAfter},
   {id:'parent',  ico:'👨‍👩‍👧', lbl:'保護者', render:_detailPaneParent},
 ];
@@ -4901,6 +4918,23 @@ function _detailPaneLimit(s, sid) {
       <button onclick="_resetCharLimit('${sid}')" style="flex:1;background:#f1f5f9;border:none;border-radius:10px;padding:8px;font-size:12px;font-weight:700;cursor:pointer;color:#64748b;">全解放</button>
       <button onclick="_saveCharLimit('${sid}')" style="flex:1;background:linear-gradient(135deg,#e11d48,#fb7185);border:none;border-radius:10px;padding:8px;font-size:12px;font-weight:700;cursor:pointer;color:white;">保存</button>
     </div>`;
+}
+function _detailPaneElder(s, sid) {
+  const on = !!s.elder_mode;
+  return `<div class="detail-pane-title">👵 おばあちゃんモード</div>
+    <div style="font-size:12px;color:#64748b;margin-bottom:12px;line-height:1.7;">ONにすると、この生徒のホーム画面が「次回のレッスン日時」と「宿題」だけのシンプル表示に切り替わります。タブ切り替えや練習中の曲などは表示されません。すぐOFFに戻せます。</div>
+    <label style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;background:${on?'#f0fdf4':'#f8fafc'};border:1.5px solid ${on?'#86efac':'#e2e8f0'};border-radius:14px;cursor:pointer;">
+      <span style="font-size:14px;font-weight:800;color:${on?'#166534':'#334155'};">${on ? '✅ ON（シンプル表示中）' : 'OFF（通常表示）'}</span>
+      <input type="checkbox" ${on?'checked':''} onchange="_toggleElderMode('${sid}', this.checked)" style="width:22px;height:22px;accent-color:#16a34a;cursor:pointer;">
+    </label>`;
+}
+async function _toggleElderMode(sid, val) {
+  const {error} = await sb.from('students').update({elder_mode: val}).eq('id', sid);
+  if (error) { toast('変更に失敗しました'); return; }
+  const s = students.find(x => x.id === sid);
+  if (s) s.elder_mode = val;
+  toast(val ? '👵 おばあちゃんモードをONにしました' : 'おばあちゃんモードをOFFにしました');
+  _showDetailTab('elder');
 }
 function _detailPaneLesson() {
   return `<div class="detail-pane-title">📝 レッスン記録</div>
@@ -5595,6 +5629,33 @@ function renderStudent(data) {
   if (typeof renderMissionCard === 'function') renderMissionCard();
   setTimeout(updatePracPlayerCard, 0);
   renderNextLesson(data);
+  _renderElderView(data);
+}
+function _renderElderView(data) {
+  const el = document.getElementById('elderView');
+  if (!el) return;
+  if (!data.elder_mode) { el.style.display = 'none'; return; }
+  el.style.display = 'flex';
+  const greetEl = document.getElementById('elderGreeting');
+  if (greetEl) greetEl.textContent = `🎸 ${data.name || ''}さん`;
+  const dateEl = document.getElementById('elderNextDate');
+  const timeEl = document.getElementById('elderNextTime');
+  if (data.next_lesson_at) {
+    const dt = new Date(data.next_lesson_at);
+    const dow = ['日','月','火','水','木','金','土'][dt.getDay()];
+    if (dateEl) dateEl.textContent = `${dt.getMonth()+1}月${dt.getDate()}日（${dow}）`;
+    if (timeEl) timeEl.textContent = dt.toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit',hour12:false}) + '〜';
+  } else {
+    if (dateEl) dateEl.textContent = '未定';
+    if (timeEl) timeEl.textContent = '';
+  }
+  const hwEl = document.getElementById('elderHwList');
+  if (hwEl) {
+    const items = _getAllLatestHomeworks();
+    hwEl.innerHTML = items.length
+      ? items.map(t => `<div class="elder-hw-item">📖 ${esc(t)}</div>`).join('')
+      : '<div style="font-size:14px;color:#94a3b8;text-align:center;padding:8px 0;">宿題はまだありません</div>';
+  }
 }
 
 // ===== TUTORIAL v2 =====
@@ -6582,11 +6643,17 @@ function _chooseSubStarter(id) {
   localStorage.setItem('sub_starter_' + sid, id);
   localStorage.setItem('sub_unlocked_chars', JSON.stringify([id]));
   localStorage.setItem('sub_selected_char', id);
+  // ホームタブのキャラ表示（custom_char_/starter_char_）もここで選んだキャラに合わせる。
+  // 合わせないとログイン時に自動で仮決定されたキャラのままホームに表示され続け、
+  // ここで選んだキャラといきものタブ・ホームタブで表示がズレる。
+  localStorage.setItem('custom_char_' + sid, id);
+  localStorage.setItem('starter_char_' + sid, id);
   _subSelectedChar = id;
   const modal = document.getElementById('subStarterModal');
   if (modal) modal.style.display = 'none';
   _updateSubMissionUnlocks();
   initSubTab();
+  if (typeof renderStudent === 'function' && currentStudentData) renderStudent(currentStudentData);
 }
 function _playStarterIntro(charId) {
   const c = CHARS.find(x => x.id === charId);
