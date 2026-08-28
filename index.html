@@ -2738,6 +2738,7 @@ let currentStudentData = null;
 let isGuest = false;
 let detailStudentId = null;
 let studentChannel = null;
+let teacherChannel = null;
 let modalBuf = '', modalCb = null;
 let pinBuf = '', pinSid = null;
 
@@ -3234,8 +3235,10 @@ async function enterTeacher() {
   switchTab('calendar');
   await loadStudents();
   _loadIkenCount();
-  // リアルタイム更新（先生画面も）
-  sb.channel('students-teacher')
+  // リアルタイム更新（先生画面も）。認証状態の変化でenterTeacherが複数回呼ばれても
+  // 購読が重複して溜まらないよう、既存の購読があれば先に解除する。
+  if (teacherChannel) { sb.removeChannel(teacherChannel); teacherChannel = null; }
+  teacherChannel = sb.channel('students-teacher')
     .on('postgres_changes', {event:'*', schema:'public', table:'students'}, () => loadStudents())
     .subscribe();
 }
