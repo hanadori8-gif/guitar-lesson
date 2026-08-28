@@ -3334,43 +3334,39 @@ function _updateIkenBadge(n) {
   else { badge.style.display = 'none'; }
 }
 
+function _lessonDateInMonth(dateStr, ym) {
+  if (!dateStr) return false;
+  return dateStr.replace(/\//g, '-').slice(0, 7) === ym;
+}
 function renderMonthSummary() {
   const thisMonth = new Date(Date.now() + 9*3600*1000).toISOString().slice(0,7);
   const activeStu = students.filter(s => !s.parent_student_id);
-  const came = activeStu.filter(s => (s.last_lesson_at||'').startsWith(thisMonth));
-  const notYet = activeStu.filter(s => !(s.last_lesson_at||'').startsWith(thisMonth));
-  const trialFee   = parseInt(localStorage.getItem('lesson_fee_trial')   || '2000', 10);
-  const regularFee = parseInt(localStorage.getItem('lesson_fee_regular') || '4000', 10);
-  const trialCnt   = came.filter(s => (s.tier||'free') === 'free').length;
-  const regularCnt = came.length - trialCnt;
-  const revenue    = trialCnt * trialFee + regularCnt * regularFee;
-  const parts = [];
-  if (regularCnt > 0) parts.push(`通常${regularCnt}×¥${regularFee.toLocaleString()}`);
-  if (trialCnt   > 0) parts.push(`体験${trialCnt}×¥${trialFee.toLocaleString()}`);
+  const lessonFee = parseInt(localStorage.getItem('lesson_fee_regular') || '4000', 10);
+  let lessonCount = 0;
+  const cameNames = [];
+  activeStu.forEach(s => {
+    const tl = typeof s.timeline === 'string' ? JSON.parse(s.timeline || '[]') : (s.timeline || []);
+    const cnt = tl.filter(e => e.type === 'lesson' && _lessonDateInMonth(e.date, thisMonth)).length;
+    if (cnt > 0) { lessonCount += cnt; cameNames.push({name: s.name, cnt}); }
+  });
+  const revenue = lessonCount * lessonFee;
   const content = document.getElementById('monthlySummaryContent');
   if (!content) return;
   content.innerHTML = `
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;">
-      <div style="text-align:center;background:#f0f9ff;border-radius:12px;padding:14px 8px;">
-        <div style="font-size:32px;font-weight:900;color:#0369a1;">${came.length}</div>
-        <div style="font-size:11px;color:#64748b;font-weight:700;">来訪</div>
-      </div>
-      <div style="text-align:center;background:#fef2f2;border-radius:12px;padding:14px 8px;">
-        <div style="font-size:32px;font-weight:900;color:#dc2626;">${notYet.length}</div>
-        <div style="font-size:11px;color:#64748b;font-weight:700;">未来訪</div>
-      </div>
+    <div style="text-align:center;background:#f0f9ff;border-radius:12px;padding:14px 8px;margin-bottom:14px;">
+      <div style="font-size:32px;font-weight:900;color:#0369a1;">${lessonCount}</div>
+      <div style="font-size:11px;color:#64748b;font-weight:700;">今月のレッスン数</div>
     </div>
     <div style="background:#f0fdf4;border-radius:12px;padding:14px;margin-bottom:16px;">
       <div style="font-size:11px;font-weight:700;color:#166534;margin-bottom:4px;">💰 今月の収益（概算）</div>
       <div style="font-size:32px;font-weight:900;color:#16a34a;">¥${revenue.toLocaleString()}</div>
-      <div style="font-size:11px;color:#64748b;margin-top:4px;">${parts.join(' / ') || '—'}</div>
+      <div style="font-size:11px;color:#64748b;margin-top:4px;">${lessonCount}回 × ¥${lessonFee.toLocaleString()}</div>
       <button onclick="editLessonFee()" style="margin-top:10px;font-size:11px;color:#16a34a;background:none;border:1.5px solid #86efac;border-radius:8px;padding:4px 12px;cursor:pointer;font-family:var(--hf);">⚙️ 料金設定</button>
     </div>
-    ${came.length ? `<div style="font-size:11px;font-weight:700;color:#475569;margin-bottom:6px;">来訪した生徒（${came.length}名）</div>
-    ${came.map(s => `<div style="display:flex;align-items:center;gap:8px;padding:7px 2px;border-bottom:1px solid #f1f5f9;">
+    ${cameNames.length ? `<div style="font-size:11px;font-weight:700;color:#475569;margin-bottom:6px;">レッスンした生徒（${cameNames.length}名）</div>
+    ${cameNames.map(s => `<div style="display:flex;align-items:center;gap:8px;padding:7px 2px;border-bottom:1px solid #f1f5f9;">
       <span style="font-size:13px;font-weight:700;flex:1;color:#1e293b;">${esc(s.name)}</span>
-      <span style="font-size:11px;color:#94a3b8;">${(s.last_lesson_at||'').slice(0,10)}</span>
-      <span style="font-size:11px;font-weight:700;color:#16a34a;">¥${((s.tier||'free')==='free'?trialFee:regularFee).toLocaleString()}</span>
+      <span style="font-size:11px;font-weight:700;color:#16a34a;">${s.cnt}回</span>
     </div>`).join('')}` : ''}
   `;
 }
@@ -3414,12 +3410,9 @@ async function setRecommendSong() {
 
 function editLessonFee() {
   const curR = localStorage.getItem('lesson_fee_regular') || '4000';
-  const curT = localStorage.getItem('lesson_fee_trial')   || '2000';
-  const newR = prompt(`通常レッスン料金（円）\n現在: ¥${parseInt(curR).toLocaleString()}`, curR);
+  const newR = prompt(`1レッスンあたりの料金（円）\n現在: ¥${parseInt(curR).toLocaleString()}`, curR);
   if (newR && !isNaN(parseInt(newR))) {
     localStorage.setItem('lesson_fee_regular', String(parseInt(newR)));
-    const newT = prompt(`体験レッスン料金（円）\n現在: ¥${parseInt(curT).toLocaleString()}`, curT);
-    if (newT && !isNaN(parseInt(newT))) localStorage.setItem('lesson_fee_trial', String(parseInt(newT)));
   }
   renderMonthSummary();
 }
