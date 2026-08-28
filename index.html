@@ -7042,7 +7042,7 @@ function renderSharedPosts(posts) {
       .replace(/^🎸 練習した！（(\d+)日連続🔥）$/, '$1日連続')
       .replace(/^🎸 /, '')
       .replace(/^🔥 /, '');
-    return `<div class="tl-post${isOwn ? ' own' : ''}" onclick="showPostSongs('${p.char_id||''}','${p.student_id}')" style="cursor:pointer;-webkit-tap-highlight-color:transparent;">
+    return `<div class="tl-post${isOwn ? ' own' : ''}" onclick="showPostSongs('${escJs(p.char_id||'')}','${escJs(p.student_id||'')}')" style="cursor:pointer;-webkit-tap-highlight-color:transparent;">
       <div class="tl-post-icon"><img src="${_cObj.img}" style="width:36px;height:36px;object-fit:contain;"></div>
       <div style="flex:1;min-width:0;">
         <div class="tl-post-phrase">${esc(_displayPhrase)}</div>
@@ -8583,7 +8583,7 @@ function renderNakamaFeed(posts) {
       return `<div class="rm-feed-hw">${esc(t)}${phrase}</div>`;
     }).join('') : '';
     const songLine = primarySong ? `<div class="rm-feed-song">🎵 ${esc(primarySong)}</div>` : '';
-    return `<div class="rm-feed-card" onclick="showPostSongs('${p.char_id||''}','${p.student_id}')" style="cursor:pointer;">
+    return `<div class="rm-feed-card" onclick="showPostSongs('${escJs(p.char_id||'')}','${escJs(p.student_id||'')}')" style="cursor:pointer;">
       <div class="rm-feed-left">
         <div class="rm-feed-char-circle"><img src="${charObj.img}" style="width:48px;height:48px;object-fit:contain;"></div>
         ${cmBadge}
