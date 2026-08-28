@@ -6774,8 +6774,13 @@ function selectSubChar(id) {
   _subSelectedChar = id;
   localStorage.setItem('sub_selected_char', id);
   _rmSelectedChar = id;
+  // ホームタブのキャラ表示（custom_char_）もここで切り替えたキャラに合わせる。
+  // 合わせないと、いきものタブで別のキャラに切り替えてもホームタブには古いキャラが表示され続ける。
+  const sid = currentStudentId;
+  if (sid) localStorage.setItem('custom_char_' + sid, id);
   initSubTab();
   document.getElementById('subCharSheet').style.display = 'none';
+  if (typeof renderStudent === 'function' && currentStudentData) renderStudent(currentStudentData);
 }
 function openSubBgSheet() {
   const unlocked = parseInt(localStorage.getItem('sub_stages_unlocked')||'1');
@@ -6806,8 +6811,13 @@ function openSubBgSheet() {
 function selectSubBg(id) {
   _subSelectedBg = id;
   localStorage.setItem('sub_selected_bg', id);
+  // ホームタブの背景表示（stage_bg_）もここで選んだステージに合わせる。
+  // 合わせないと、いきものタブで背景を切り替えてもホームタブには古い背景が表示され続ける。
+  const sid = currentStudentId;
+  if (sid) localStorage.setItem('stage_bg_' + sid, id);
   initSubTab();
   document.getElementById('subBgSheet').style.display = 'none';
+  if (typeof renderStudent === 'function' && currentStudentData) renderStudent(currentStudentData);
 }
 
 // スワイプでタブ切り替え
