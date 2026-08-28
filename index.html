@@ -2465,7 +2465,6 @@ body{background:#f0ebe0!important;}
 
   <!-- おばあちゃんモード: シンプル表示オーバーレイ（先生の生徒詳細からON/OFF） -->
   <div id="elderView" style="display:none;position:absolute;inset:0;z-index:200;background:var(--ocean-grad);flex-direction:column;align-items:center;justify-content:center;padding:32px 20px;box-sizing:border-box;overflow-y:auto;">
-    <div id="elderGreeting" style="font-size:17px;font-weight:800;color:white;text-shadow:0 1px 4px rgba(0,0,0,.18);margin-bottom:24px;text-align:center;word-break:break-word;overflow-wrap:anywhere;"></div>
     <div style="background:white;border-radius:20px;padding:22px 20px;width:100%;max-width:340px;box-shadow:0 8px 30px rgba(0,0,0,.18);margin-bottom:18px;box-sizing:border-box;">
       <div style="font-size:13px;font-weight:700;color:#0077a8;letter-spacing:.05em;margin-bottom:8px;text-align:center;">次回のレッスン</div>
       <div id="elderNextDate" style="font-size:26px;font-weight:900;color:#003D52;text-align:center;line-height:1.35;word-break:break-word;overflow-wrap:anywhere;">—</div>
@@ -4557,10 +4556,12 @@ function renderStudentList() {
       ? `<span class="si2-tag parent">親</span>`
       : (s.parent_student_id ? `<span class="si2-tag child">子</span>` : '');
     const enterColor = isParentRow ? 'style="border-color:#f97316;color:#f97316;"' : '';
+    const elderMark = s.elder_mode ? `<span title="おばあちゃんモード" style="font-size:16px;flex-shrink:0;">👵</span>` : '';
     return `<div class="si2-row" onclick="showStudentDetail('${s.id}')">
       <div style="display:flex;align-items:center;gap:8px;min-width:0;flex:1;">
         ${tag}
         <span class="si2-name">${esc(s.name)}</span>
+        ${elderMark}
       </div>
       <button class="si2-enterbtn" ${enterColor} onclick="event.stopPropagation();_teacherEnterStudent('${s.id}')">入場</button>
     </div>`;
@@ -5636,8 +5637,6 @@ function _renderElderView(data) {
   if (!el) return;
   if (!data.elder_mode) { el.style.display = 'none'; return; }
   el.style.display = 'flex';
-  const greetEl = document.getElementById('elderGreeting');
-  if (greetEl) greetEl.textContent = `🎸 ${data.name || ''}さん`;
   const dateEl = document.getElementById('elderNextDate');
   const timeEl = document.getElementById('elderNextTime');
   if (data.next_lesson_at) {
