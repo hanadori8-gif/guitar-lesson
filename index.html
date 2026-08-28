@@ -268,7 +268,7 @@ body{font-family:'Zen Maru Gothic','Helvetica Neue','Hiragino Sans','Meiryo',san
 .si2-sorttab.active{color:var(--ocean-deep);border-bottom-color:var(--ocean-mid);}
 .si2-row{display:flex;align-items:center;gap:10px;padding:14px 8px;border-bottom:1px solid #eef3f4;cursor:pointer;-webkit-tap-highlight-color:transparent;}
 .si2-row:active{background:rgba(0,150,200,.05);}
-.si2-name{font-size:14.5px;font-weight:800;color:var(--text-dark);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.si2-name{font-size:14.5px;font-weight:800;color:var(--text-dark);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;background:var(--card-bg);padding:5px 12px;border-radius:8px;box-shadow:0 1px 3px rgba(0,40,70,.08);}
 .si2-tag{font-size:10px;font-weight:800;padding:2px 7px;border-radius:10px;flex-shrink:0;white-space:nowrap;}
 .si2-tag.child{color:#2563eb;background:#dbeafe;}
 .si2-tag.parent{color:#ea580c;background:#fed7aa;}
@@ -4557,8 +4557,10 @@ function renderStudentList() {
       : (s.parent_student_id ? `<span class="si2-tag child">子</span>` : '');
     const enterColor = isParentRow ? 'style="border-color:#f97316;color:#f97316;"' : '';
     return `<div class="si2-row" onclick="showStudentDetail('${s.id}')">
-      ${tag}
-      <span class="si2-name" style="flex:1;">${esc(s.name)}</span>
+      <div style="display:flex;align-items:center;gap:8px;min-width:0;flex:1;">
+        ${tag}
+        <span class="si2-name">${esc(s.name)}</span>
+      </div>
       <button class="si2-enterbtn" ${enterColor} onclick="event.stopPropagation();_teacherEnterStudent('${s.id}')">入場</button>
     </div>`;
   };
