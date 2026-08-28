@@ -2914,24 +2914,25 @@ window.addEventListener('load', () => {
   initLiff().then(async (lineProfile) => {
     if (!lineProfile) return;
     const lineUserId = lineProfile.userId;
-    const {data: lineStudent} = await sb.from('students').select('*').eq('line_user_id', lineUserId).single();
+    const {data: lineStudentRows} = await sb.rpc('rpc_login_by_line', {p_line_user_id: lineUserId});
+    const lineStudent = lineStudentRows && lineStudentRows[0];
     if (lineStudent) {
       currentStudentId = lineStudent.id;
       enterStudent(lineStudent);
       return;
     }
-    const {data: parentChild} = await sb.from('students').select('*').eq('parent_line_id', lineUserId).maybeSingle();
+    const {data: parentChildRows} = await sb.rpc('rpc_lookup_child_by_parent_line', {p_parent_line_user_id: lineUserId});
+    const parentChild = parentChildRows && parentChildRows[0];
     if (parentChild) {
       enterParent(parentChild);
       return;
     }
     // 新規LINEユーザー → 自動登録
-    const _autoPin = await hashPin('0000');
-    const {data: newStudent} = await sb.from('students').insert({
-      name: lineProfile.displayName || 'LINEユーザー',
-      tier: 'free', total_exp: 0, practice_streak: 0,
-      line_user_id: lineUserId, pin_hash: _autoPin
-    }).select('*').single();
+    const {data: newStudentRows} = await sb.rpc('rpc_register_student', {
+      p_name: lineProfile.displayName || 'LINEユーザー',
+      p_line_user_id: lineUserId
+    });
+    const newStudent = newStudentRows && newStudentRows[0];
     if (newStudent) { currentStudentId = newStudent.id; enterStudent(newStudent); return; }
   });
 });
@@ -4626,10 +4627,12 @@ async function saveParentSettings() {
 let _parentSelf = null;
 let _prtChildId = null;
 let _prtChildNextAt = null;
+let _prtParentLineId = null;
 async function enterParent(studentData, selfData) {
   if (selfData) _parentSelf = selfData;
   _prtChildId = studentData.id;
   _prtChildNextAt = studentData.next_lesson_at || null;
+  _prtParentLineId = studentData.parent_line_id || null;
   goScreen('sParent');
   const switchBtn = document.getElementById('prtSwitchBtn');
   if (switchBtn) switchBtn.style.display = _parentSelf ? '' : 'none';
@@ -4787,14 +4790,10 @@ async function doParentGiftSushi() {
   if (localStorage.getItem(giftKey) === today) { toast('今日はもうプレゼントしたよ ✓'); return; }
   const btn = document.getElementById('prtGiftBtn');
   if (btn) { btn.disabled = true; btn.textContent = '送信中...'; }
-  const {data: child, error: fetchErr} = await sb.from('students').select('timeline').eq('id', _prtChildId).single();
-  if (fetchErr || !child) {
-    if (btn) { btn.disabled = false; btn.textContent = '🎁 エサをプレゼントする！'; }
-    toast('送信に失敗しました 😢'); return;
-  }
-  const tl = Array.isArray(child.timeline) ? child.timeline : [];
-  const newTl = [{type:'parent_sushi', ts: Date.now()}, ...tl].slice(0, 80);
-  const {error: upErr} = await sb.from('students').update({timeline: newTl}).eq('id', _prtChildId);
+  const {error: upErr} = await sb.rpc('rpc_student_self_update', {
+    p_student_id: _prtChildId, p_line_user_id: _prtParentLineId,
+    p_timeline_prepend: {type:'parent_sushi', ts: Date.now()}
+  });
   if (upErr) {
     if (btn) { btn.disabled = false; btn.textContent = '🎁 エサをプレゼントする！'; }
     toast('送信に失敗しました 😢'); return;
@@ -4810,10 +4809,11 @@ async function _parentCancelLesson() {
   const dow = ['日','月','火','水','木','金','土'][dt.getDay()];
   const label = `${m}月${d}日（${dow}）のレッスンをお休みします`;
   if (!confirm(`${label}\n\n先生に欠席を伝えますか？`)) return;
-  const {data: cur} = await sb.from('students').select('timeline').eq('id', _prtChildId).single();
-  const tl = cur?.timeline || [];
-  tl.unshift({type:'cancel', text:label, date: new Date().toISOString().slice(0,10)});
-  await sb.from('students').update({timeline: tl, next_lesson_at: null, next_lesson: null}).eq('id', _prtChildId);
+  await sb.rpc('rpc_student_self_update', {
+    p_student_id: _prtChildId, p_line_user_id: _prtParentLineId,
+    p_timeline_prepend: {type:'cancel', text:label, date: new Date().toISOString().slice(0,10)},
+    p_clear_next_lesson: true
+  });
   _prtChildNextAt = null;
   document.getElementById('prtNextLesson').innerHTML = `<div class="prt-empty">まだ予定が登録されていません</div>`;
   document.getElementById('prtCancelBtn').style.display = 'none';
@@ -5375,8 +5375,8 @@ async function goRegister() {
   const btn = document.querySelector('#sRegister .btn-primary');
   if (btn) { btn.disabled = true; btn.textContent = '登録中... 🌊'; }
   const _luid = window._pendingLineUserId || sessionStorage.getItem('pending_line_uid');
-  const newStudent = { name: nickname, tier: 'free', total_exp: 0, practice_streak: 0, line_user_id: _luid || null };
-  const {data, error} = await sb.from('students').insert(newStudent).select('*').single();
+  const {data: newRows, error} = await sb.rpc('rpc_register_student', {p_name: nickname, p_line_user_id: _luid || null});
+  const data = newRows && newRows[0];
   if (error || !data) {
     errEl.textContent = '登録に失敗しました。もう一度お試しください。';
     if (btn) { btn.disabled = false; btn.textContent = '🎸 登録してアプリを始める'; }
@@ -5437,7 +5437,11 @@ async function enterStudent(data, {fromTeacher=false}={}) {
   // 体験さん: ログインごとに完全リセット（デモ用）
   if (data.name === '体験さん') {
     const reset = {total_exp:0, practice_streak:0, last_practice_date:null, timeline:[], bonus_given:[]};
-    await sb.from('students').update(reset).eq('id', data.id);
+    await sb.rpc('rpc_student_self_update', {
+      p_student_id: data.id, p_line_user_id: data.line_user_id,
+      p_total_exp: 0, p_practice_streak: 0, p_clear_last_practice_date: true,
+      p_timeline: [], p_reset_bonus_given: true
+    });
     ['custom_char_','stage_bg_','tutorial_done_','custom_title_'].forEach(k => localStorage.removeItem(k + data.id));
     data = {...data, ...reset};
   }
@@ -5476,7 +5480,7 @@ async function enterStudent(data, {fromTeacher=false}={}) {
     const _sushiGifts = _tl.filter(e => e && e.type === 'parent_sushi');
     if (_sushiGifts.length > 0) {
       const _newTl = _tl.filter(e => e && e.type !== 'parent_sushi');
-      sb.from('students').update({timeline: _newTl}).eq('id', data.id);
+      sb.rpc('rpc_student_self_update', {p_student_id: data.id, p_line_user_id: data.line_user_id, p_timeline: _newTl});
       const _charId = _subSelectedChar || 'kumanomi';
       const _cur = parseInt(localStorage.getItem('sub_food_special_' + _charId) || '0');
       localStorage.setItem('sub_food_special_' + _charId, String(_cur + _sushiGifts.length));
@@ -5517,7 +5521,8 @@ async function enterStudent(data, {fromTeacher=false}={}) {
   studentChannel = sb.channel('student-' + currentStudentId)
     .on('postgres_changes', {event:'UPDATE', schema:'public', table:'students', filter:`id=eq.${currentStudentId}`},
       async () => {
-        const {data:_rtData} = await sb.from('students').select('*').eq('id', currentStudentId).single();
+        const {data:_rtRows} = await sb.rpc('rpc_get_own_student', {p_student_id: currentStudentId, p_line_user_id: currentStudentData?.line_user_id});
+        const _rtData = _rtRows && _rtRows[0];
         if (_rtData) renderStudent(_rtData);
       })
     .subscribe();
@@ -6344,7 +6349,7 @@ function switchSTab(tab) {
   }
   if (tab === 'home' || tab === 'timeline') {
     if (currentStudentId && !isGuest) {
-      sb.from('students').select('*').eq('id', currentStudentId).single().then(({data}) => { if (data) renderStudent(data); });
+      sb.rpc('rpc_get_own_student', {p_student_id: currentStudentId, p_line_user_id: currentStudentData?.line_user_id}).then(({data}) => { if (data && data[0]) renderStudent(data[0]); });
     }
   }
   if (tab === 'homework') {
@@ -6970,8 +6975,8 @@ async function showPostSongs(charId, studentId) {
   ov.classList.add('show');
   if (studentId) {
     try {
-      const {data: _sd} = await sb.from('students').select('name,practice_streak,songs,total_exp,bonus_given').eq('id', studentId).single();
-      const _sdata = _sd || {};
+      const {data: _sdRows} = await sb.rpc('rpc_get_public_profile', {p_student_id: studentId});
+      const _sdata = (_sdRows && _sdRows[0]) || {};
       document.getElementById('postSongsTitle').textContent = _sdata.name || '';
       const _songRow = n => `<div class="post-songs-item"><span class="post-songs-ico">🎵</span><span class="post-songs-name">${esc(n)}</span></div>`;
       if (_sdata.songs && _sdata.songs.length) {
@@ -7168,10 +7173,11 @@ async function practiceCheckIn() {
   }
 
   // ── DB書き込みはバックグラウンドで（待たない）──────
-  sb.from('students').update({
-    total_exp: newExp, practice_streak: newStreak,
-    last_practice_date: today, timeline: newTimeline,
-  }).eq('id', currentStudentId).then(({error}) => {
+  sb.rpc('rpc_student_self_update', {
+    p_student_id: currentStudentId, p_line_user_id: s.line_user_id,
+    p_total_exp: newExp, p_practice_streak: newStreak,
+    p_last_practice_date: today, p_timeline: newTimeline,
+  }).then(({error}) => {
     if (error) toast('同期エラーが発生しました 😢');
   });
 
@@ -7204,10 +7210,11 @@ async function _simpleAutoCheckIn() {
   const newTimeline = [tlEntry, ...(s.timeline || [])].slice(0, 50);
   const newData   = {...s, total_exp: newExp, practice_streak: newStreak, last_practice_date: today, timeline: newTimeline};
   renderStudent(newData);
-  await sb.from('students').update({
-    total_exp: newExp, practice_streak: newStreak,
-    last_practice_date: today, timeline: newTimeline,
-  }).eq('id', currentStudentId);
+  await sb.rpc('rpc_student_self_update', {
+    p_student_id: currentStudentId, p_line_user_id: s.line_user_id,
+    p_total_exp: newExp, p_practice_streak: newStreak,
+    p_last_practice_date: today, p_timeline: newTimeline,
+  });
 }
 
 function renderNotices(tl) {
@@ -7574,7 +7581,7 @@ function renderShelf(songs) {
 
 async function changeTheme(theme) {
   applyTheme(theme);
-  if (currentStudentId) await sb.from('students').update({theme}).eq('id', currentStudentId);
+  if (currentStudentId && currentStudentData) await sb.rpc('rpc_student_self_update', {p_student_id: currentStudentId, p_line_user_id: currentStudentData.line_user_id, p_theme: theme});
 }
 function applyTheme(theme) {
   [...document.body.classList].filter(c => c.startsWith('theme-')).forEach(c => document.body.classList.remove(c));
@@ -8151,7 +8158,7 @@ document.addEventListener('visibilitychange', () => {
     el.style.animationPlayState = state;
   });
   if (!document.hidden && currentStudentId && !isGuest) {
-    sb.from('students').select('*').eq('id', currentStudentId).single().then(({data}) => { if (data) renderStudent(data); });
+    sb.rpc('rpc_get_own_student', {p_student_id: currentStudentId, p_line_user_id: currentStudentData?.line_user_id}).then(({data}) => { if (data && data[0]) renderStudent(data[0]); });
   }
 });
 
@@ -8718,10 +8725,11 @@ async function _doRmCheckIn() {
     const newTimeline = [tlEntry, ...(s.timeline || [])].slice(0, 50);
     const newData = {...s, total_exp: newExp, practice_streak: newStreak, last_practice_date: today, timeline: newTimeline};
     renderStudent(newData);
-    sb.from('students').update({
-      total_exp: newExp, practice_streak: newStreak,
-      last_practice_date: today, timeline: newTimeline,
-    }).eq('id', currentStudentId).then(({error}) => { if (error) toast('同期エラーが発生しました 😢'); });
+    sb.rpc('rpc_student_self_update', {
+      p_student_id: currentStudentId, p_line_user_id: s.line_user_id,
+      p_total_exp: newExp, p_practice_streak: newStreak,
+      p_last_practice_date: today, p_timeline: newTimeline,
+    }).then(({error}) => { if (error) toast('同期エラーが発生しました 😢'); });
   }
   // shared_posts投稿は今日まだ「記録する！」を押していない場合のみ
   const _rmKey = 'rm_posted_' + today + '_' + currentStudentId;
