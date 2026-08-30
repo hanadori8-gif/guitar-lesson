@@ -2449,13 +2449,11 @@ const STAGE_BKGS = [
 ];
 
 const BADGES_DEF = [
-  {id:'streak_3',   label:'3日連続',        icon:'🔥', desc:'3日連続で練習した',           check: s => (s.practice_streak||0) >= 3},
-  {id:'streak_7',   label:'一週間連続',     icon:'🔥', desc:'7日連続で練習した',           check: s => (s.practice_streak||0) >= 7},
-  {id:'streak_14',  label:'2週間連続',      icon:'🏆', desc:'14日連続で練習した',          check: s => (s.practice_streak||0) >= 14},
-  {id:'streak_30',  label:'一ヶ月連続',     icon:'👑', desc:'30日連続で練習した',          check: s => (s.practice_streak||0) >= 30},
   {id:'songs_3',    label:'3曲レパートリー',icon:'🎵', desc:'3曲以上登録した',             check: s => (s.songs||[]).length >= 3},
   {id:'songs_10',   label:'10曲レパートリー',icon:'🎸',desc:'10曲以上登録した',            check: s => (s.songs||[]).length >= 10},
-  {id:'tbook_1',    label:'教科書1冊クリア',icon:'📖', desc:'教科書1冊のミッションを全クリアした', check: s => TEXTBOOKS.some(tb => GOALS.filter(g=>g.cat===tb.id).every(g=>(s.bonus_given||[]).includes(g.id)) && GOALS.some(g=>g.cat===tb.id))},
+  {id:'songs_20',   label:'20曲レパートリー',icon:'🎤',desc:'20曲以上登録した',            check: s => (s.songs||[]).length >= 20},
+  {id:'exp_500',    label:'がんばり500EXP', icon:'💪', desc:'累計EXPが500に到達した',      check: s => (s.total_exp||0) >= 500},
+  {id:'exp_1500',   label:'がんばり1500EXP',icon:'🌟', desc:'累計EXPが1500に到達した',     check: s => (s.total_exp||0) >= 1500},
 ];
 
 const LOCAL_BADGES_DEF = [
@@ -2468,7 +2466,11 @@ const LOCAL_BADGES_DEF = [
   {id:'cm_max',   icon:'🏆', label:'20cmの大物',      desc:'いきものが20cmになった',                  check: () => CHARS.some(c => parseInt(localStorage.getItem('sub_cm_'+c.id)||'0') >= 200)},
   {id:'sushi_1',  icon:'🍣', label:'お寿司デビュー',  desc:'はじめてお寿司をあげた',                  check: () => parseInt(localStorage.getItem('sub_sushi_cnt')||'0') >= 1},
   {id:'sushi_5',  icon:'🍣', label:'お寿司5回',       desc:'お寿司を5回あげた（かなり贅沢！）',       check: () => parseInt(localStorage.getItem('sub_sushi_cnt')||'0') >= 5},
+  {id:'chars_3',  icon:'🐠', label:'なかま3匹目',     desc:'いきものを3匹なかまにした',               check: () => (JSON.parse(localStorage.getItem('sub_unlocked_chars')||'[]')).length >= 3},
+  {id:'chars_7',  icon:'🐬', label:'なかま7匹目',     desc:'いきものを7匹なかまにした',               check: () => (JSON.parse(localStorage.getItem('sub_unlocked_chars')||'[]')).length >= 7},
   {id:'all_chars',icon:'🐟', label:'全キャラ解放',    desc:'全いきもののアンロック条件を達成した',      check: () => CHARS.every(c => (localStorage.getItem('sub_unlocked_chars') ? JSON.parse(localStorage.getItem('sub_unlocked_chars')||'[]') : []).includes(c.id))},
+  {id:'stage_3',  icon:'🏝️', label:'新しい海へ',      desc:'ステージを3つ解放した',                   check: () => parseInt(localStorage.getItem('sub_stages_unlocked')||'1') >= 3},
+  {id:'stage_all',icon:'🌈', label:'海を制覇！',      desc:'すべてのステージを解放した',               check: () => parseInt(localStorage.getItem('sub_stages_unlocked')||'1') >= STAGE_BKGS.length},
 ];
 
 // =====================================================================
@@ -4734,7 +4736,6 @@ function renderStudent(data) {
   renderHomeworkMini(tl);
   renderPraiseMini(tl);
   renderCancelNote(tl);
-  renderCurrentGoal();
   renderTbookLife();
   renderShelf(data.songs || []);
   applyTheme(data.theme || 'normal');
@@ -5461,7 +5462,6 @@ function switchSTab(tab) {
     initNakamaTab();
   }
   if (tab === 'timeline') {
-    renderCurrentGoal();
     renderMasteryList();
     renderRecList();
     setTimeout(updatePracPlayerCard, 0);
