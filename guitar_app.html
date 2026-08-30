@@ -636,21 +636,6 @@ body{font-family:'Zen Maru Gothic','Helvetica Neue','Hiragino Sans','Meiryo',san
 .tl-songs-preview{display:flex;flex-wrap:wrap;gap:4px;margin-top:5px;}
 .tl-song-chip{background:rgba(255,255,255,.15);border-radius:20px;padding:2px 8px;font-size:11px;color:rgba(255,255,255,.85);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:140px;}
 .tl-song-more{background:rgba(255,255,255,.08);color:rgba(255,255,255,.55);}
-/* 意見箱 */
-.iken-btn{background:rgba(255,255,255,.18);border:1.5px solid rgba(255,255,255,.4);color:white;font-size:11px;font-weight:700;border-radius:20px;padding:5px 12px;cursor:pointer;letter-spacing:.3px;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);font-family:var(--hf);}
-.iken-ov{position:fixed;inset:0;z-index:360;background:rgba(0,0,0,.5);display:none;align-items:flex-end;justify-content:center;}
-.iken-ov.show{display:flex;animation:fdIn .25s ease;}
-.iken-sheet{background:white;border-radius:24px 24px 0 0;width:100%;max-width:480px;padding:22px 20px calc(env(safe-area-inset-bottom,0px) + 24px);animation:slideUp .25s ease;}
-.iken-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
-.iken-hdr-ttl{font-size:17px;font-weight:800;color:#1a3a5c;font-family:var(--hf);}
-.iken-sub{font-size:13px;color:#888;margin-bottom:12px;}
-.iken-ta{width:100%;border:1.5px solid #e0e8f0;border-radius:12px;padding:10px 12px;font-size:14px;font-family:var(--hf);resize:none;outline:none;box-sizing:border-box;color:#1a1a2e;}
-.iken-ta:focus{border-color:#00a8cc;}
-.iken-send-btn{width:100%;margin-top:12px;padding:14px;background:linear-gradient(135deg,#0077a8,#00b4d8);color:white;border:none;border-radius:14px;font-size:16px;font-weight:800;font-family:var(--hf);cursor:pointer;}
-.iken-send-btn:disabled{opacity:.5;}
-.iken-item{background:#f8fafc;border-radius:12px;padding:12px 14px;margin-bottom:8px;border:1px solid #e2e8f0;}
-.iken-item-meta{font-size:11px;color:#94a3b8;margin-bottom:4px;}
-.iken-item-text{font-size:14px;color:#1a3a5c;line-height:1.6;white-space:pre-wrap;}
 /* 曲リストポップアップ（タイムライン投稿タップ時） */
 .post-songs-ov{position:fixed;inset:0;z-index:350;background:rgba(0,0,0,.45);display:none;align-items:flex-end;justify-content:center;}
 .post-songs-ov.show{display:flex;}
@@ -1300,7 +1285,6 @@ body{background:#f0ebe0!important;}
 #sp-home .next-lesson-card{display:none!important;}
 #sp-home #simpleLvArea{display:none!important;}
 #sp-home .dev-lvup-btn{display:none!important;}
-#sp-home .iken-btn{display:none!important;}
 #sp-home #sLikeCount{display:none!important;}
 /* ビーチヘッダー（上部名前・Lv・ゲージ） */
 #homeBeachHdr{position:relative;z-index:10;padding:44px 16px 0;display:flex;justify-content:space-between;align-items:flex-start;}
@@ -1488,19 +1472,6 @@ body{background:#f0ebe0!important;}
       <div id="postBadgesList"></div>
     </div>
     <button onclick="closePostSongs()" style="width:100%;margin-top:14px;padding:13px;border:1.5px solid #e5e7eb;background:white;border-radius:14px;font-size:14px;font-weight:700;color:#888;cursor:pointer;font-family:var(--hf);">閉じる</button>
-  </div>
-</div>
-
-<!-- 意見箱モーダル -->
-<div class="iken-ov" id="ikenOv" onclick="closeIken()">
-  <div class="iken-sheet" onclick="event.stopPropagation()">
-    <div class="iken-hdr">
-      <span class="iken-hdr-ttl">📮 意見箱</span>
-      <button onclick="closeIken()" style="background:none;border:none;font-size:22px;cursor:pointer;color:#aaa;line-height:1;">×</button>
-    </div>
-    <p class="iken-sub">欲しい機能や気になることを先生に送ってね！</p>
-    <textarea class="iken-ta" id="ikenText" placeholder="例：こんな機能が欲しいです！" rows="5"></textarea>
-    <button class="iken-send-btn" id="ikenSendBtn" onclick="submitIken()">送る ✉️</button>
   </div>
 </div>
 
@@ -1704,7 +1675,6 @@ body{background:#f0ebe0!important;}
       <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:0 8px 14px;">
         <div class="card-title" style="padding:0;flex-shrink:0;font-size:19px;">生徒一覧</div>
         <button onclick="openFesTemplateSheet()" style="font-size:11px;font-weight:700;padding:5px 12px;border-radius:20px;border:1.5px solid #c026d3;background:white;color:#c026d3;cursor:pointer;font-family:var(--hf);flex-shrink:0;">🎪 FES設定</button>
-        <div style="display:none;"><button id="ikenNavBtn"><span id="ikenBadge"></span></button></div>
       </div>
       <div class="si2-search" style="margin:0 8px 14px;">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
@@ -1717,11 +1687,6 @@ body{background:#f0ebe0!important;}
       </div>
       <div id="studentListArea" style="padding:0 8px;"><div class="loading-inline">読み込み中... 🌊</div></div>
     </div>
-  </div>
-
-  <div id="tabIkenArea" class="main t-tab-area hidden" style="padding:12px!important;">
-    <div style="font-size:16px;font-weight:800;color:var(--ocean-deep);margin-bottom:12px;font-family:var(--hf);">📮 生徒からの意見</div>
-    <div id="ikenList"><div class="loading-inline">読み込み中... 🌊</div></div>
   </div>
 
   <!-- 下タブバー -->
@@ -2007,9 +1972,6 @@ body{background:#f0ebe0!important;}
           <div class="next-lesson-lbl">次のレッスン</div>
           <div class="next-lesson-val" id="nextLessonVal">—</div>
         </div>
-      </div>
-      <div style="position:absolute;top:8px;right:10px;z-index:10;">
-        <button class="iken-btn" onclick="openIken()">📮 意見箱</button>
       </div>
       <div class="s-home-top">
         <div id="homeNextLessonArea" style="display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:8px;">
@@ -3123,7 +3085,6 @@ async function enterTeacher() {
   goScreen('sTeacher');
   switchTab('calendar');
   await loadStudents();
-  _loadIkenCount();
   // リアルタイム更新（先生画面も）。認証状態の変化でenterTeacherが複数回呼ばれても
   // 購読が重複して溜まらないよう、既存の購読があれば先に解除する。
   if (teacherChannel) { sb.removeChannel(teacherChannel); teacherChannel = null; }
@@ -3163,67 +3124,11 @@ function switchTab(tab) {
   document.getElementById('tabLessonArea').classList.toggle('hidden',    tab !== 'lesson');
   document.getElementById('tabStudentsArea').classList.toggle('hidden',  tab !== 'students');
   document.getElementById('tabCalendarArea').classList.toggle('hidden',  tab !== 'calendar');
-  document.getElementById('tabIkenArea').classList.toggle('hidden',      tab !== 'iken');
   document.getElementById('tabLesson').classList.toggle('active',    tab === 'lesson');
   document.getElementById('tabStudents').classList.toggle('active',  tab === 'students');
   document.getElementById('tabCalendar').classList.toggle('active',  tab === 'calendar');
-  const _ikenTabEl = document.getElementById('tabIken');
-  if (_ikenTabEl) _ikenTabEl.classList.toggle('active', tab === 'iken');
   if (tab === 'students') loadStudents();
-  if (tab === 'iken') loadSuggestions();
   if (tab === 'calendar') { _calMonthOffset = 0; _calSelectedDate = todayJST(); _loadTeacherEvents().then(() => _renderCalendar()); }
-}
-
-function openIken() {
-  if (!currentStudentId) { toast('ログインが必要です'); return; }
-  document.getElementById('ikenOv').classList.add('show');
-}
-function closeIken() {
-  document.getElementById('ikenOv').classList.remove('show');
-}
-async function submitIken() {
-  const text = (document.getElementById('ikenText').value || '').trim();
-  if (!text) { toast('ひとこと書いてみてね 📝'); return; }
-  const btn = document.getElementById('ikenSendBtn');
-  btn.disabled = true; btn.textContent = '送信中...';
-  const {error} = await sb.rpc('rpc_submit_suggestion', {
-    p_student_id: currentStudentId,
-    p_line_user_id: currentStudentData?.line_user_id,
-    p_text: text
-  });
-  btn.disabled = false; btn.textContent = '送る ✉️';
-  if (error) { toast('送信エラー 😢'); return; }
-  document.getElementById('ikenText').value = '';
-  closeIken();
-  toast('📮 送れたよ！ありがとう！', 'bonus');
-}
-async function loadSuggestions() {
-  const el = document.getElementById('ikenList');
-  if (!el) return;
-  el.innerHTML = '<div class="loading-inline">読み込み中... 🌊</div>';
-  const {data, error} = await sb.from('suggestions').select('*').order('created_at', {ascending:false}).limit(50);
-  const _ikenTotal = data && !error ? data.length : 0;
-  localStorage.setItem('iken_seen_count', String(_ikenTotal));
-  _updateIkenBadge(_ikenTotal);
-  if (error || !data?.length) {
-    el.innerHTML = '<div class="empty" style="padding:24px 0;text-align:center;color:#94a3b8;">まだ意見はありません 📮</div>';
-    return;
-  }
-  el.innerHTML = data.map(s => `<div class="iken-item"><div class="iken-item-meta">${esc(s.student_name)} · ${(s.created_at||'').slice(0,10)}</div><div class="iken-item-text">${esc(s.text)}</div></div>`).join('');
-}
-
-async function _loadIkenCount() {
-  const {count} = await sb.from('suggestions').select('*', {count:'exact', head:true});
-  _updateIkenBadge(count || 0);
-}
-
-function _updateIkenBadge(n) {
-  const badge = document.getElementById('ikenBadge');
-  if (!badge) return;
-  const seen = parseInt(localStorage.getItem('iken_seen_count') || '0', 10);
-  const newCount = Math.max(0, n - seen);
-  if (newCount > 0) { badge.textContent = newCount; badge.style.display = ''; }
-  else { badge.style.display = 'none'; }
 }
 
 function _lessonDateInMonth(dateStr, ym) {
@@ -5229,7 +5134,6 @@ function _tutV2HideMainUI() {
   ['sNameBig','nextLessonCard','sStage','goalVideoBtn','homeNextLessonArea','recommendSongBanner','sHomeworkMini','sPraiseMini'].forEach(id => {
     const el = document.getElementById(id); if (el) el.style.display = 'none';
   });
-  document.querySelectorAll('.iken-btn').forEach(el => el.style.display = 'none');
   ['.s-exp-block','.home-side-icons','.dev-lvup-btn'].forEach(sel => {
     document.querySelectorAll(sel).forEach(el => el.style.display = 'none');
   });
@@ -5823,7 +5727,6 @@ function _tutV2RevealAll() {
   const _tb = document.querySelector('.s-tab-bar'); if (_tb) { _tb.style.visibility = ''; _tb.style.pointerEvents = ''; _tb.style.animation = 'tut2UiReveal .6s cubic-bezier(.34,1.56,.64,1) both'; }
   reveal(document.getElementById('sStage'), 180);
   reveal(document.getElementById('homeNextLessonArea'), 120);
-  document.querySelectorAll('.iken-btn').forEach(el => el.style.display = '');
   const _rsb = document.getElementById('recommendSongBanner'); if (_rsb && _recommendSong) _rsb.style.display = '';
   reveal(document.querySelector('.home-side-icons'), 240);
   reveal(document.querySelector('.dev-lvup-btn'), 0);
