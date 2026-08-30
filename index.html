@@ -2688,10 +2688,10 @@ const STAGE_BKGS = [
 ];
 
 const BADGE_CATEGORIES = [
-  {id:'streak', label:'練習の継続',   icon:'🔥'},
-  {id:'song',   label:'曲・レッスン', icon:'🎵'},
-  {id:'food',   label:'エサ・お世話', icon:'🍚'},
-  {id:'growth', label:'いきもの育成', icon:'🐟'},
+  {id:'streak', label:'継続', icon:'🔥'},
+  {id:'song',   label:'曲',   icon:'🎵'},
+  {id:'food',   label:'エサ', icon:'🍚'},
+  {id:'growth', label:'育成', icon:'🐟'},
 ];
 
 const BADGES_DEF = [
@@ -9616,7 +9616,7 @@ function _prtCloseInfoSheet() {
   const el = document.getElementById('prtInfoSheet');
   if (el) { el.style.display = 'none'; }
 }
-let _badgeSheetCat = null;
+let _badgeSheetCat = 'all';
 
 function _badgeMedalHtml(b) {
   const circleStyle = b.earned
@@ -9642,25 +9642,15 @@ function _badgeAreaHtml() {
     ...BADGES_DEF.map(b => ({...b, earned: b.check(d)})),
     ...LOCAL_BADGES_DEF.map(b => ({...b, earned: b.check()})),
   ];
-  if (!_badgeSheetCat) {
-    return `<div style="display:flex;flex-direction:column;gap:8px;">${BADGE_CATEGORIES.map(c => {
-      const items = list.filter(b => b.cat === c.id);
-      const earned = items.filter(b => b.earned).length;
-      return `<div onclick="_selectBadgeCat('${c.id}')" style="display:flex;align-items:center;gap:10px;background:#f4f8fb;border-radius:12px;padding:12px 14px;cursor:pointer;-webkit-tap-highlight-color:transparent;">
-        <div style="font-size:26px;flex-shrink:0;">${c.icon}</div>
-        <div style="flex:1;min-width:0;">
-          <div style="font-size:13px;font-weight:800;color:#003D52;">${esc(c.label)}</div>
-          <div style="font-size:11px;color:#8a99a8;margin-top:2px;">${earned}/${items.length}個 獲得</div>
-        </div>
-        <div style="font-size:16px;color:#c2ccd4;flex-shrink:0;">›</div>
-      </div>`;
-    }).join('')}</div>`;
-  }
-  const cat = BADGE_CATEGORIES.find(c => c.id === _badgeSheetCat);
-  const items = list.filter(b => b.cat === _badgeSheetCat);
-  return `<div onclick="_selectBadgeCat(null)" style="display:flex;align-items:center;gap:4px;color:#0096C7;font-size:12px;font-weight:800;cursor:pointer;margin-bottom:12px;-webkit-tap-highlight-color:transparent;">‹ カテゴリ一覧に戻る</div>
-    <div style="font-size:12px;font-weight:800;color:#003D52;margin-bottom:10px;">${cat.icon} ${esc(cat.label)}</div>
-    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;">${items.map(_badgeMedalHtml).join('')}</div>`;
+  const tabs = [{id:'all', label:'すべて', icon:'🏅'}, ...BADGE_CATEGORIES];
+  const tabsHtml = `<div class="si2-sortrow" style="margin:0 0 14px;overflow-x:auto;flex-wrap:nowrap;">${tabs.map(t =>
+    `<button class="si2-sorttab${_badgeSheetCat===t.id?' active':''}" style="white-space:nowrap;flex-shrink:0;" onclick="_selectBadgeCat('${t.id}')">${t.icon} ${esc(t.label)}</button>`
+  ).join('')}</div>`;
+  const items = _badgeSheetCat === 'all' ? list : list.filter(b => b.cat === _badgeSheetCat);
+  const itemsHtml = items.length
+    ? `<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;">${items.map(_badgeMedalHtml).join('')}</div>`
+    : '<div class="post-songs-empty" style="font-size:12px;">このカテゴリにはまだバッジがありません</div>';
+  return tabsHtml + itemsHtml;
 }
 
 function _selectBadgeCat(catId) {
@@ -9690,7 +9680,7 @@ function _prtMusicBtnTap() {
     ...LOCAL_BADGES_DEF.map(b => ({...b, earned: b.check()})),
   ];
   const _earnedCount = _badgeList.filter(b => b.earned).length;
-  _badgeSheetCat = null;
+  _badgeSheetCat = 'all';
 
   const sheet = document.createElement('div');
   sheet.id = '_musicRecordSheet';
