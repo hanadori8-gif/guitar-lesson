@@ -9633,41 +9633,43 @@ const _RECORD_TABS = [
 ];
 let _recordSheetTab = 'badge';
 
-function _recordTabAreaHtml() {
-  const d = currentStudentData;
-  if (!d) return '';
-  const tabsHtml = `<div class="si2-sortrow" style="margin:0 0 16px;">${_RECORD_TABS.map(t =>
+function _recordTabsHtml() {
+  return `<div class="si2-sortrow" style="margin:0 0 16px;">${_RECORD_TABS.map(t =>
     `<button class="si2-sorttab${_recordSheetTab===t.id?' active':''}" onclick="_selectRecordTab('${t.id}')">${t.icon} ${esc(t.label)}</button>`
   ).join('')}</div>`;
+}
 
-  let contentHtml = '';
+function _recordContentHtml() {
+  const d = currentStudentData;
+  if (!d) return '';
   if (_recordSheetTab === 'badge') {
     const list = [
       ...BADGES_DEF.map(b => ({...b, earned: b.check(d)})),
       ...LOCAL_BADGES_DEF.map(b => ({...b, earned: b.check()})),
     ];
     const earned = list.filter(b => b.earned).length;
-    contentHtml = `<div style="font-size:11px;font-weight:800;color:#f59e0b;letter-spacing:.8px;margin-bottom:10px;">獲得バッジ（${earned}/${list.length}個）</div>
+    return `<div style="font-size:11px;font-weight:800;color:#f59e0b;letter-spacing:.8px;margin-bottom:10px;">獲得バッジ（${earned}/${list.length}個）</div>
       <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;">${list.map(_badgeMedalHtml).join('')}</div>`;
-  } else if (_recordSheetTab === 'hw') {
+  }
+  if (_recordSheetTab === 'hw') {
     const tl = typeof d.timeline === 'string' ? JSON.parse(d.timeline || '[]') : (d.timeline || []);
     const hwItems = tl.filter(e => e.type === 'hw').slice(0, 5);
-    contentHtml = hwItems.length
+    return hwItems.length
       ? hwItems.map(e => `<div style="padding:8px 0;border-bottom:1px solid rgba(0,0,0,.06);font-size:13px;color:#334155;"><span style="font-weight:800;">📝 ${esc(e.text||'')}</span>${e.date?`<span style="font-size:10px;color:#94a3b8;margin-left:8px;">${e.date}</span>`:''}</div>`).join('')
       : '<div style="font-size:12px;color:#bbb;padding:8px 0;">まだ宿題の記録がありません</div>';
-  } else {
-    const songs = d.songs || [];
-    contentHtml = songs.length
-      ? songs.map(s => `<div style="padding:8px 0;border-bottom:1px solid rgba(0,0,0,.06);font-size:14px;font-weight:700;color:#003D52;">🎵 ${esc(s)}</div>`).join('')
-      : '<div style="font-size:12px;color:#bbb;padding:8px 0;">まだ登録された曲がありません</div>';
   }
-  return tabsHtml + contentHtml;
+  const songs = d.songs || [];
+  return songs.length
+    ? songs.map(s => `<div style="padding:8px 0;border-bottom:1px solid rgba(0,0,0,.06);font-size:14px;font-weight:700;color:#003D52;">🎵 ${esc(s)}</div>`).join('')
+    : '<div style="font-size:12px;color:#bbb;padding:8px 0;">まだ登録された曲がありません</div>';
 }
 
 function _selectRecordTab(tabId) {
   _recordSheetTab = tabId;
-  const el = document.getElementById('recordTabArea');
-  if (el) el.innerHTML = _recordTabAreaHtml();
+  const tabsEl = document.getElementById('recordTabsRow');
+  if (tabsEl) tabsEl.innerHTML = _recordTabsHtml();
+  const contentEl = document.getElementById('recordTabContent');
+  if (contentEl) contentEl.innerHTML = _recordContentHtml();
 }
 
 function _prtMusicBtnTap() {
@@ -9684,11 +9686,16 @@ function _prtMusicBtnTap() {
       <div style="width:40px;height:4px;background:#ddd;border-radius:2px;margin:14px auto 18px;"></div>
       <div style="padding:0 20px;">
         <div style="font-size:15px;font-weight:900;color:#003D52;margin-bottom:16px;">📖 これまでの記録</div>
-        <div id="recordTabArea">${_recordTabAreaHtml()}</div>
+        <div id="recordTabsRow">${_recordTabsHtml()}</div>
+        <div id="recordTabContent">${_recordContentHtml()}</div>
         <button onclick="document.getElementById('_musicRecordSheet')?.remove()" style="display:block;width:100%;background:#f4f8fb;border:none;border-radius:12px;padding:12px;color:#778899;font-size:14px;font-weight:700;margin-top:18px;cursor:pointer;">閉じる</button>
       </div>
     </div>`;
   document.body.appendChild(sheet);
+  requestAnimationFrame(() => {
+    const contentEl = document.getElementById('recordTabContent');
+    if (contentEl) contentEl.style.minHeight = contentEl.offsetHeight + 'px';
+  });
 }
 
 function saveFesInfo() {
