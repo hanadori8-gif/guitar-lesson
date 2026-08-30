@@ -2621,22 +2621,22 @@ const CHARS = [
 // スターター候補（3択）とキャラ別ミッション定義
 const _STARTER_IDS = ['kumanomi','kani','fugu'];
 const _STARTER_SLOT_DEFS = {
-  kumanomi: { label:'はじめてレッスンを受ける', check:(s,n)=>(s.timeline||[]).some(e=>e.type==='lesson') },
-  kani:     { label:'練習を5回記録する',        check:(s,n)=>n>=5 },
-  fugu:     { label:'3日連続で練習する',         check:(s,n)=>(s.practice_streak||0)>=3 },
+  kumanomi: { label:'はじめてレッスンを受ける', check:s=>(s.timeline||[]).some(e=>e.type==='lesson') },
+  kani:     { label:'練習を5回記録する',        check:s=>(s.practice_count||0)>=5 },
+  fugu:     { label:'3日連続で練習する',         check:s=>(s.practice_streak||0)>=3 },
 };
 const CHAR_MISSIONS = [
-  { id:'kumanomi',    label:'はじめてレッスンを受ける',  check:(s)=>(s.timeline||[]).some(e=>e.type==='lesson') },
-  { id:'kani',        label:'練習を5回記録する',         check:(s,n)=>n>=5 },
-  { id:'fugu',        label:'3日連続で練習する',         check:(s)=>(s.practice_streak||0)>=3 },
-  { id:'kurage',      label:'7日連続で練習する',         check:(s)=>(s.practice_streak||0)>=7 },
-  { id:'chinanagozu', label:'練習を10回記録する',        check:(s,n)=>n>=10 },
-  { id:'kame',        label:'レッスンを5回受ける',       check:(s)=>(s.timeline||[]).filter(e=>e.type==='lesson').length>=5 },
-  { id:'penguin',     label:'練習を20回記録する',        check:(s,n)=>n>=20 },
-  { id:'shumokuzame', label:'レッスンを10回受ける',      check:(s)=>(s.timeline||[]).filter(e=>e.type==='lesson').length>=10 },
-  { id:'manta',       label:'練習を50回記録する',        check:(s,n)=>n>=50 },
-  { id:'kurione',     label:'14日連続で練習する',        check:(s)=>(s.practice_streak||0)>=14 },
-  { id:'sunameri',   label:'ライブに出場する',           check:(s)=>(s.bonus_given||[]).includes('live_performed') },
+  { id:'kumanomi',    label:'はじめてレッスンを受ける',  check:s=>(s.timeline||[]).some(e=>e.type==='lesson') },
+  { id:'kani',        label:'練習を5回記録する',         check:s=>(s.practice_count||0)>=5 },
+  { id:'fugu',        label:'3日連続で練習する',         check:s=>(s.practice_streak||0)>=3 },
+  { id:'kurage',      label:'7日連続で練習する',         check:s=>(s.practice_streak||0)>=7 },
+  { id:'chinanagozu', label:'練習を10回記録する',        check:s=>(s.practice_count||0)>=10 },
+  { id:'kame',        label:'レッスンを5回受ける',       check:s=>(s.timeline||[]).filter(e=>e.type==='lesson').length>=5 },
+  { id:'penguin',     label:'練習を20回記録する',        check:s=>(s.practice_count||0)>=20 },
+  { id:'shumokuzame', label:'レッスンを10回受ける',      check:s=>(s.timeline||[]).filter(e=>e.type==='lesson').length>=10 },
+  { id:'manta',       label:'練習を50回記録する',        check:s=>(s.practice_count||0)>=50 },
+  { id:'kurione',     label:'14日連続で練習する',        check:s=>(s.practice_streak||0)>=14 },
+  { id:'sunameri',   label:'ライブに出場する',           check:s=>(s.bonus_given||[]).includes('live_performed') },
 ];
 
 // スターターキャラ（初ログイン時にランダム1体が相棒になる）
@@ -3296,10 +3296,10 @@ async function submitIken() {
   if (!text) { toast('ひとこと書いてみてね 📝'); return; }
   const btn = document.getElementById('ikenSendBtn');
   btn.disabled = true; btn.textContent = '送信中...';
-  const {error} = await sb.from('suggestions').insert({
-    student_id: currentStudentId,
-    student_name: currentStudentData?.name || '生徒',
-    text
+  const {error} = await sb.rpc('rpc_submit_suggestion', {
+    p_student_id: currentStudentId,
+    p_line_user_id: currentStudentData?.line_user_id,
+    p_text: text
   });
   btn.disabled = false; btn.textContent = '送る ✉️';
   if (error) { toast('送信エラー 😢'); return; }
@@ -5451,11 +5451,11 @@ async function enterStudent(data, {fromTeacher=false}={}) {
 
   // 体験さん: ログインごとに完全リセット（デモ用）
   if (data.name === '体験さん') {
-    const reset = {total_exp:0, practice_streak:0, last_practice_date:null, timeline:[], bonus_given:[]};
+    const reset = {total_exp:0, practice_streak:0, last_practice_date:null, timeline:[], bonus_given:[], practice_count:0};
     await sb.rpc('rpc_student_self_update', {
       p_student_id: data.id, p_line_user_id: data.line_user_id,
       p_total_exp: 0, p_practice_streak: 0, p_clear_last_practice_date: true,
-      p_timeline: [], p_reset_bonus_given: true
+      p_timeline: [], p_reset_bonus_given: true, p_practice_count: 0
     });
     ['custom_char_','stage_bg_','tutorial_done_','custom_title_'].forEach(k => localStorage.removeItem(k + data.id));
     data = {...data, ...reset};
@@ -6308,17 +6308,24 @@ function _tutV2RevealAll() {
     if (_tutV2PracticeSnapshot && currentStudentId) {
       const _snap = _tutV2PracticeSnapshot;
       _tutV2PracticeSnapshot = null;
+      const _tutLineUid = currentStudentData?.line_user_id;
       await Promise.all([
-        sb.from('students').update({
-          total_exp: _snap.total_exp,
-          practice_streak: _snap.practice_streak,
-          last_practice_date: _snap.last_practice_date,
-          timeline: _snap.timeline
-        }).eq('id', currentStudentId),
-        sb.from('shared_posts').delete()
-          .eq('student_id', currentStudentId)
-          .like('phrase', '🎸 練習した！%')
-          .gte('created_at', new Date(Date.now() - 60*60*1000).toISOString())
+        sb.rpc('rpc_student_self_update', {
+          p_student_id: currentStudentId,
+          p_line_user_id: _tutLineUid,
+          p_total_exp: _snap.total_exp,
+          p_practice_streak: _snap.practice_streak,
+          p_last_practice_date: _snap.last_practice_date,
+          p_clear_last_practice_date: !_snap.last_practice_date,
+          p_timeline: _snap.timeline,
+          p_practice_count: _snap.practice_count
+        }),
+        sb.rpc('rpc_delete_own_recent_shared_post', {
+          p_student_id: currentStudentId,
+          p_line_user_id: _tutLineUid,
+          p_phrase_prefix: '🎸 練習した！',
+          p_since: new Date(Date.now() - 60*60*1000).toISOString()
+        })
       ]);
       _tlCache = null;
     }
@@ -6705,7 +6712,6 @@ function _updateSubMissionUnlocks() {
   const starter = localStorage.getItem('sub_starter_' + sid);
   if (!starter) return;
   const s = currentStudentData;
-  const cnt = parseInt(localStorage.getItem('sub_checkin_cnt_' + sid) || '0');
   let unlocked;
   try { unlocked = JSON.parse(localStorage.getItem('sub_unlocked_chars') || '[]'); }
   catch(e) { unlocked = []; }
@@ -6715,9 +6721,9 @@ function _updateSubMissionUnlocks() {
     if (m.id === 'kumanomi' && starter !== 'kumanomi') {
       // クマノミは選ばれなかった場合、選ばれたスターターの席のミッション条件で解放
       const slotDef = _STARTER_SLOT_DEFS[starter];
-      if (slotDef && slotDef.check(s, cnt)) unlocked.push('kumanomi');
+      if (slotDef && slotDef.check(s)) unlocked.push('kumanomi');
     } else {
-      if (m.check(s, cnt)) unlocked.push(m.id);
+      if (m.check(s)) unlocked.push(m.id);
     }
   });
   if (unlocked.length !== before) localStorage.setItem('sub_unlocked_chars', JSON.stringify(unlocked));
@@ -7159,7 +7165,7 @@ async function practiceCheckIn() {
   if (_alreadyDone) return;
 
   if (_tutV2Active && !_tutV2PracticeSnapshot) {
-    _tutV2PracticeSnapshot = {total_exp: s.total_exp||0, practice_streak: s.practice_streak||0, last_practice_date: s.last_practice_date||null, timeline: s.timeline||[]};
+    _tutV2PracticeSnapshot = {total_exp: s.total_exp||0, practice_streak: s.practice_streak||0, last_practice_date: s.last_practice_date||null, timeline: s.timeline||[], practice_count: s.practice_count||0};
   }
 
   const yesterday = yesterdayJST();
@@ -7174,7 +7180,8 @@ async function practiceCheckIn() {
     date: dateStr()
   };
   const newTimeline = [tlEntry, ...(s.timeline || [])].slice(0, 50);
-  const newData = {...s, total_exp: newExp, practice_streak: newStreak, last_practice_date: today, timeline: newTimeline};
+  const newPracticeCount = (s.practice_count || 0) + 1;
+  const newData = {...s, total_exp: newExp, practice_streak: newStreak, last_practice_date: today, timeline: newTimeline, practice_count: newPracticeCount};
 
   // ── 即座にUI更新（楽観的更新）──────────────────────
   _setLife(_LIFE_MAX);
@@ -7184,12 +7191,13 @@ async function practiceCheckIn() {
     if (_isTutorial) { localStorage.setItem('tutorial_done_' + currentStudentId, '1'); hideTutorial(); }
     toast(`🎸 練習チェック！ +${exp} EXP${newStreak >= 2 ? `（${newStreak}日連続🔥）` : ''}`, 'bonus');
   }
+  _updateSubMissionUnlocks();
 
   // ── DB書き込みはバックグラウンドで（待たない）──────
   sb.rpc('rpc_student_self_update', {
     p_student_id: currentStudentId, p_line_user_id: s.line_user_id,
     p_total_exp: newExp, p_practice_streak: newStreak,
-    p_last_practice_date: today, p_timeline: newTimeline,
+    p_last_practice_date: today, p_timeline: newTimeline, p_practice_count: newPracticeCount,
   }).then(({error}) => {
     if (error) toast('同期エラーが発生しました 😢');
   });
@@ -7198,13 +7206,10 @@ async function practiceCheckIn() {
     const _co0  = CHARS.find(c => c.id === _cid0) || CHARS[0];
     const _cm0  = (_co0.startCm || 3) + parseInt(localStorage.getItem('sub_cm_' + _cid0) || '0');
     const _hw0  = _getAllLatestHomeworks();
-    sb.from('shared_posts').insert({
-      student_id: currentStudentId, student_name: s.name || '生徒',
-      student_title: '',
-      phrase: JSON.stringify({ streak: newStreak, cm: _cm0, hw: _hw0 }),
-      char_id: _cid0,
-      songs: s.songs || [],
-      tier: s.tier || 'free'
+    sb.rpc('rpc_post_shared_timeline', {
+      p_student_id: currentStudentId, p_line_user_id: s.line_user_id,
+      p_phrase: JSON.stringify({ streak: newStreak, cm: _cm0, hw: _hw0 }),
+      p_char_id: _cid0
     }).then(() => { _tlCache = null; loadSharedPosts(); });
   }
 }
@@ -8726,43 +8731,35 @@ async function _doRmCheckIn() {
   if (!currentStudentId || !currentStudentData) return;
   const today = todayJST();
   const s = currentStudentData;
-  const alreadyDone = s.last_practice_date === today;
+  // 今日すでにチェックイン済み（このボタン経由でもホーム下部バナー経由でも）なら何もしない。
+  // 重複投稿・練習回数の二重カウントを防ぐため、判定はlast_practice_dateに一本化している。
+  if (s.last_practice_date === today) return;
   const yesterday = yesterdayJST();
   const streak = s.practice_streak || 0;
-  const newStreak = alreadyDone ? streak : (s.last_practice_date === yesterday ? streak + 1 : 1);
-  // EXP更新は未チェックインの場合のみ
-  if (!alreadyDone) {
-    const exp = streakExp(newStreak);
-    const newExp = (s.total_exp || 0) + exp;
-    const tlEntry = {type:'practice', text:`自主練習！${newStreak >= 14 ? '🏆MAX ' : '🔥'}${newStreak}日連続`, exp, date:dateStr()};
-    const newTimeline = [tlEntry, ...(s.timeline || [])].slice(0, 50);
-    const newData = {...s, total_exp: newExp, practice_streak: newStreak, last_practice_date: today, timeline: newTimeline};
-    renderStudent(newData);
-    sb.rpc('rpc_student_self_update', {
-      p_student_id: currentStudentId, p_line_user_id: s.line_user_id,
-      p_total_exp: newExp, p_practice_streak: newStreak,
-      p_last_practice_date: today, p_timeline: newTimeline,
-    }).then(({error}) => { if (error) toast('同期エラーが発生しました 😢'); });
-  }
-  // shared_posts投稿は今日まだ「記録する！」を押していない場合のみ
-  const _rmKey = 'rm_posted_' + today + '_' + currentStudentId;
-  if (!localStorage.getItem(_rmKey)) {
-    localStorage.setItem(_rmKey, '1');
-    const _cntKey = 'sub_checkin_cnt_' + currentStudentId;
-    localStorage.setItem(_cntKey, String(parseInt(localStorage.getItem(_cntKey)||'0') + 1));
-    _updateSubMissionUnlocks();
-    const _cid1 = localStorage.getItem('custom_char_' + currentStudentId) || 'kumanomi';
-    const _co1  = CHARS.find(c => c.id === _cid1) || CHARS[0];
-    const _cm1  = (_co1.startCm || 3) + parseInt(localStorage.getItem('sub_cm_' + _cid1) || '0');
-    const _hw1  = _getAllLatestHomeworks().slice(0, 1);
-    sb.from('shared_posts').insert({
-      student_id: currentStudentId, student_name: s.name || '生徒',
-      student_title: '',
-      phrase: JSON.stringify({ streak: newStreak, cm: _cm1, hw: _hw1 }),
-      char_id: _cid1,
-      songs: s.songs || [], tier: s.tier || 'free'
-    }).then(() => { _tlCache = null; loadSharedPosts(); });
-  }
+  const newStreak = (s.last_practice_date === yesterday) ? streak + 1 : 1;
+  const exp = streakExp(newStreak);
+  const newExp = (s.total_exp || 0) + exp;
+  const newPracticeCount = (s.practice_count || 0) + 1;
+  const tlEntry = {type:'practice', text:`自主練習！${newStreak >= 14 ? '🏆MAX ' : '🔥'}${newStreak}日連続`, exp, date:dateStr()};
+  const newTimeline = [tlEntry, ...(s.timeline || [])].slice(0, 50);
+  const newData = {...s, total_exp: newExp, practice_streak: newStreak, last_practice_date: today, timeline: newTimeline, practice_count: newPracticeCount};
+  renderStudent(newData);
+  _updateSubMissionUnlocks();
+  sb.rpc('rpc_student_self_update', {
+    p_student_id: currentStudentId, p_line_user_id: s.line_user_id,
+    p_total_exp: newExp, p_practice_streak: newStreak,
+    p_last_practice_date: today, p_timeline: newTimeline, p_practice_count: newPracticeCount,
+  }).then(({error}) => { if (error) toast('同期エラーが発生しました 😢'); });
+
+  const _cid1 = localStorage.getItem('custom_char_' + currentStudentId) || 'kumanomi';
+  const _co1  = CHARS.find(c => c.id === _cid1) || CHARS[0];
+  const _cm1  = (_co1.startCm || 3) + parseInt(localStorage.getItem('sub_cm_' + _cid1) || '0');
+  const _hw1  = _getAllLatestHomeworks().slice(0, 1);
+  sb.rpc('rpc_post_shared_timeline', {
+    p_student_id: currentStudentId, p_line_user_id: s.line_user_id,
+    p_phrase: JSON.stringify({ streak: newStreak, cm: _cm1, hw: _hw1 }),
+    p_char_id: _cid1
+  }).then(() => { _tlCache = null; loadSharedPosts(); });
 }
 function initRouteMap(){
   renderRouteMap();
@@ -9347,14 +9344,11 @@ async function _postMasteryToTimeline(song, stage, justCleared) {
   const phrase = justCleared
     ? `🎉「${song}」をクリアした！`
     : `${icon}「${song}」で${nm}ランクになった！`;
-  await sb.from('shared_posts').insert({
-    student_id:    currentStudentId,
-    student_name:  s.name || '生徒',
-    student_title: '',
-    phrase,
-    char_id: localStorage.getItem('custom_char_' + currentStudentId) || 'kumanomi',
-    songs:   s.songs || [],
-    tier:    s.tier  || 'free'
+  await sb.rpc('rpc_post_shared_timeline', {
+    p_student_id: currentStudentId,
+    p_line_user_id: s.line_user_id,
+    p_phrase: phrase,
+    p_char_id: localStorage.getItem('custom_char_' + currentStudentId) || 'kumanomi'
   });
   _tlCache = null;
 }
