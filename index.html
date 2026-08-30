@@ -638,8 +638,6 @@ body{font-family:'Zen Maru Gothic','Helvetica Neue','Hiragino Sans','Meiryo',san
 .tl-song-more{background:rgba(255,255,255,.08);color:rgba(255,255,255,.55);}
 /* 意見箱 */
 .iken-btn{background:rgba(255,255,255,.18);border:1.5px solid rgba(255,255,255,.4);color:white;font-size:11px;font-weight:700;border-radius:20px;padding:5px 12px;cursor:pointer;letter-spacing:.3px;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);font-family:var(--hf);}
-/* 設定への入り口 */
-.s-setting-entry-btn{background:rgba(255,255,255,.18);border:1.5px solid rgba(255,255,255,.4);color:white;font-size:16px;width:30px;height:30px;border-radius:50%;cursor:pointer;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);font-family:var(--hf);display:flex;align-items:center;justify-content:center;padding:0;line-height:1;}
 .iken-ov{position:fixed;inset:0;z-index:360;background:rgba(0,0,0,.5);display:none;align-items:flex-end;justify-content:center;}
 .iken-ov.show{display:flex;animation:fdIn .25s ease;}
 .iken-sheet{background:white;border-radius:24px 24px 0 0;width:100%;max-width:480px;padding:22px 20px calc(env(safe-area-inset-bottom,0px) + 24px);animation:slideUp .25s ease;}
@@ -2009,9 +2007,6 @@ body{background:#f0ebe0!important;}
           <div class="next-lesson-lbl">次のレッスン</div>
           <div class="next-lesson-val" id="nextLessonVal">—</div>
         </div>
-      </div>
-      <div style="position:absolute;top:8px;left:10px;z-index:20;">
-        <button class="s-setting-entry-btn" onclick="studentLogout()">🚪</button>
       </div>
       <div style="position:absolute;top:8px;right:10px;z-index:10;">
         <button class="iken-btn" onclick="openIken()">📮 意見箱</button>
@@ -5090,14 +5085,6 @@ async function enterStudent(data, {fromTeacher=false}={}) {
         if (_rtData) renderStudent(_rtData);
       })
     .subscribe();
-}
-
-function studentLogout() {
-  if (studentChannel) { sb.removeChannel(studentChannel); studentChannel = null; }
-  currentStudentId = null;
-  isGuest = false;
-  document.body.classList.remove('simple-mode');
-  _showTeacherLogin();
 }
 
 function renderStudent(data) {
