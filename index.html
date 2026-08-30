@@ -1516,36 +1516,6 @@ body{background:#f0ebe0!important;}
   </div>
 </div>
 
-<!-- 保護者管理モーダル（先生ダッシュボード用） -->
-<div class="prt-modal-ov" id="parentModal">
-  <div class="prt-modal-card">
-    <div class="prt-modal-title" id="parentModalName">保護者設定</div>
-    <div class="prt-modal-sub">この生徒の保護者アカウントを設定します</div>
-    <div style="font-size:12px;font-weight:700;color:#555;margin-bottom:6px;">保護者のLINE ID</div>
-    <input type="text" id="parentLineIdInput" class="txt-in" placeholder="例：U1234abcd5678efgh…" style="font-size:12px;font-family:monospace;letter-spacing:.3px;">
-    <div style="font-size:11px;color:#bbb;margin-top:6px;line-height:1.6;">保護者がLIFFを開いたとき、自動取得されます。<br>または Supabase の <b>line_user_id</b> カラムで確認。</div>
-    <div style="display:flex;gap:10px;margin-top:20px;">
-      <button onclick="closeParentModal()" style="flex:1;padding:14px;border:1.5px solid #e5e7eb;background:white;border-radius:14px;font-size:14px;font-weight:700;color:#666;cursor:pointer;font-family:var(--hf);">キャンセル</button>
-      <button onclick="saveParentSettings()" style="flex:2;padding:14px;background:linear-gradient(135deg,#f97316,#ea580c);border:none;border-radius:14px;font-size:14px;font-weight:800;color:white;cursor:pointer;font-family:var(--hf);">💾 保存する</button>
-    </div>
-  </div>
-</div>
-
-<!-- PINモーダル（先生が生徒PIN設定するとき） -->
-<div class="modal-ov" id="pinModal">
-  <div class="modal-card">
-    <div class="modal-title" id="mTitle">PINコードを設定</div>
-    <div class="modal-sub" id="mSub">4桁の数字を入力してください</div>
-    <div class="modal-dots" id="mDots">
-      <div class="modal-dot"></div><div class="modal-dot"></div>
-      <div class="modal-dot"></div><div class="modal-dot"></div>
-    </div>
-    <div class="modal-pad" id="mPad"></div>
-    <button class="btn btn-primary" id="mSubmitBtn" style="width:100%;margin-bottom:10px;display:none;" onclick="submitModal()">✅ 登録する</button>
-    <button class="btn btn-outline btn-sm" style="width:100%;" onclick="closeModal()">キャンセル</button>
-  </div>
-</div>
-
 <!-- SCREEN: ローディング -->
 <div id="sLoading" class="screen active">
   <div class="load-wrap">
@@ -2680,7 +2650,6 @@ let isGuest = false;
 let detailStudentId = null;
 let studentChannel = null;
 let teacherChannel = null;
-let modalBuf = '', modalCb = null;
 let pinBuf = '', pinSid = null;
 
 // =====================================================================
@@ -3042,22 +3011,6 @@ function _stuRowMenu(sid) {
     + '<button class="td-modal-btn" style="background:#fffbeb;color:#92400e;" onclick="_closeTdModal();_todayRemove(\'' + sid + '\',\'cancel\')">⚡ 直前キャンセル（レッスン料発生）</button>'
     + '<button class="td-modal-btn" style="background:#fef2f2;color:#b91c1c;" onclick="_closeTdModal();_todayRemove(\'' + sid + '\',\'delete\')">🗑 削除（予約もクリア）</button>'
     + '<button class="td-modal-btn" style="background:rgba(0,0,0,.05);color:#555;margin-top:4px;" onclick="_closeTdModal()">キャンセル</button>'
-    + '</div>';
-  document.body.appendChild(m);
-  m.addEventListener('click', e => { if (e.target === m) m.remove(); });
-}
-
-function _todayStudentTap(sid, sname) {
-  const m = document.createElement('div');
-  m.id = '_tdModal';
-  m.style.cssText = 'position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.5);display:flex;align-items:flex-end;';
-  const s_name = esc(sname);
-  m.innerHTML = '<div style="width:100%;background:white;border-radius:24px 24px 0 0;padding:24px 20px 40px;font-family:var(--hf)">'
-    + '<div style="font-size:16px;font-weight:900;text-align:center;margin-bottom:20px;">' + s_name + '</div>'
-    + '<button class="td-modal-btn" style="background:#eff6ff;color:#1d4ed8;" onclick="_closeTdModal();_calOpenLessonRecord(\'' + sid + '\')">📝 レッスン登録</button>'
-    + '<button class="td-modal-btn" style="background:#fffbeb;color:#92400e;" onclick="_closeTdModal();_todayRemove(\'' + sid + '\',\'cancel\')">⚡ 直前キャンセル</button>'
-    + '<button class="td-modal-btn" style="background:#fef2f2;color:#b91c1c;" onclick="_closeTdModal();_todayRemove(\'' + sid + '\',\'delete\')">🗑 削除（予約もクリア）</button>'
-    + '<button class="td-modal-btn" style="background:rgba(0,0,0,.05);color:#555;" onclick="_closeTdModal()">キャンセル</button>'
     + '</div>';
   document.body.appendChild(m);
   m.addEventListener('click', e => { if (e.target === m) m.remove(); });
@@ -3584,53 +3537,6 @@ function _renderSelectedDayTimeline(dateStr) {
   return h;
 }
 
-function _calSlotTap(dateStr, hour) {
-  const evs = _getEventsForDate(dateStr);
-  const occupied = evs.some(ev => {
-    if (!ev.start_time) return false;
-    const [sh] = ev.start_time.split(':').map(Number);
-    const [eh] = ev.end_time ? ev.end_time.split(':').map(Number) : [sh+1];
-    return hour >= sh && hour < eh;
-  });
-  if (occupied) return;
-  _calOpenBookingForm(dateStr, hour);
-}
-
-function _calOpenBookingForm(dateStr, hour) {
-  document.getElementById('_calModal')?.remove();
-  const timeStr = String(hour).padStart(2,'0') + ':00';
-  const endStr = String(Math.min(hour+1,23)).padStart(2,'0') + ':00';
-  const d = new Date(dateStr + 'T00:00:00');
-  const dow = ['日','月','火','水','木','金','土'][d.getDay()];
-  const studentOpts = students.map(s => `<option value="${s.id}">${esc(s.name)}</option>`).join('');
-  let h = `<div style="position:fixed;inset:0;z-index:600;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;" onclick="if(event.target===this)this.remove();" id="_calModal">`;
-  h += `<div style="width:calc(100% - 32px);max-width:420px;background:white;border-radius:20px;padding:18px 16px 24px;max-height:85vh;overflow-y:auto;">`;
-  h += `<div style="font-size:15px;font-weight:900;color:var(--ocean-deep);margin-bottom:12px;">📅 レッスン予約</div>`;
-  h += `<div style="background:#eff6ff;border-radius:10px;padding:10px 14px;margin-bottom:12px;font-size:14px;font-weight:700;color:var(--ocean-mid);">${d.getMonth()+1}月${d.getDate()}日（${dow}） ${timeStr}〜${endStr}</div>`;
-  h += `<div style="margin-bottom:12px;"><div style="font-size:11px;font-weight:700;color:rgba(0,0,0,.4);margin-bottom:5px;">生徒</div><select id="_bookStudentSel" style="width:100%;padding:10px 12px;border:1.5px solid #e2e8f0;border-radius:10px;font-size:15px;font-family:var(--hf);">${studentOpts}</select></div>`;
-  h += `<div style="display:flex;gap:8px;margin-bottom:16px;">`;
-  h += `<div style="flex:1;"><div style="font-size:11px;font-weight:700;color:rgba(0,0,0,.4);margin-bottom:4px;">開始</div><input type="time" id="_bookStartIn" value="${timeStr}" style="width:100%;padding:9px;border:1.5px solid #e2e8f0;border-radius:10px;font-size:14px;font-family:var(--hf);box-sizing:border-box;"></div>`;
-  h += `<div style="flex:1;"><div style="font-size:11px;font-weight:700;color:rgba(0,0,0,.4);margin-bottom:4px;">終了</div><input type="time" id="_bookEndIn" value="${endStr}" style="width:100%;padding:9px;border:1.5px solid #e2e8f0;border-radius:10px;font-size:14px;font-family:var(--hf);box-sizing:border-box;"></div>`;
-  h += `</div>`;
-  h += `<button onclick="_calSaveBooking('${dateStr}')" style="width:100%;padding:13px;background:var(--ocean-mid);color:white;border:none;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;font-family:var(--hf);">📅 予約する</button>`;
-  h += `</div></div>`;
-  document.body.insertAdjacentHTML('beforeend', h);
-}
-
-async function _calSaveBooking(dateStr) {
-  const sid = document.getElementById('_bookStudentSel')?.value;
-  const startTime = document.getElementById('_bookStartIn')?.value;
-  if (!sid || !startTime) { toast('入力を確認してください'); return; }
-  const dt = `${dateStr}T${startTime}:00+09:00`;
-  const {error} = await sb.from('students').update({next_lesson_at: dt}).eq('id', sid);
-  if (error) { toast('保存に失敗しました'); return; }
-  document.getElementById('_calModal')?.remove();
-  toast('予約しました 📅');
-  await loadStudents();
-  await _loadTeacherEvents();
-  _renderCalendar();
-}
-
 function _calOpenLessonRecord(studentId) {
   const s = students.find(x => x.id === studentId);
   if (!s) { toast('生徒が見つかりません'); return; }
@@ -3953,53 +3859,6 @@ async function _calAddException(eventId, dateStr) {
   await _loadTeacherEvents();
   _renderCalendar();
   toast('この週をスキップしました');
-}
-
-function _exportICal() {
-  const today = new Date();
-  const endDate = new Date(today.getFullYear(), today.getMonth()+3, 0);
-  let ics = 'BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//Guitar Lesson App//JP\r\nCALSCALE:GREGORIAN\r\n';
-  _teacherEvents.forEach(ev => {
-    if (ev.is_recurring) {
-      let d = new Date(today.getFullYear(), today.getMonth(), 1);
-      while (d <= endDate) {
-        if (d.getDay() === ev.recur_day) {
-          const ds = d.toISOString().slice(0,10);
-          if (!(ev.exception_dates||[]).includes(ds)) ics += _icsEvent(ev, ds);
-        }
-        d.setDate(d.getDate()+1);
-      }
-    } else if (ev.event_date) {
-      ics += _icsEvent(ev, ev.event_date);
-    }
-  });
-  students.forEach(s => {
-    if (s.next_lesson_at) {
-      const d = new Date(s.next_lesson_at);
-      const dt = d.toISOString().replace(/[-:]/g,'').slice(0,15)+'Z';
-      ics += `BEGIN:VEVENT\r\nUID:lesson-${s.id}@guitar-lesson\r\nSUMMARY:レッスン - ${s.name}\r\nDTSTART:${dt}\r\nEND:VEVENT\r\n`;
-    }
-  });
-  ics += 'END:VCALENDAR';
-  const blob = new Blob([ics], {type:'text/calendar;charset=utf-8'});
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = 'guitar_lesson.ics';
-  a.click();
-  toast('エクスポートしました 📤');
-}
-
-function _icsEvent(ev, dateStr) {
-  const uid = ev.id+'-'+dateStr+'@guitar-lesson';
-  let s = `BEGIN:VEVENT\r\nUID:${uid}\r\nSUMMARY:${ev.title}\r\n`;
-  if (ev.start_time) {
-    const dt = dateStr.replace(/-/g,'')+`T${ev.start_time.replace(':','')}00`;
-    s += `DTSTART;TZID=Asia/Tokyo:${dt}\r\n`;
-    if (ev.end_time) s += `DTEND;TZID=Asia/Tokyo:${dateStr.replace(/-/g,'')}T${ev.end_time.replace(':','')}00\r\n`;
-  } else {
-    s += `DTSTART;VALUE=DATE:${dateStr.replace(/-/g,'')}\r\n`;
-  }
-  return s + 'END:VEVENT\r\n';
 }
 
 function rebuildTeacherSel() {
@@ -4414,34 +4273,6 @@ async function renameStudent(id, currentName) {
 // =====================================================================
 // ★ 保護者モード
 // =====================================================================
-let _parentStudentId = null;
-
-function openParentModal(sid) {
-  const s = students.find(x => x.id === sid);
-  if (!s) return;
-  _parentStudentId = sid;
-  document.getElementById('parentModalName').textContent = esc(s.name) + ' の保護者設定';
-  document.getElementById('parentLineIdInput').value = s.parent_line_id || '';
-  document.getElementById('parentModal').classList.add('show');
-}
-
-function closeParentModal() {
-  document.getElementById('parentModal').classList.remove('show');
-  _parentStudentId = null;
-}
-
-async function saveParentSettings() {
-  if (!_parentStudentId) return;
-  const lineId = document.getElementById('parentLineIdInput').value.trim();
-  const {error} = await sb.from('students').update({
-    parent_line_id: lineId || null,
-  }).eq('id', _parentStudentId);
-  if (error) { toast('保存に失敗しました'); return; }
-  toast('✅ 保護者設定を保存しました');
-  closeParentModal();
-  await loadStudents();
-}
-
 let _parentSelf = null;
 let _prtChildId = null;
 let _prtChildNextAt = null;
@@ -4639,31 +4470,6 @@ async function _parentCancelLesson() {
   if (_cnEl) { _cnEl.style.display = ''; _cnEl.innerHTML = `<div style="background:#fff7ed;border:1.5px solid #fde68a;border-radius:10px;padding:8px 12px;font-size:12px;font-weight:700;color:#92400e;">${esc(label)}（${new Date().toISOString().slice(0,10)}）</div>`; }
   toast('🗓 先生に欠席を伝えました');
 }
-async function extendStudentAccess(sid) {
-  const s = students.find(x => x.id === sid);
-  if (!s) return;
-  const until = new Date();
-  until.setDate(until.getDate() + 60); // 60日延長
-  const untilStr = until.toISOString().slice(0,10);
-  const {error} = await sb.from('students').update({access_extended_until: untilStr}).eq('id', sid);
-  if (error) { toast('延長に失敗しました'); return; }
-  toast(`✅ ${esc(s.name)} さんのアクセスを${untilStr}まで延長しました`);
-  await loadStudents();
-}
-
-function promptAddStudent() {
-  const name = document.getElementById('newSname').value.trim();
-  if (!name) { toast('名前を入力してください'); return; }
-  openModal(`「${name}」のPINを設定`, '4桁の数字を入力してください', async pin => {
-    const pin_hash = await hashPin(pin);
-    const {error} = await sb.from('students').insert({
-      name, pin_hash, total_exp:0, theme:'normal', songs:[], timeline:[], bonus_given:[],
-    });
-    if (!error) { document.getElementById('newSname').value = ''; toast(`🐬 「${name}」を追加しました！`); await loadStudents(); }
-    else toast('追加に失敗しました: ' + error.message);
-  });
-}
-
 // 生徒詳細のサイドナビ項目。追加・削除はこの配列を編集するだけでよい。
 const DETAIL_SECTIONS = [
   {id:'mission', ico:'📚', lbl:'ミッション', render:_detailPaneMission},
@@ -4978,22 +4784,6 @@ async function unlinkParentStudent(childId) {
 }
 
 
-async function addGrowthMemo() {
-  if (!detailStudentId) return;
-  const text = document.getElementById('growthMemoInput').value.trim();
-  if (!text) { toast('メモを入力してください'); return; }
-  const s = students.find(x => x.id === detailStudentId);
-  if (!s) return;
-  const entry = { type: 'growth', text, date: dateStr() };
-  const newTl = [entry, ...(s.timeline || [])].slice(0, 80);
-  const {error} = await sb.from('students').update({timeline: newTl}).eq('id', detailStudentId);
-  if (error) { toast('保存に失敗しました 😢'); return; }
-  toast('📝 成長メモを保存しました！');
-  document.getElementById('growthMemoInput').value = '';
-  await loadStudents();
-  showStudentDetail(detailStudentId);
-}
-
 let _seqHwItems = [];
 function _addSeqHwItem() {
   const input = document.getElementById('hwIn');
@@ -5099,49 +4889,6 @@ async function addLessonRecord() {
   await loadStudents();
   showStudentDetail(detailStudentId);
   if (_recBtn) _recBtn.disabled = false;
-}
-
-function promptResetPin(sid, sname) {
-  openModal(`「${sname}」のPINを変更`, '新しい4桁のPINを入力してください', async pin => {
-    const pin_hash = await hashPin(pin);
-    const {error} = await sb.from('students').update({pin_hash}).eq('id', sid);
-    if (!error) toast('🔑 PINを変更しました');
-    else toast('変更に失敗しました');
-  });
-}
-
-// =====================================================================
-// ★ モーダル（PIN設定）
-// =====================================================================
-function openModal(title, sub, cb) {
-  modalBuf = ''; modalCb = cb;
-  document.getElementById('mTitle').textContent = title;
-  document.getElementById('mSub').textContent   = sub;
-  document.getElementById('mSubmitBtn').style.display = 'none';
-  updateDots('mDots', 0);
-  buildModalPad();
-  document.getElementById('pinModal').classList.add('show');
-}
-function closeModal() { document.getElementById('pinModal').classList.remove('show'); modalBuf = ''; modalCb = null; }
-function buildModalPad() {
-  const keys = ['1','2','3','4','5','6','7','8','9','','0','⌫'];
-  document.getElementById('mPad').innerHTML = keys.map(k => {
-    if (!k) return '<div style="visibility:hidden"></div>';
-    return `<button class="modal-key ${k==='⌫'?'del':''}" onclick="modalKey('${k}')">${k}</button>`;
-  }).join('');
-}
-function modalKey(k) {
-  if (k === '⌫') { modalBuf = modalBuf.slice(0,-1); }
-  else { if (modalBuf.length >= 4) return; modalBuf += k; }
-  updateDots('mDots', modalBuf.length);
-  document.getElementById('mSubmitBtn').style.display = modalBuf.length === 4 ? 'block' : 'none';
-}
-function submitModal() {
-  if (modalBuf.length !== 4) return;
-  const pin = modalBuf;
-  const cb = modalCb;   // closeModal() が modalCb を null にする前に退避
-  closeModal();
-  if (cb) cb(pin);
 }
 
 // =====================================================================
@@ -7327,18 +7074,6 @@ function goGuest() {
 // =====================================================================
 // ★ 次回レッスン
 // =====================================================================
-async function saveNextLesson() {
-  if (!detailStudentId) return;
-  const val = document.getElementById('nextLessonInput').value.trim();
-  const btn = document.querySelector('.next-lesson-save');
-  btn.textContent = '保存中...'; btn.disabled = true;
-  const {error} = await sb.from('students').update({next_lesson: val || null}).eq('id', detailStudentId);
-  btn.textContent = '📅 保存して生徒に表示'; btn.disabled = false;
-  if (error) { toast('エラーが発生しました 😢'); return; }
-  toast(val ? `📅 次回レッスンを設定しました` : '次回レッスンをクリアしました');
-  await loadStudents();
-}
-
 function renderNextLesson(data) {
   if (_tutV2Active) return;
   const card = document.getElementById('nextLessonCard');
@@ -7413,24 +7148,6 @@ function _tbookSvg(c) {
 
 const _TBOOK_TILTS  = [-1.8, 0.9, -0.6, 1.4, -1.1, 0.7, -1.5, 0.5];
 const _TBOOK_DELAYS = [0, 0.4, 0.8, 1.2, 0.2, 0.6, 1.0, 0.3];
-// ── アクセス制限 ──────────────────────────────────────────
-
-function _getAccessTier() {
-  if (!currentStudentData) return 'free';
-  const tier = currentStudentData.tier || 'free';
-  if (tier === 'free') return 'free';
-  // lesson tier: 延長期限チェック
-  const ext = currentStudentData.access_extended_until;
-  if (ext && new Date(ext) >= new Date()) return 'lesson';
-  // 2か月チェック
-  const last = currentStudentData.last_lesson_at;
-  if (!last) return 'inactive';
-  const daysSince = (Date.now() - new Date(last).getTime()) / 86400000;
-  return daysSince > 60 ? 'inactive' : 'lesson';
-}
-function _isFullAccess() { return _getAccessTier() === 'lesson'; }
-function _isInactive()   { return _getAccessTier() === 'inactive'; }
-
 let _tbookSelIdx = -1;
 
 const _TBOOK_LOCKED_IDS = new Set(['buy','full','song','chord']);
