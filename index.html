@@ -1398,14 +1398,11 @@ body{background:#f0ebe0!important;}
     <!-- 非表示（未使用・後方互換） -->
     <div style="display:none;" aria-hidden="true">
       <div id="detailTimeline"></div>
-      <div id="goalCheckArea"></div>
       <div id="detailLv"></div>
       <div id="detailInfoBar"></div>
       <div id="detailPraise"></div>
       <div id="detailSongs"></div>
       <div id="detailTrophies"></div>
-      <div id="detailTbookArea"></div>
-      <div id="detailMissionArea"></div>
       <div id="detailSteps"></div>
       <div id="detailParentInfo"></div>
     </div>
@@ -2283,52 +2280,6 @@ body{background:#f0ebe0!important;}
       </div>
     </div>
 
-    <!-- Tab 3: 記録 -->
-    <div class="s-panel" id="sp-reward">
-      <div class="s-panel-body">
-        <div class="s-panel-hdr">📋 記録</div>
-        <div class="s-panel-hdr" style="margin-top:4px;font-size:13px;">🐚 目標（褒めコレクション）</div>
-        <div id="sShells"><div class="empty">まだ貝殻がありません 🌊</div></div>
-        <div class="s-panel-hdr" style="margin-top:24px;">🏆 獲得トロフィー</div>
-        <div id="sTrophies"><div class="empty">まだトロフィーはありません 🌊</div></div>
-        <div class="s-panel-hdr" style="margin-top:24px;">🎸 クリア曲コレクション</div>
-        <div class="shelf-wrap">
-          <div class="shelf" id="sShelf">
-            <div class="empty" style="grid-column:1/-1;">まだクリア曲がありません 🎵</div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Tab 4: 教科書 -->
-    <div class="s-panel" id="sp-homework">
-      <div class="s-panel-body">
-        <div id="recommendSongBanner" style="display:none;background:linear-gradient(135deg,rgba(2,132,199,.18),rgba(6,182,212,.12));border-radius:18px;padding:16px 18px;margin-bottom:16px;border:2px solid rgba(6,182,212,.4);box-shadow:0 4px 20px rgba(6,182,212,.2),inset 0 1px 0 rgba(255,255,255,.3);">
-          <div style="font-size:11px;font-weight:800;color:#0284c7;letter-spacing:.8px;margin-bottom:5px;text-transform:uppercase;">🎵 今月の先生おすすめ曲</div>
-          <div id="recommendSongName" style="font-size:22px;font-weight:900;color:#0c4a6e;font-family:var(--hf);line-height:1.25;"></div>
-        </div>
-        <div class="tbook-shelf-wrap" id="tbookShelfArea"></div>
-        <div id="tbookChallengeArea" style="padding:16px 0 0;"></div>
-        <div class="tbook-ob-overlay" id="tbookObOverlay" onclick="if(event.target===this)closeTbookPanel()">
-          <div class="tbook-ob-wrap">
-            <button class="tbook-ob-close" onclick="closeTbookPanel()">✕ 閉じる</button>
-            <div class="tbook-ob-cover">
-              <div class="tbook-ob-left">
-                <div class="tbook-ob-ruled"></div>
-                <div class="tbook-ob-left-c" id="tbookObLeft"></div>
-              </div>
-              <div class="tbook-ob-right" id="tbookObRight">
-                <div class="tbook-ob-ruled"></div>
-                <div class="tbook-ob-right-c" id="tbookObMlist"></div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-
-      </div>
-    </div>
-
   </div><!-- /s-tab-wrap -->
 
   <div id="tutV2Dim" style="display:none;position:fixed;inset:0;z-index:49;background:rgba(0,0,0,.68);pointer-events:all;"></div>
@@ -2339,7 +2290,6 @@ body{background:#f0ebe0!important;}
     <button class="s-tab-btn" id="stab-minna" onclick="switchSTab('minna')"><span style="font-size:13px;font-weight:900;letter-spacing:.5px;">なかま</span></button>
     <button class="s-tab-btn" id="stab-sub" onclick="switchSTab('sub')"><span style="font-size:13px;font-weight:900;letter-spacing:.5px;">いきもの</span></button>
     <button class="s-tab-btn" id="stab-timeline" onclick="switchSTab('timeline')" style="display:none;"></button>
-    <button class="s-tab-btn" id="stab-homework" onclick="switchSTab('homework')" style="display:none;"></button>
   </div>
 
   <!-- おばあちゃんモード: シンプル表示オーバーレイ（先生の生徒詳細からON/OFF） -->
@@ -2396,75 +2346,6 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 // =====================================================================
 // ★ データ定義
 // =====================================================================
-const CHECKLIST = [
-  {id:'c_ring',   label:'Cコードの薬指が早く動いた',          exp:15, cat:'コード'},
-  {id:'c_mid',    label:'Cコードの中指がきれいに押さえられた',  exp:15, cat:'コード'},
-  {id:'c_idx',    label:'Cコードの人差し指が安定した',         exp:10, cat:'コード'},
-  {id:'g3_clean', label:'3弦の音がビビらず鳴った',            exp:20, cat:'コード'},
-  {id:'g_chord',  label:'Gコードが1秒以内に押さえられた',      exp:20, cat:'コード'},
-  {id:'am_chord', label:'Amコードがきれいに鳴った',           exp:15, cat:'コード'},
-  {id:'em_chord', label:'Emコードが一発で決まった',           exp:10, cat:'コード'},
-  {id:'stk_down', label:'ダウンストロークが一定のリズムで弾けた',exp:15, cat:'ストローク'},
-  {id:'stk_updn', label:'アップダウンが途切れずに続いた',      exp:20, cat:'ストローク'},
-  {id:'stk_mute', label:'ミュートストロークが決まった',         exp:20, cat:'ストローク'},
-  {id:'beat_4',   label:'4拍子を安定して刻めた',              exp:15, cat:'リズム'},
-  {id:'metro_ok', label:'メトロノームに合わせられた',           exp:20, cat:'リズム'},
-  {id:'posture',  label:'正しい姿勢でギターを持てた',           exp:10, cat:'基礎'},
-  {id:'tuning',   label:'自分でチューニングできた',             exp:15, cat:'基礎'},
-  {id:'nail',     label:'爪が適切な長さで弾けた',               exp:5,  cat:'基礎'},
-];
-
-const BONUSES = [
-  {id:'c_master',    name:'🎸 Cコード合格！',       desc:'Cコードの4要素をすべてクリア',  req:['c_ring','c_mid','c_idx','g3_clean'], bonus:100, icon:'🏆'},
-  {id:'rhythm_king', name:'🥁 リズムマスター！',    desc:'リズム系をすべてクリア',          req:['beat_4','metro_ok'],               bonus:80,  icon:'🥁'},
-  {id:'stk_hero',    name:'⚡ ストロークヒーロー！', desc:'ストローク系をすべてクリア',      req:['stk_down','stk_updn','stk_mute'],  bonus:90,  icon:'⚡'},
-  {id:'basics',      name:'🌟 基礎完成！',          desc:'基礎項目をすべてクリア',          req:['posture','tuning','nail'],          bonus:60,  icon:'🌟'},
-];
-
-const GOALS = [
-  {id:'goal_marigold',    label:'マリーゴールド（あいみょん）', points:100, icon:'⭐', cat:'full',   days:30,  diff:2, desc:'C・G・Am・Fの4コードで弾けます。テンポが優しいので初心者にも挑戦しやすい曲です。', video:''},
-  {id:'goal_cherry', free:true,      label:'チェリー（スピッツ）',         points:100, icon:'⭐', cat:'full',   days:21,  diff:2, desc:'G・Em・C・Dの基本コードで構成されています。イントロのフレーズから始めてみましょう。', video:''},
-  {id:'goal_yoru_kakeru', label:'夜に駆ける（YOASOBI）',        points:150, icon:'⭐', cat:'full',   days:45,  diff:3, desc:'Am・F・C・Gの進行が基本です。テンポが速いのでゆっくりから練習しましょう。', video:''},
-  {id:'goal_shimanto',    label:'島人ぬ宝（BEGIN）',            points:100, icon:'⭐', cat:'full',   days:30,  diff:2, desc:'F・B♭・C7が主体のゆったりした曲です。沖縄の雰囲気を感じながら弾けます。', video:''},
-  {id:'goal_posture',  label:'正しい姿勢でギターを持てる',           points:80,  icon:'⭐', cat:'full',   days:7,   diff:1, desc:'背筋を伸ばし、ギターのボディを体に密着させ、ネックを斜め上に構えましょう。肩に力が入らないようリラックスすることが大切です。', video:''},
-  {id:'goal_tuning',   label:'毎回自分でチューニングできる',          points:100, icon:'⭐', cat:'full',   days:14,  diff:1, desc:'スマホのチューナーアプリを使って6弦から1弦を順番に合わせましょう。低音弦から合わせるのがコツです。', video:''},
-  {id:'goal_rhythm',   label:'4拍子をメトロノームに合わせて刻める',  points:120, icon:'⭐', cat:'full',   days:21,  diff:2, desc:'BPM60からスタートして、ダウンストロークだけで4拍子を刻む練習をしましょう。足でビートを踏むと安定します。', video:''},
-  {id:'goal_cchord',   label:'Cコードがきれいに鳴る',                points:100, icon:'⭐', cat:'chord',  days:14,  diff:1, desc:'人差し指2弦1フレット、中指4弦2フレット、薬指5弦3フレット。各弦を一本ずつ弾いてみてびびりがなければOKです。', video:''},
-  {id:'goal_cchange',  label:'コードチェンジをスムーズにできる',     points:120, icon:'⭐', cat:'chord',  days:30,  diff:2, desc:'C→Gのコードチェンジを1分間ひたすら繰り返す練習が効果的です。次のコードの形を先読みするイメージで。', video:''},
-  {id:'goal_fcord', free:true,    label:'Fコードがきれいに鳴る',                points:250, icon:'⭐', cat:'chord',  days:60,  diff:4, desc:'人差し指の側面で全弦を押さえ、1・6弦だけ意識しましょう。親指はネック裏の中央よりやや下が理想的です。', video:''},
-  {id:'goal_backing',  label:'バッキングパターンを一つ覚える',       points:150, icon:'⭐', cat:'song',   days:21,  diff:2, desc:'ダウン・ダウン・アップ・ダウン・アップの基本パターンをBPM60〜70でCコードだけ弾いて体に染み込ませましょう。', video:''},
-  {id:'goal_song',     label:'一曲を通して演奏できる',               points:300, icon:'⭐', cat:'song',   days:60,  diff:3, desc:'曲全体を通して弾けるようにしましょう。途中でミスしても止まらず最後まで弾き続けるのが上達の秘訣です。', video:''},
-  {id:'goal_arpegio',  label:'アルペジオを一種類マスターする',       points:200, icon:'⭐', cat:'poro',   days:45,  diff:3, desc:'6弦→3弦→2弦→1弦の基本パターンから始めましょう。右手の親指・人差し指・中指・薬指を割り当てます。', video:''},
-  {id:'goal_perform',  label:'人前で一曲演奏できる',                 points:400, icon:'⭐', cat:'live',   days:90,  diff:4, desc:'家族や友人1人の前で弾くことから始めましょう。緊張してテンポが速くなりがちなので、ゆっくり丁寧に弾くことを意識して。', video:''},
-  {id:'goal_guitar_type', label:'こうなれます！',    points:30,  icon:'⭐', cat:'buy',    days:1,   diff:1, desc:'アコースティック・エレキ・クラシックから自分の目的に合った種類を選びましょう。弾きたい音楽ジャンルで決めるのが一番です。', video:''},
-  {id:'goal_guitar_buy',  label:'ギター以外に必要なもの',                points:50,  icon:'⭐', cat:'buy',    days:1,   diff:1, desc:'楽器店でスタッフに相談しながら選ぶのが初心者には安心です。弦長（スケール）が短いほど弾きやすいですよ。', video:''},
-  {id:'goal_accessories', label:'初心者のギターの選び', free:true,        points:30,  icon:'⭐', cat:'buy',    days:1,   diff:1, desc:'チューナー・ピック・ストラップ・替え弦を揃えましょう。これだけあれば練習を始められます。', video:''},
-  {id:'goal_first_strum', label:'あれば便利なもの',              points:50,  icon:'⭐', cat:'buy',    days:1,   diff:1, desc:'Cコードを1本の指でも良いので押さえて、ジャランと鳴らしてみましょう。最初の一音があなたのギター人生の始まりです！', video:''},
-  {id:'goal_tab_read',    label:'タブ譜（TAB譜）を読める',           points:100, icon:'⭐', cat:'full',   days:21,  diff:2, desc:'6本の線がギターの弦を表し、数字はフレット番号を示します。まず好きな曲のイントロのタブ譜を探して読んでみましょう。', video:''},
-  {id:'goal_sing_guitar', label:'弾き語りで一曲歌える',              points:250, icon:'⭐', cat:'song',   days:90,  diff:4, desc:'まずはコードを弾きながら歌うことに慣れましょう。最初はゆっくりしたテンポで簡単なコード進行の曲を選ぶのがコツです。', video:''},
-  {id:'goal_chord_song',  label:'コード3つで一曲弾ける',             points:200, icon:'⭐', cat:'song',   days:45,  diff:3, desc:'C・G・Amの3コードだけで弾ける曲がたくさんあります。この3コードをマスターしたら曲のレパートリーが一気に広がります。', video:''},
-  {id:'goal_gchord',      label:'Gコードがきれいに鳴る',             points:120, icon:'⭐', cat:'chord',  days:14,  diff:2, desc:'中指6弦3フレット、薬指5弦2フレット、小指1弦3フレットで押さえましょう。親指でミュートする方法もあります。', video:''},
-  {id:'goal_janjan_p1', label:'パターン１を覚える', points:80,  icon:'⭐', cat:'janjan', days:7,  diff:1, desc:'', video:''},
-  {id:'goal_janjan_p2', label:'パターン２を覚える', points:120, icon:'⭐', cat:'janjan', days:14, diff:2, desc:'', video:''},
-  {id:'goal_janjan_p3', label:'パターン３を覚える', points:150, icon:'⭐', cat:'janjan', days:21, diff:2, desc:'', video:''},
-  {id:'goal_pick_basic',  label:'右手の指の割り当てを覚える',        points:80,  icon:'⭐', cat:'poro',   days:7,   diff:1, desc:'親指（p）＝4〜6弦、人差し指（i）＝3弦、中指（m）＝2弦、薬指（a）＝1弦が基本です。', video:''},
-  {id:'goal_arp_chord',   label:'C・AmでアルペジオをつなげられC',    points:150, icon:'⭐', cat:'poro',   days:30,  diff:2, desc:'C→Am→F→Gの定番進行をアルペジオで弾いてみましょう。コードチェンジの瞬間を意識することが大切です。', video:''},
-  {id:'goal_fingerpick',  label:'フィンガーピッキングで一曲弾く',    points:250, icon:'⭐', cat:'poro',   days:60,  diff:4, desc:'簡単なアルペジオパターンが使われている曲（Let It Be等）を選んで、最初から最後まで通して弾いてみましょう。', video:''},
-  {id:'goal_play_family', label:'家族の前で一曲演奏する',             points:200, icon:'⭐', cat:'live',   days:60,  diff:3, desc:'まず一番身近な人の前で弾きましょう。本番のプレッシャーを体験することで緊張への耐性がつきます。', video:''},
-  {id:'goal_play_record', label:'演奏を録音・録画して聴き直す',       points:120, icon:'⭐', cat:'live',   days:14,  diff:2, desc:'スマホで録画して聴き直すことで自分の癖に気づけます。録音を重ねるたびに確実に上達が見えてきます。', video:''},
-  {id:'goal_stage',       label:'発表会やライブで演奏する',           points:500, icon:'⭐', cat:'live',   days:180, diff:5, desc:'教室の発表会やオープンマイクに挑戦しましょう。舞台に立つ経験があなたのギター人生を大きく変えます！', video:''},
-];
-
-const TEXTBOOKS = [
-  {id:'buy',    color:'#f97316', rank:'これからギターを買う',  cat:'ギターを始める！', desc:'ギターを選ぶところからスタートしよう'},
-  {id:'full',   color:'#3b82f6', rank:'教科書完全版',          cat:'曲を弾こう',    desc:'弾いてみたい曲に挑戦しよう'},
-  {id:'song',   color:'#10b981', rank:'曲を弾いてみよう',      cat:'曲を弾こう',    desc:'好きな曲を通して演奏できるようにする'},
-  {id:'chord',  color:'#a855f7', rank:'コードマスター',         cat:'コード習得',    desc:'よく使うコードを確実に押さえよう'},
-  {id:'janjan', color:'#ef4444', rank:'ジャンジャンマスター',  cat:'ストローク',    desc:'ストロークやリズムパターンをマスター'},
-  {id:'poro',   color:'#06b6d4', rank:'ポロポロマスター',       cat:'アルペジオ',    desc:'アルペジオで繊細な音を紡ぎ出そう'},
-  {id:'live',   color:'#eab308', rank:'ライブデビュー',         cat:'人前で弾こう',  desc:'自信を持って誰かに聴いてもらおう'},
-];
-
 const _kumanomiImg = 'images/kumanomi.png';
 const _kaiBgImg = 'images/kai_bg.png';
 const _isogiBgImg = 'images/isogi_bg.png';
@@ -3056,7 +2937,6 @@ function _showSeqForm() {
     } else { _dIn.value = ''; _tIn.value = new Date().toTimeString().slice(0,2) + ':00'; }
   }
   todayChecked[teacherSid] = todayChecked[teacherSid] || [];
-  renderCheck(); renderBonus();
 }
 
 function _seqNext() {
@@ -3478,7 +3358,6 @@ function _calOpenLessonRecord(studentId) {
   }
 
   todayChecked[teacherSid] = todayChecked[teacherSid] || [];
-  renderCheck(); renderBonus();
 }
 
 async function _calCancelLesson(studentId) {
@@ -3767,7 +3646,6 @@ function rebuildTeacherSel() {
   sel.innerHTML = students.map(s => `<option value="${s.id}">${esc(s.name)}</option>`).join('');
   if (prev && students.find(s => s.id === prev)) sel.value = prev;
   teacherSid = sel.value || (students[0] && students[0].id) || null;
-  renderCheck(); renderBonus();
 }
 
 function onTeacherSelChange() {
@@ -3788,178 +3666,8 @@ function onTeacherSelChange() {
     }
   }
   todayChecked[teacherSid] = todayChecked[teacherSid] || [];
-  renderCheck(); renderBonus();
 }
 
-// ===== チェックリスト =====
-function renderCheck() {
-  if (!document.getElementById('checkArea')) return;
-  if (!teacherSid) { document.getElementById('checkArea').innerHTML = '<div class="empty">生徒を選んでください</div>'; return; }
-  const s = students.find(x => x.id === teacherSid);
-  const completed = (s && s.completed_steps) || [];
-  const checked = todayChecked[teacherSid] || [];
-  const cats = [...new Set(CHECKLIST.map(i => i.cat))];
-  const rows = cats.map((cat, idx) => {
-    const items = CHECKLIST.filter(i => i.cat === cat && !completed.includes(i.id));
-    if (!items.length) return '';
-    const checkedCount = items.filter(i => checked.includes(i.id)).length;
-    const bodyId = `catBody_${idx}`;
-    const headId = `catHead_${idx}`;
-    return `<div class="cat-header" id="${headId}" onclick="toggleCat('${headId}','${bodyId}')">
-        <span>${cat} <span style="font-weight:400;font-size:11px;opacity:.7;">${checkedCount?`(${checkedCount}/${items.length} チェック済み)`:''}</span></span>
-        <span class="acc-arrow">▼</span>
-      </div>
-      <div class="cat-body" id="${bodyId}">
-        <ul class="checklist" style="padding-top:6px;">${
-          items.map(item => {
-            const ok = checked.includes(item.id);
-            return `<li class="cl-item ${ok?'checked':''}" onclick="toggleCheck('${teacherSid}','${item.id}')">
-              <div class="cl-box">${ok?'✓':''}</div>
-              <span class="cl-label">${esc(item.label)}</span>
-              <span class="cl-exp">+${item.exp} EXP</span>
-            </li>`;
-          }).join('')
-        }</ul>
-      </div>`;
-  }).join('');
-  document.getElementById('checkArea').innerHTML = rows ||
-    '<div class="empty">🎉 このステップはすべてクリア済みです！</div>';
-}
-
-function _detailSelectTbook(sid, id) {
-  const cur = localStorage.getItem('_tbook_' + sid);
-  const newId = cur === id ? null : id;
-  if (newId) localStorage.setItem('_tbook_' + sid, newId);
-  else localStorage.removeItem('_tbook_' + sid);
-  // チップのアクティブ状態を更新
-  document.querySelectorAll('#detailTbookArea div').forEach(el => {
-    const tb = TEXTBOOKS.find(t => el.textContent.trim() === t.cat);
-    if (!tb) return;
-    const act = tb.id === newId;
-    el.style.background = act ? tb.color : 'white';
-    el.style.color = act ? 'white' : tb.color;
-  });
-  _renderDetailMissions(sid, newId);
-}
-
-function _renderDetailMissions(sid, tbId) {
-  const el = document.getElementById('detailMissionArea');
-  if (!el) return;
-  if (!tbId) { el.innerHTML = ''; return; }
-  const s = students.find(x => x.id === sid);
-  const bonusDone = (s && s.bonus_given) || [];
-  const tb = TEXTBOOKS.find(t => t.id === tbId);
-  const goals = GOALS.filter(g => g.cat === tbId);
-  if (!goals.length) {
-    el.innerHTML = '<div style="padding:8px 4px;font-size:12px;color:#bbb;">このカテゴリのミッションはありません</div>';
-    return;
-  }
-  el.innerHTML = '<div style="margin-top:10px;">'
-    + goals.map(g => {
-        const done = bonusDone.includes(g.id);
-        return `<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:12px;margin-bottom:6px;background:${done?'#f0fdf4':'#f8fafc'};border:1.5px solid ${done?'#86efac':'#e2e8f0'};">
-          <span style="font-size:18px;flex-shrink:0;">${done?'✅':g.icon}</span>
-          <div style="flex:1;min-width:0;">
-            <div style="font-size:13px;font-weight:700;color:${done?'#166534':'#1a3a5c'};line-height:1.4;">${esc(g.label)}</div>
-            <div style="font-size:11px;color:#94a3b8;margin-top:1px;">+${g.points} EXP</div>
-          </div>
-          ${done
-            ? '<span style="font-size:11px;font-weight:700;color:#166534;flex-shrink:0;">達成済み</span>'
-            : `<button onclick="_detailClearGoal('${sid}','${g.id}')" style="flex-shrink:0;padding:6px 12px;background:${tb?tb.color:'#0077a8'};color:white;border:none;border-radius:20px;font-size:11px;font-weight:700;cursor:pointer;font-family:var(--hf);">クリア✨</button>`
-          }
-        </div>`;
-      }).join('')
-    + '</div>';
-}
-
-async function _detailClearGoal(sid, goalId) {
-  const s = students.find(x => x.id === sid);
-  if (!s) return;
-  const g = GOALS.find(x => x.id === goalId);
-  if (!g) return;
-  if (!confirm(`「${g.label}」をクリアにしますか？\n+${g.points} EXP が付与されます`)) return;
-  const bonusDone = s.bonus_given || [];
-  if (bonusDone.includes(goalId)) { toast('すでに達成済みです ✅'); return; }
-  const newExp = (s.total_exp || 0) + g.points;
-  const newBonusGiven = [...bonusDone, goalId];
-  const goalEntry = { type: 'goal', id: g.id, text: `🏆 ゴール達成！${g.label}`, exp: g.points, date: dateStr() };
-  const newTl = [goalEntry, ...(s.timeline || [])].slice(0, 80);
-  const {error} = await sb.from('students').update({
-    total_exp: newExp, timeline: newTl, bonus_given: newBonusGiven,
-  }).eq('id', sid);
-  if (error) { toast('保存に失敗しました 😢'); return; }
-  toast(`✨ ${g.label} クリア！ +${g.points} EXP`);
-  const tbId = localStorage.getItem('_tbook_' + sid);
-  await loadStudents();
-  showStudentDetail(sid);
-}
-
-function renderGoalCheck(sid) {
-  const el = document.getElementById('goalCheckArea');
-  if (!el) return;
-  const s = students.find(x => x.id === sid);
-  const bonusDone = (s && s.bonus_given) || [];
-  if (!todayGoals[sid]) todayGoals[sid] = [];
-  const checked = todayGoals[sid];
-  el.innerHTML = GOALS.map(g => {
-    const done = bonusDone.includes(g.id);
-    const ticked = checked.includes(g.id);
-    const cb = done
-      ? `<input type="checkbox" checked disabled style="width:15px;height:15px;">`
-      : `<input type="checkbox" ${ticked?'checked':''} onclick="toggleGoal('${sid}','${g.id}')" style="width:15px;height:15px;">`;
-    return `<label style="display:flex;align-items:center;gap:8px;padding:5px 0;cursor:${done?'default':'pointer'};">
-      ${cb}
-      <span style="font-size:13px;color:${done?'#92400e':'var(--text-dark)'};">
-        ${g.icon} ${esc(g.label)}&nbsp;<span style="font-size:11px;color:${done?'#d97706':'var(--text-mid)'};">${done?'(達成済み)':'(+'+g.points+' EXP)'}</span>
-      </span>
-    </label>`;
-  }).join('');
-}
-
-function toggleGoal(sid, id) {
-  if (!todayGoals[sid]) todayGoals[sid] = [];
-  const a = todayGoals[sid], i = a.indexOf(id);
-  if (i >= 0) a.splice(i, 1); else a.push(id);
-}
-
-function toggleCat(headId, bodyId) {
-  const head = document.getElementById(headId);
-  const body = document.getElementById(bodyId);
-  head.classList.toggle('open');
-  body.classList.toggle('open');
-}
-
-function toggleCheck(sid, id) {
-  if (!todayChecked[sid]) todayChecked[sid] = [];
-  const a = todayChecked[sid], i = a.indexOf(id);
-  if (i >= 0) a.splice(i, 1); else a.push(id);
-  renderCheck(); renderBonus();
-}
-
-function renderBonus() {
-  if (!teacherSid) return;
-  const s = students.find(x => x.id === teacherSid);
-  const given = (s && s.bonus_given) || [];
-  const checked = todayChecked[teacherSid] || [];
-  const cards = BONUSES.map(b => {
-    const done = b.req.filter(r => checked.includes(r)).length;
-    const ok = b.req.every(r => checked.includes(r));
-    return `<div class="bonus-card ${ok?'achieved':''}">
-      <div class="bonus-icon">${b.icon}</div>
-      <div class="bonus-info">
-        <div class="bonus-name">${esc(b.name)} ${given.includes(b.id)?'✅':''}</div>
-        <div class="bonus-prog">${esc(b.desc)}（${done}/${b.req.length}）</div>
-      </div>
-      <div class="bonus-exp-val">+${b.bonus}</div>
-    </div>`;
-  }).join('');
-  const _bA = document.getElementById('bonusArea'); if (!_bA) return;
-  _bA.innerHTML =
-    `<div class="cat-header" id="bonusHead" onclick="toggleCat('bonusHead','bonusBody')">
-      <span>クエスト一覧</span><span class="acc-arrow">▼</span>
-    </div>
-    <div class="cat-body" id="bonusBody" style="padding-top:6px;">${cards}</div>`;
-}
 
 // ===== 保存 =====
 async function saveLesson() {
@@ -3968,27 +3676,10 @@ async function saveLesson() {
   if (!s) return;
   const _saveBtn = document.querySelector('#seqFormView .btn-primary');
   if (_saveBtn) { if (_saveBtn.disabled) return; _saveBtn.disabled = true; _saveBtn.textContent = '登録中...'; }
-  const checked = todayChecked[teacherSid] || [];
   const hw = document.getElementById('hwIn').value.trim();
 
-  let exp = 50;
+  const exp = 50;
   const entries = [{type:'lesson', text:'レッスン来訪', exp:50}];
-  const bonusGiven = [...(s.bonus_given || [])];
-
-  for (const id of checked) {
-    const it = CHECKLIST.find(i => i.id === id);
-    if (it) {
-      exp += it.exp;
-      entries.push({type:'achievement', text: it.label, exp: it.exp});
-    }
-  }
-  for (const b of BONUSES) {
-    if (!bonusGiven.includes(b.id) && b.req.every(r => checked.includes(r))) {
-      exp += b.bonus;
-      bonusGiven.push(b.id);
-      entries.push({type:'bonus', text:`${b.name}達成！`, exp: b.bonus});
-    }
-  }
 
   const today = dateStr();
 
@@ -3998,8 +3689,6 @@ async function saveLesson() {
   const newTimeline = [...hwEntries, ...entries.map(e=>({date:today,...e})), ...(s.timeline||[])].slice(0,50);
   const newExp = (s.total_exp || 0) + exp;
 
-  const newCompleted = [...new Set([...(s.completed_steps || []), ...checked])];
-
   const _songInVal = (document.getElementById('songIn')?.value || '').trim();
   const newSongs = [...(s.songs || [])];
   if (_songInVal && !newSongs.includes(_songInVal)) newSongs.push(_songInVal);
@@ -4007,8 +3696,6 @@ async function saveLesson() {
   const {error} = await sb.from('students').update({
     total_exp: newExp,
     timeline:  newTimeline,
-    bonus_given: bonusGiven,
-    completed_steps: newCompleted,
     songs: newSongs,
     last_lesson_at: new Date().toISOString(),
     ...(() => {
@@ -4028,8 +3715,6 @@ async function saveLesson() {
     return;
   }
 
-  todayChecked[teacherSid] = [];
-
   document.getElementById('hwIn').value = '';
   document.getElementById('songIn').value = '';
   _seqHwItems = [];
@@ -4038,8 +3723,7 @@ async function saveLesson() {
   if (currentStudentData && currentStudentData.id === teacherSid) {
     currentStudentData = {...currentStudentData, total_exp: newExp, timeline: newTimeline};
   }
-  if (entries.some(e => e.type === 'bonus')) toast(`🏆 ボーナス！ +${exp} EXP`, 'bonus');
-  else toast(`💾 保存しました！ +${exp} EXP`);
+  toast(`💾 保存しました！ +${exp} EXP`);
   if (_saveBtn) { _saveBtn.disabled = false; _saveBtn.textContent = '登録する'; }
   if (_seqMode) { _seqNext(); }
   else {
@@ -4604,17 +4288,6 @@ function showStudentDetail(sid) {
   }
 
 
-  // textbook selector
-  const curTbook = localStorage.getItem('_tbook_' + sid) || '';
-  const tbookArea = document.getElementById('detailTbookArea');
-  if (tbookArea) {
-    tbookArea.innerHTML = TEXTBOOKS.map(tb => {
-      const act = tb.id === curTbook;
-      return `<div onclick="_detailSelectTbook('${sid}','${tb.id}')" style="padding:5px 10px;border-radius:20px;border:2px solid ${tb.color};background:${act?tb.color:'white'};color:${act?'white':tb.color};font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;">${tb.cat}</div>`;
-    }).join('');
-  }
-  _renderDetailMissions(sid, curTbook || null);
-
   document.getElementById('studentDetailOv').classList.add('show');
 }
 function closeStudentDetail() {
@@ -4749,18 +4422,8 @@ async function addLessonRecord() {
   // 宿題エントリ（複数）
   const hwEntries = _lessonHwItems.map(t => ({ type: 'hw', text: t, date: dateStr() }));
   const entry = { type: 'lesson', text: 'レッスン来訪', exp, date: dateStr() };
-
-  // ゴール達成処理
-  const bonusDone = s.bonus_given || [];
-  const newGoalIds = (todayGoals[detailStudentId] || []).filter(id => !bonusDone.includes(id));
-  const goalEntries = newGoalIds.map(id => {
-    const g = GOALS.find(x => x.id === id);
-    return g ? { type: 'goal', id: g.id, text: `🏆 ゴール達成！${g.label}`, exp: g.points, date: dateStr() } : null;
-  }).filter(Boolean);
-  const goalExp = goalEntries.reduce((sum, e) => sum + e.exp, 0);
-  const newBonusGiven = [...bonusDone, ...newGoalIds];
-  const newExp = (s.total_exp || 0) + exp + goalExp;
-  const newTl  = [...goalEntries, ...hwEntries, entry, ...(s.timeline || [])].slice(0, 80);
+  const newExp = (s.total_exp || 0) + exp;
+  const newTl  = [...hwEntries, entry, ...(s.timeline || [])].slice(0, 80);
 
   // 曲：新しい曲のみ追加
   const existingSongs = s.songs || [];
@@ -4768,7 +4431,7 @@ async function addLessonRecord() {
     ? [songVal, ...existingSongs]
     : existingSongs;
 
-  const updateObj = { total_exp: newExp, timeline: newTl, bonus_given: newBonusGiven };
+  const updateObj = { total_exp: newExp, timeline: newTl };
   if (newSongs !== existingSongs) updateObj.songs = newSongs;
 
   const {error} = await sb.from('students').update(updateObj).eq('id', detailStudentId);
@@ -4778,13 +4441,11 @@ async function addLessonRecord() {
     return;
   }
 
-  const goalMsg = goalEntries.length ? ` + ゴール達成 +${goalExp} EXP！` : '';
-  toast(`💾 記録しました！ +${exp} EXP${goalMsg}`);
+  toast(`💾 記録しました！ +${exp} EXP`);
   document.getElementById('lessonExpInput').value = 50;
   if (songInput) songInput.value = '';
   _lessonHwItems = [];
   _renderLessonHwList();
-  todayGoals[detailStudentId] = [];
 
   await loadStudents();
   showStudentDetail(detailStudentId);
@@ -5075,7 +4736,6 @@ function renderStudent(data) {
   renderCancelNote(tl);
   renderCurrentGoal();
   renderTbookLife();
-  renderTrophies(data.bonus_given || []);
   renderShelf(data.songs || []);
   applyTheme(data.theme || 'normal');
   renderNotices(tl);
@@ -5810,10 +5470,6 @@ function switchSTab(tab) {
     if (currentStudentId && !isGuest) {
       sb.rpc('rpc_get_own_student', {p_student_id: currentStudentId, p_line_user_id: currentStudentData?.line_user_id}).then(({data}) => { if (data && data[0]) renderStudent(data[0]); });
     }
-  }
-  if (tab === 'homework') {
-    renderTextbookGoals();
-    loadRecommendSong();
   }
   if (tab === 'sub') {
     initSubTab();
@@ -6838,31 +6494,9 @@ function closeHomePanel() {
   document.getElementById('homeOvHomework').classList.remove('show');
 }
 
-function renderTrophies(bonusGiven) {
-  const el = document.getElementById('sTrophies');
-  if (!bonusGiven.length) {
-    el.innerHTML = '<div class="empty">まだトロフィーはありません 🌊<br><span style="font-size:12px;">レッスンを積み重ねると獲得できます！</span></div>';
-    return;
-  }
-  el.innerHTML = bonusGiven.map(id => {
-    const b = BONUSES.find(x => x.id === id);
-    if (!b) return '';
-    return `<div style="display:flex;align-items:center;gap:12px;background:linear-gradient(135deg,#fffbeb,#fef3c7);border-radius:14px;padding:14px 16px;margin-bottom:10px;box-shadow:0 2px 8px rgba(217,119,6,.15);">
-      <span style="font-size:32px;filter:drop-shadow(0 2px 4px rgba(0,0,0,.2));">${b.icon}</span>
-      <div style="flex:1;">
-        <div style="font-weight:800;font-size:15px;color:#b45309;">${esc(b.name)}</div>
-        <div style="font-size:12px;color:#92400e;margin-top:2px;">${esc(b.desc)}</div>
-      </div>
-      <div style="text-align:center;">
-        <div style="font-size:18px;font-weight:800;color:#d97706;">+${b.bonus}</div>
-        <div style="font-size:10px;color:#92400e;">EXP</div>
-      </div>
-    </div>`;
-  }).filter(Boolean).join('');
-}
-
 function renderShelf(songs) {
   const shelf = document.getElementById('sShelf');
+  if (!shelf) return;
   if (!songs.length) { shelf.innerHTML = '<div class="empty" style="grid-column:1/-1;">まだクリア曲がありません 🎵</div>'; return; }
   const colors = [['#FF6B6B','#FF8E8E'],['#4ECDC4','#71D8D1'],['#45B7D1','#6CC5DC'],['#96CEB4','#AEDAD9'],['#FFEAA7','#FFF3CC'],['#DDA0DD','#E8B4E8']];
   shelf.innerHTML = songs.map((s,i) => {
@@ -7000,284 +6634,6 @@ async function hashPin(pin) {
 }
 function esc(s)   { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;'); }
 
-function openGoalPicker() {
-  if (!currentStudentId) return;
-  const bonusDone = currentStudentData ? (currentStudentData.bonus_given || []) : [];
-  const selectedId = localStorage.getItem('current_goal_' + currentStudentId);
-  document.getElementById('goalPickList').innerHTML = GOALS.map(g => {
-    const achieved = bonusDone.includes(g.id);
-    const sel = g.id === selectedId;
-    return `<div class="goal-pick-item${sel?' goal-sel':''}" onclick="selectGoal('${g.id}')">
-      <span style="font-size:22px;">${achieved ? '✅' : g.icon}</span>
-      <div style="flex:1">
-        <div style="font-weight:700;color:${achieved?'#92400e':'var(--text-dark)'};">${esc(g.label)}</div>
-        ${achieved ? '<div style="font-size:11px;color:#d97706;margin-top:2px;">達成済み！</div>'
-                   : `<div style="font-size:11px;color:var(--text-mid);margin-top:2px;">+${g.points} EXP</div>`}
-      </div>
-      ${sel ? '<span style="font-size:18px;color:var(--ocean-mid);">✓</span>' : ''}
-    </div>`;
-  }).join('');
-  document.getElementById('goalPickOverlay').style.display = 'flex';
-}
-
-function selectGoal(id) {
-  if (!currentStudentId) return;
-  localStorage.setItem('current_goal_' + currentStudentId, id);
-  closeGoalPicker();
-  renderCurrentGoal();
-}
-
-function _hexAlpha(hex, a) {
-  const r=parseInt(hex.slice(1,3),16), g=parseInt(hex.slice(3,5),16), b=parseInt(hex.slice(5,7),16);
-  return `rgba(${r},${g},${b},${a})`;
-}
-
-function _tbookSvg(c) {
-  return `<svg width="28" height="28" viewBox="0 0 28 28" fill="none"><rect x="2" y="2" width="18" height="24" rx="2" fill="${c}33" stroke="${c}" stroke-width="1.5"/><rect x="2" y="2" width="5" height="24" rx="2" fill="${c}66"/><line x1="10" y1="7" x2="18" y2="7" stroke="${c}cc" stroke-width="1.5" stroke-linecap="round"/><line x1="10" y1="11" x2="18" y2="11" stroke="${c}cc" stroke-width="1.5" stroke-linecap="round"/><line x1="10" y1="15" x2="15" y2="15" stroke="${c}cc" stroke-width="1.5" stroke-linecap="round"/></svg>`;
-}
-
-const _TBOOK_TILTS  = [-1.8, 0.9, -0.6, 1.4, -1.1, 0.7, -1.5, 0.5];
-const _TBOOK_DELAYS = [0, 0.4, 0.8, 1.2, 0.2, 0.6, 1.0, 0.3];
-let _tbookSelIdx = -1;
-
-const _TBOOK_LOCKED_IDS = new Set(['buy','full','song','chord']);
-
-function renderTextbookGoals() {
-  const area = document.getElementById('tbookShelfArea');
-  if (!area) return;
-  const mid = Math.ceil(TEXTBOOKS.length / 2);
-  const rows = [TEXTBOOKS.slice(0, mid), TEXTBOOKS.slice(mid)];
-  area.innerHTML = '';
-  let globalIdx = 0;
-  rows.forEach((row, ri) => {
-    const rowEl = document.createElement('div');
-    rowEl.className = 'tbook-sh-row';
-    row.forEach(tb => {
-      rowEl.appendChild(_buildTbookBook(tb, globalIdx++));
-    });
-    area.appendChild(rowEl);
-    if (ri < rows.length - 1) {
-      const board = document.createElement('div');
-      board.className = 'tbook-sand';
-      area.appendChild(board);
-    }
-  });
-  renderTbookChallenge();
-}
-
-function _buildTbookBook(tb, i) {
-  const locked = _TBOOK_LOCKED_IDS.has(tb.id);
-  const slot = document.createElement('div');
-  slot.className = 'tbook-bk-slot' + (locked ? ' tbook-locked' : '');
-  slot.id = `tbslot-${i}`;
-  const bk = document.createElement('div');
-  bk.className = 'tbook-bk';
-  bk.style.background = `linear-gradient(160deg,${tb.color}ee 0%,${tb.color}99 55%,${tb.color}77 100%)`;
-  bk.style.setProperty('--tbtilt', `${_TBOOK_TILTS[i % _TBOOK_TILTS.length]}deg`);
-  bk.style.animationDelay = `${_TBOOK_DELAYS[i % _TBOOK_DELAYS.length]}s`;
-  const _mc = GOALS.filter(g => g.cat === tb.id).length;
-  const _stars = _mc > 0 ? '★'.repeat(_mc) : '—';
-  if (locked) {
-    bk.innerHTML = `<div class="tbook-bk-top"></div><div class="tbook-bk-deco-top"></div><div class="tbook-bk-deco-bot"></div><div class="tbook-bk-sp" style="opacity:.55;">${esc(tb.cat)}</div><div class="tbook-bk-label" style="font-size:14px;background:rgba(0,0,0,.35);letter-spacing:0;">🔒</div>`;
-  } else {
-    bk.innerHTML = `<div class="tbook-bk-top"></div><div class="tbook-bk-deco-top"></div><div class="tbook-bk-deco-bot"></div><div class="tbook-bk-sp">${esc(tb.cat)}</div><div class="tbook-bk-label">${_stars}</div>`;
-  }
-  const glow = document.createElement('div');
-  glow.className = 'tbook-bk-glow';
-  glow.style.background = tb.color;
-  const pages = document.createElement('div');
-  pages.className = 'tbook-bk-open-pages';
-  slot.appendChild(pages);
-  slot.appendChild(bk);
-  slot.appendChild(glow);
-  if (!locked) slot.onclick = () => _selectTbookBook(i);
-  return slot;
-}
-
-function _selectTbookBook(idx) {
-  if (_tbookSelIdx === idx) { closeTbookPanel(); return; }
-  _tbookSelIdx = idx;
-  document.querySelectorAll('.tbook-bk-slot').forEach(s => s.classList.remove('sel'));
-  const slot = document.getElementById(`tbslot-${idx}`);
-  if (slot) slot.classList.add('sel');
-  _openTbookPanel(TEXTBOOKS[idx]);
-}
-
-function _spawnTbookBubbles(slot) {
-  const area = document.getElementById('tbookShelfArea');
-  if (!area) return;
-  for (let n = 0; n < 4; n++) {
-    const bub = document.createElement('div');
-    bub.className = 'tbook-bub-anim';
-    const sz = 5 + Math.random() * 8;
-    const bx = (Math.random() - .5) * 24;
-    bub.style.cssText = `width:${sz}px;height:${sz}px;position:absolute;left:${slot.offsetLeft + slot.offsetWidth/2 - 3}px;bottom:${area.offsetHeight - slot.offsetTop - slot.offsetHeight + 6}px;animation-delay:${n * 0.12}s;--bx:${bx}px`;
-    area.appendChild(bub);
-    setTimeout(() => bub.remove(), 1400 + n * 120);
-  }
-}
-
-function _openTbookPanel(tb) {
-  const selGoalId = currentStudentId ? localStorage.getItem('current_goal_' + currentStudentId) : null;
-  const goals = GOALS.filter(g => g.cat === tb.id);
-  const _bub = (g) => {
-    const isSel = g.id === selGoalId;
-    const metaParts = [];
-    if (g.days) metaParts.push(`📅 ${g.days}日`);
-    if (g.diff) metaParts.push('★'.repeat(g.diff) + '☆'.repeat(5 - g.diff));
-    const metaHtml = metaParts.length ? `<div class="tbook-pg-bub-meta">${metaParts.join(' ／ ')}</div>` : '';
-    return `<div class="tbook-pg-bub${isSel?' sel':''}" onclick="openMissionDetail('${esc(g.id)}')">` +
-      `<span class="tbook-pg-bub-ico">${g.icon}</span>` +
-      `<div class="tbook-pg-bub-body"><div class="tbook-pg-bub-lbl">${esc(g.label)}</div>${metaHtml}</div>` +
-    `</div>`;
-  };
-  const _empty = () => `<div class="tbook-pg-bub empty"><span class="tbook-pg-bub-ico">✦</span><span class="tbook-pg-bub-lbl">近日追加予定</span></div>`;
-  const half = Math.ceil(goals.length / 2);
-  const leftGoals = goals.slice(0, half);
-  const rightGoals = goals.slice(half);
-  const _page = (slice, minItems) => {
-    const bubs = slice.map(_bub);
-    while (bubs.length < minItems) bubs.push(_empty());
-    return bubs.join('');
-  };
-  const catHdr = `<div class="tbook-ob-l-cat" style="color:${_hexAlpha(tb.color,.8)}">${esc(tb.cat)}</div>`;
-  const leftEl = document.getElementById('tbookObLeft');
-  const rightEl = document.getElementById('tbookObMlist');
-  leftEl.innerHTML = catHdr + _page(leftGoals, 2);
-  leftEl.style.overflowY = 'auto';
-  rightEl.innerHTML = catHdr + _page(rightGoals, 2);
-  rightEl.style.overflowY = 'auto';
-  const overlay = document.getElementById('tbookObOverlay');
-  overlay.classList.add('show');
-  const shelf = document.getElementById('tbookShelfArea');
-  if (shelf) shelf.style.visibility = 'hidden';
-}
-
-function _toggleTbookMission(i) {
-  document.querySelectorAll('.tbook-ob-bub').forEach((el, idx) => {
-    if (idx === i) el.classList.toggle('open');
-    else el.classList.remove('open');
-  });
-}
-
-function _renderTbookSugoroku(idx) {
-  const board = document.getElementById('tbookSgBoard');
-  const hdr   = document.getElementById('tbookSgHdr');
-  if (!board) return;
-  const tb = TEXTBOOKS[idx] || TEXTBOOKS[0];
-  if (!tb) return;
-  const goals = GOALS.filter(g => g.cat === tb.id);
-  if (!goals.length) { board.innerHTML = ''; return; }
-  if (hdr) hdr.textContent = tb.cat.toUpperCase();
-  const bonusDone = currentStudentData ? (currentStudentData.bonus_given || []) : [];
-  const doneCount = goals.filter(g => bonusDone.includes(g.id)).length;
-  const charId = currentStudentId ? localStorage.getItem('custom_char_' + currentStudentId) : null;
-  const charObj = (charId && CHARS.find(c => c.id === charId)) || CHARS[0];
-  const charImgSrc = charObj && charObj.img ? charObj.img : null;
-  let html = '';
-  goals.forEach((g, i) => {
-    const isDone    = bonusDone.includes(g.id);
-    const isCurrent = i === doneCount;
-    const tileCls   = isDone ? 'done' : isCurrent ? 'current' : 'locked';
-    html += '<div class="tbook-sg-col">';
-    if (isCurrent) {
-      html += '<div class="tbook-sg-char-slot" style="animation:floatY 2.2s ease-in-out infinite alternate;">';
-      if (charImgSrc) {
-        html += `<img src="${charImgSrc}" style="height:34px;object-fit:contain;filter:drop-shadow(0 3px 8px rgba(0,180,255,.5));">`;
-      } else {
-        html += '<span style="font-size:24px;">🐠</span>';
-      }
-      html += '</div>';
-    } else {
-      html += '<div class="tbook-sg-char-slot"></div>';
-    }
-    html += `<div class="tbook-sg-tile ${tileCls}"></div>`;
-    html += '</div>';
-    if (i < goals.length - 1) {
-      html += `<div class="tbook-sg-conn ${isDone ? 'done' : 'locked'}"></div>`;
-    }
-  });
-  board.innerHTML = html;
-}
-
-function closeTbookPanel() {
-  const ov = document.getElementById('tbookObOverlay');
-  if (ov) ov.classList.remove('show');
-  document.querySelectorAll('.tbook-bk-slot').forEach(s => s.classList.remove('sel'));
-  _tbookSelIdx = -1;
-  const shelf = document.getElementById('tbookShelfArea');
-  if (shelf) shelf.style.visibility = '';
-}
-
-function openPremiumInfo() {
-  const ov = document.getElementById('premiumModalOverlay');
-  if (!ov) return;
-  ov.classList.remove('show');
-  void ov.offsetWidth;
-  ov.classList.add('show');
-}
-function closePremiumModal() {
-  const ov = document.getElementById('premiumModalOverlay');
-  if (ov) ov.classList.remove('show');
-}
-
-function toggleTbookCat(id) {
-  const card = document.getElementById('tcat-' + id);
-  if (card) card.classList.toggle('open');
-}
-
-function selectGoalFromTextbook(id) {
-  if (!currentStudentId) return;
-  localStorage.setItem('current_goal_' + currentStudentId, id);
-  renderCurrentGoal();
-  renderTbookChallenge();
-  const g = GOALS.find(x => x.id === id);
-  if (g) toast('🔥 挑戦を開始！ ' + g.label);
-}
-
-function renderTbookChallenge() {
-  const area = document.getElementById('tbookChallengeArea');
-  if (!area) return;
-  const id = currentStudentId ? localStorage.getItem('current_goal_' + currentStudentId) : null;
-  if (!id) { area.innerHTML = ''; return; }
-  const g = GOALS.find(x => x.id === id);
-  if (!g) { area.innerHTML = ''; return; }
-  area.innerHTML =
-    `<div style="font-size:11px;font-weight:800;color:rgba(255,210,60,.65);letter-spacing:.8px;margin-bottom:10px;text-align:center;">📌 前回挑戦したミッション</div>` +
-    `<div onclick="openMissionDetail('${esc(id)}')" style="background:rgba(255,200,50,.12);border:1.5px solid rgba(255,190,40,.38);border-radius:18px;padding:22px 20px 24px;cursor:pointer;-webkit-tap-highlight-color:transparent;display:flex;flex-direction:column;align-items:center;gap:14px;text-align:center;box-shadow:0 4px 20px rgba(255,180,0,.12);">` +
-    `<span style="font-size:48px;line-height:1;">${g.icon}</span>` +
-    `<div style="font-size:20px;font-weight:900;color:rgba(255,255,255,.95);line-height:1.4;letter-spacing:.2px;">${esc(g.label)}</div>` +
-    `<div style="font-size:12px;font-weight:700;color:rgba(255,220,80,.6);margin-top:2px;">タップして詳細を見る</div>` +
-    `</div>`;
-}
-
-function closeGoalPicker() {
-  document.getElementById('goalPickOverlay').style.display = 'none';
-}
-
-function renderCurrentGoal() {
-  const el = document.getElementById('goalPickBtn');
-  if (!el) return;
-  const id = currentStudentId ? localStorage.getItem('current_goal_' + currentStudentId) : null;
-  if (!id) {
-    el.innerHTML = '<span class="goal-pick-placeholder">目標を選ぼう！</span><span style="margin-left:auto;color:rgba(0,0,0,.3);font-size:20px;">›</span>';
-    const _vb1 = document.getElementById('goalVideoBtn'); if (_vb1) _vb1.style.display = 'none';
-    return;
-  }
-  const g = GOALS.find(x => x.id === id);
-  if (!g) {
-    el.innerHTML = '<span class="goal-pick-placeholder">目標を選ぼう！</span><span style="margin-left:auto;color:rgba(0,0,0,.3);font-size:20px;">›</span>';
-    const _vb2 = document.getElementById('goalVideoBtn'); if (_vb2) _vb2.style.display = 'none';
-    return;
-  }
-  const bonusDone = currentStudentData ? (currentStudentData.bonus_given || []) : [];
-  const achieved = bonusDone.includes(id);
-  el.innerHTML = `<span style="font-size:22px;">${achieved ? '✅' : g.icon}</span>`
-    + `<span style="flex:1;font-size:15px;font-weight:700;color:var(--text-dark);">${esc(g.label)}</span>`
-    + `<span style="margin-left:auto;color:rgba(0,0,0,.3);font-size:20px;">›</span>`;
-  const _vb3 = document.getElementById('goalVideoBtn'); if (_vb3) _vb3.style.display = _tutV2Active ? 'none' : '';
-}
-
 // ライフシステム
 const _LIFE_MAX = 5;
 function _getLife() {
@@ -7302,55 +6658,6 @@ function renderTbookLife() {
     ? `ライフ ${life}/${_LIFE_MAX} — 練習チェックインで回復します`
     : `ライフがありません — 練習チェックインで回復します`;
 }
-function tbookWatchVideo() {
-  const life = _getLife();
-  if (life <= 0) return;
-  const goalId = currentStudentId ? localStorage.getItem('current_goal_' + currentStudentId) : null;
-  const g = goalId ? GOALS.find(x => x.id === goalId) : null;
-  if (!g) { toast('📚 まず教科書からミッションを選んでください'); return; }
-  _setLife(life - 1);
-  toast('📺 動画を再生中…（' + esc(g.label) + '）');
-}
-
-
-// ミッション詳細モーダル
-function _ytId(url) {
-  if (!url) return null;
-  const m = url.match(/[?&]v=([^&]+)/) || url.match(/youtu\.be\/([^?&]+)/);
-  return m ? m[1] : null;
-}
-function openMissionDetail(id) {
-  const g = GOALS.find(x => x.id === id);
-  if (!g) return;
-  const selId = currentStudentId ? localStorage.getItem('current_goal_' + currentStudentId) : null;
-  const isSel = id === selId;
-  const ytId = _ytId(g.video || '');
-  const thumbHtml = ytId
-    ? '<a class="mission-det-thumb" href="' + esc(g.video) + '" target="_blank" rel="noopener">' +
-      '<img src="https://img.youtube.com/vi/' + ytId + '/hqdefault.jpg" alt="動画サムネイル" loading="lazy">' +
-      '<div class="mission-det-thumb-play"><div class="mission-det-thumb-play-ico">▶</div></div></a>'
-    : '<div class="mission-det-no-video">📺 動画は準備中です</div>';
-  const descText = g.desc || '';
-  const ov = document.getElementById('missionDetOverlay');
-  if (!ov) return;
-  ov.innerHTML = '<div class="mission-det-sheet" onclick="event.stopPropagation()">' +
-    '<div style="width:36px;height:4px;border-radius:2px;background:rgba(255,255,255,.15);margin:0 auto 18px;"></div>' +
-    '<div class="mission-det-ico">' + g.icon + '</div>' +
-    '<div class="mission-det-lbl">' + esc(g.label) + '</div>' +
-    '<div class="mission-det-pts">+' + g.points + ' EXP</div>' +
-    (descText ? '<div class="mission-det-desc">' + esc(descText) + '</div>' : '') +
-    thumbHtml +
-    '<button class="mission-det-sel-btn' + (isSel ? ' active' : '') + '" onclick="selectGoalFromTextbook(\'' + esc(id) + '\');closeMissionDetail();closeTbookPanel()">' +
-    (isSel ? '✅ 挑戦中！' : '🔥 挑戦する！') + '</button>' +
-    '<span class="mission-det-close" onclick="closeMissionDetail()">閉じる</span>' +
-    '</div>';
-  ov.classList.add('show');
-}
-function closeMissionDetail() {
-  const ov = document.getElementById('missionDetOverlay');
-  if (ov) { ov.classList.remove('show'); ov.innerHTML = ''; }
-}
-
 // ヒントドロワー
 function openHintDrawer() {
   const ov = document.getElementById('hintOverlay');
@@ -7916,17 +7223,6 @@ function initRouteMap(){
 }
 document.addEventListener('DOMContentLoaded',initRouteMap);
 </script>
-<!-- いまの目標ピッカー ポップアップ -->
-<div class="goal-pick-overlay" id="goalPickOverlay" onclick="if(event.target===this)closeGoalPicker()">
-  <div class="goal-pick-sheet">
-    <div class="goal-pick-hdr">
-      <span>🎯 目標を選ぼう</span>
-      <button onclick="closeGoalPicker()" style="background:none;border:none;font-size:22px;color:rgba(0,0,0,.35);cursor:pointer;line-height:1;">✕</button>
-    </div>
-    <div id="goalPickList"></div>
-  </div>
-</div>
-
 <!-- 練習キャラポップアップ -->
 <div class="practice-pop-overlay" id="practicePopOverlay">
   <div class="practice-fish" style="top:5%;--fdur:1.4s;--fdel:0s;">🐠</div><div class="practice-fish" style="top:14%;--fdur:1.9s;--fdel:-.5s;">🐟</div><div class="practice-fish" style="top:23%;--fdur:1.3s;--fdel:-1.0s;filter:hue-rotate(170deg) saturate(4);">🐟</div><div class="practice-fish" style="top:31%;--fdur:2.0s;--fdel:-1.6s;">🐡</div><div class="practice-fish" style="top:40%;--fdur:1.5s;--fdel:-.3s;filter:hue-rotate(170deg) saturate(4);">🐟</div><div class="practice-fish" style="top:49%;--fdur:1.7s;--fdel:-2.1s;">🐠</div><div class="practice-fish" style="top:57%;--fdur:1.2s;--fdel:-.8s;">🐟</div><div class="practice-fish" style="top:65%;--fdur:1.8s;--fdel:-1.3s;filter:hue-rotate(170deg) saturate(4);">🐟</div><div class="practice-fish" style="top:73%;--fdur:1.6s;--fdel:-2.6s;">🐡</div><div class="practice-fish" style="top:80%;--fdur:1.4s;--fdel:-.6s;">🐠</div><div class="practice-fish" style="top:87%;--fdur:2.0s;--fdel:-1.8s;filter:hue-rotate(170deg) saturate(4);">🐟</div><div class="practice-fish" style="top:94%;--fdur:1.3s;--fdel:-3.0s;">🐟</div><div class="practice-pop-char" id="practicePopChar">
@@ -8093,9 +7389,6 @@ document.addEventListener('DOMContentLoaded',initRouteMap);
         </div>
   </div>
 </div>
-
-<!-- ミッション詳細モーダル -->
-<div class="mission-det-overlay" id="missionDetOverlay" onclick="if(event.target===this)closeMissionDetail()"></div>
 
 <!-- プレミアムモーダル -->
 <div class="premium-modal-overlay" id="premiumModalOverlay" onclick="if(event.target===this)closePremiumModal()">
