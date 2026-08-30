@@ -2687,27 +2687,34 @@ const STAGE_BKGS = [
   {id:'kaigara',  name:'貝殻の舞台',     img:_kaigaraBgImg,  size:360, offsetY:-20},
 ];
 
+const BADGE_CATEGORIES = [
+  {id:'streak', label:'練習の継続',   icon:'🔥'},
+  {id:'song',   label:'曲・レッスン', icon:'🎵'},
+  {id:'food',   label:'エサ・お世話', icon:'🍚'},
+  {id:'growth', label:'いきもの育成', icon:'🐟'},
+];
+
 const BADGES_DEF = [
-  {id:'streak_3',   label:'3日連続',        icon:'🔥', desc:'3日連続で練習した',           check: s => (s.practice_streak||0) >= 3},
-  {id:'streak_7',   label:'一週間連続',     icon:'🔥', desc:'7日連続で練習した',           check: s => (s.practice_streak||0) >= 7},
-  {id:'streak_14',  label:'2週間連続',      icon:'🏆', desc:'14日連続で練習した',          check: s => (s.practice_streak||0) >= 14},
-  {id:'streak_30',  label:'一ヶ月連続',     icon:'👑', desc:'30日連続で練習した',          check: s => (s.practice_streak||0) >= 30},
-  {id:'songs_3',    label:'3曲レパートリー',icon:'🎵', desc:'3曲以上登録した',             check: s => (s.songs||[]).length >= 3},
-  {id:'songs_10',   label:'10曲レパートリー',icon:'🎸',desc:'10曲以上登録した',            check: s => (s.songs||[]).length >= 10},
-  {id:'tbook_1',    label:'教科書1冊クリア',icon:'📖', desc:'教科書1冊のミッションを全クリアした', check: s => TEXTBOOKS.some(tb => GOALS.filter(g=>g.cat===tb.id).every(g=>(s.bonus_given||[]).includes(g.id)) && GOALS.some(g=>g.cat===tb.id))},
+  {id:'streak_3',   cat:'streak', label:'3日連続',        icon:'🔥', desc:'3日連続で練習した',           check: s => (s.practice_streak||0) >= 3},
+  {id:'streak_7',   cat:'streak', label:'一週間連続',     icon:'🔥', desc:'7日連続で練習した',           check: s => (s.practice_streak||0) >= 7},
+  {id:'streak_14',  cat:'streak', label:'2週間連続',      icon:'🏆', desc:'14日連続で練習した',          check: s => (s.practice_streak||0) >= 14},
+  {id:'streak_30',  cat:'streak', label:'一ヶ月連続',     icon:'👑', desc:'30日連続で練習した',          check: s => (s.practice_streak||0) >= 30},
+  {id:'songs_3',    cat:'song',   label:'3曲レパートリー',icon:'🎵', desc:'3曲以上登録した',             check: s => (s.songs||[]).length >= 3},
+  {id:'songs_10',   cat:'song',   label:'10曲レパートリー',icon:'🎸',desc:'10曲以上登録した',            check: s => (s.songs||[]).length >= 10},
+  {id:'tbook_1',    cat:'song',   label:'教科書1冊クリア',icon:'📖', desc:'教科書1冊のミッションを全クリアした', check: s => TEXTBOOKS.some(tb => GOALS.filter(g=>g.cat===tb.id).every(g=>(s.bonus_given||[]).includes(g.id)) && GOALS.some(g=>g.cat===tb.id))},
 ];
 
 const LOCAL_BADGES_DEF = [
-  {id:'feed_10',  icon:'🍚', label:'ご飯10回',        desc:'エサを合計10回あげた',                    check: () => parseInt(localStorage.getItem('sub_total_feed_cnt')||'0') >= 10},
-  {id:'feed_30',  icon:'🍽️', label:'ご飯30回',        desc:'エサを合計30回あげた',                    check: () => parseInt(localStorage.getItem('sub_total_feed_cnt')||'0') >= 30},
-  {id:'feed_100', icon:'⭐', label:'ご飯100回',       desc:'エサを合計100回あげた',                   check: () => parseInt(localStorage.getItem('sub_total_feed_cnt')||'0') >= 100},
-  {id:'max_one',  icon:'📏', label:'マックスサイズ達成', desc:'いきものを1体MAXまで育てた',           check: () => CHARS.some(c => localStorage.getItem('sub_char_stage_done_'+c.id)==='1')},
-  {id:'max_all',  icon:'🌊', label:'全員MAX',         desc:'全いきものをMAXまで育てた',                check: () => CHARS.every(c => localStorage.getItem('sub_char_stage_done_'+c.id)==='1')},
-  {id:'cm_10',    icon:'📐', label:'10cm超え',        desc:'いきものが10cmを超えた',                  check: () => CHARS.some(c => parseInt(localStorage.getItem('sub_cm_'+c.id)||'0') >= 100)},
-  {id:'cm_max',   icon:'🏆', label:'20cmの大物',      desc:'いきものが20cmになった',                  check: () => CHARS.some(c => parseInt(localStorage.getItem('sub_cm_'+c.id)||'0') >= 200)},
-  {id:'sushi_1',  icon:'🍣', label:'お寿司デビュー',  desc:'はじめてお寿司をあげた',                  check: () => parseInt(localStorage.getItem('sub_sushi_cnt')||'0') >= 1},
-  {id:'sushi_5',  icon:'🍣', label:'お寿司5回',       desc:'お寿司を5回あげた（かなり贅沢！）',       check: () => parseInt(localStorage.getItem('sub_sushi_cnt')||'0') >= 5},
-  {id:'all_chars',icon:'🐟', label:'全キャラ解放',    desc:'全いきもののアンロック条件を達成した',      check: () => CHARS.every(c => (localStorage.getItem('sub_unlocked_chars') ? JSON.parse(localStorage.getItem('sub_unlocked_chars')||'[]') : []).includes(c.id))},
+  {id:'feed_10',  cat:'food',   icon:'🍚', label:'ご飯10回',        desc:'エサを合計10回あげた',                    check: () => parseInt(localStorage.getItem('sub_total_feed_cnt')||'0') >= 10},
+  {id:'feed_30',  cat:'food',   icon:'🍽️', label:'ご飯30回',        desc:'エサを合計30回あげた',                    check: () => parseInt(localStorage.getItem('sub_total_feed_cnt')||'0') >= 30},
+  {id:'feed_100', cat:'food',   icon:'⭐', label:'ご飯100回',       desc:'エサを合計100回あげた',                   check: () => parseInt(localStorage.getItem('sub_total_feed_cnt')||'0') >= 100},
+  {id:'max_one',  cat:'growth', icon:'📏', label:'マックスサイズ達成', desc:'いきものを1体MAXまで育てた',           check: () => CHARS.some(c => localStorage.getItem('sub_char_stage_done_'+c.id)==='1')},
+  {id:'max_all',  cat:'growth', icon:'🌊', label:'全員MAX',         desc:'全いきものをMAXまで育てた',                check: () => CHARS.every(c => localStorage.getItem('sub_char_stage_done_'+c.id)==='1')},
+  {id:'cm_10',    cat:'growth', icon:'📐', label:'10cm超え',        desc:'いきものが10cmを超えた',                  check: () => CHARS.some(c => parseInt(localStorage.getItem('sub_cm_'+c.id)||'0') >= 100)},
+  {id:'cm_max',   cat:'growth', icon:'🏆', label:'20cmの大物',      desc:'いきものが20cmになった',                  check: () => CHARS.some(c => parseInt(localStorage.getItem('sub_cm_'+c.id)||'0') >= 200)},
+  {id:'sushi_1',  cat:'food',   icon:'🍣', label:'お寿司デビュー',  desc:'はじめてお寿司をあげた',                  check: () => parseInt(localStorage.getItem('sub_sushi_cnt')||'0') >= 1},
+  {id:'sushi_5',  cat:'food',   icon:'🍣', label:'お寿司5回',       desc:'お寿司を5回あげた（かなり贅沢！）',       check: () => parseInt(localStorage.getItem('sub_sushi_cnt')||'0') >= 5},
+  {id:'all_chars',cat:'growth', icon:'🐟', label:'全キャラ解放',    desc:'全いきもののアンロック条件を達成した',      check: () => CHARS.every(c => (localStorage.getItem('sub_unlocked_chars') ? JSON.parse(localStorage.getItem('sub_unlocked_chars')||'[]') : []).includes(c.id))},
 ];
 
 // ── エリアイラスト（6エリア分） ──
@@ -9609,6 +9616,59 @@ function _prtCloseInfoSheet() {
   const el = document.getElementById('prtInfoSheet');
   if (el) { el.style.display = 'none'; }
 }
+let _badgeSheetCat = null;
+
+function _badgeMedalHtml(b) {
+  const circleStyle = b.earned
+    ? 'background:radial-gradient(circle at 32% 28%,#fff6d8,#f4a435 70%);box-shadow:0 4px 14px rgba(244,164,53,.45),inset 0 -3px 0 rgba(0,0,0,.12);'
+    : 'background:#eef2f5;box-shadow:inset 0 0 0 2px #dde5ea;';
+  const icoStyle = b.earned ? '' : 'opacity:.28;filter:grayscale(1);';
+  const checkHtml = b.earned
+    ? `<div style="position:absolute;bottom:-2px;right:-2px;width:20px;height:20px;border-radius:50%;background:#00c896;border:2px solid white;display:flex;align-items:center;justify-content:center;"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="white" stroke-width="3" stroke-linecap="round"><path d="M4 12l6 6L20 6"/></svg></div>`
+    : '';
+  return `<div style="display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;">
+    <div style="width:64px;height:64px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:28px;position:relative;${circleStyle}">
+      <span style="${icoStyle}">${b.icon}</span>
+      ${checkHtml}
+    </div>
+    <div style="font-size:11px;font-weight:800;color:${b.earned?'#003D52':'#a8b4bd'};line-height:1.3;">${esc(b.label)}</div>
+  </div>`;
+}
+
+function _badgeAreaHtml() {
+  const d = currentStudentData;
+  if (!d) return '';
+  const list = [
+    ...BADGES_DEF.map(b => ({...b, earned: b.check(d)})),
+    ...LOCAL_BADGES_DEF.map(b => ({...b, earned: b.check()})),
+  ];
+  if (!_badgeSheetCat) {
+    return `<div style="display:flex;flex-direction:column;gap:8px;">${BADGE_CATEGORIES.map(c => {
+      const items = list.filter(b => b.cat === c.id);
+      const earned = items.filter(b => b.earned).length;
+      return `<div onclick="_selectBadgeCat('${c.id}')" style="display:flex;align-items:center;gap:10px;background:#f4f8fb;border-radius:12px;padding:12px 14px;cursor:pointer;-webkit-tap-highlight-color:transparent;">
+        <div style="font-size:26px;flex-shrink:0;">${c.icon}</div>
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:13px;font-weight:800;color:#003D52;">${esc(c.label)}</div>
+          <div style="font-size:11px;color:#8a99a8;margin-top:2px;">${earned}/${items.length}個 獲得</div>
+        </div>
+        <div style="font-size:16px;color:#c2ccd4;flex-shrink:0;">›</div>
+      </div>`;
+    }).join('')}</div>`;
+  }
+  const cat = BADGE_CATEGORIES.find(c => c.id === _badgeSheetCat);
+  const items = list.filter(b => b.cat === _badgeSheetCat);
+  return `<div onclick="_selectBadgeCat(null)" style="display:flex;align-items:center;gap:4px;color:#0096C7;font-size:12px;font-weight:800;cursor:pointer;margin-bottom:12px;-webkit-tap-highlight-color:transparent;">‹ カテゴリ一覧に戻る</div>
+    <div style="font-size:12px;font-weight:800;color:#003D52;margin-bottom:10px;">${cat.icon} ${esc(cat.label)}</div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;">${items.map(_badgeMedalHtml).join('')}</div>`;
+}
+
+function _selectBadgeCat(catId) {
+  _badgeSheetCat = catId;
+  const el = document.getElementById('badgeArea');
+  if (el) el.innerHTML = _badgeAreaHtml();
+}
+
 function _prtMusicBtnTap() {
   const d = currentStudentData;
   if (!d) return;
@@ -9630,23 +9690,7 @@ function _prtMusicBtnTap() {
     ...LOCAL_BADGES_DEF.map(b => ({...b, earned: b.check()})),
   ];
   const _earnedCount = _badgeList.filter(b => b.earned).length;
-  const _badgeRow = b => {
-    const circleStyle = b.earned
-      ? 'background:radial-gradient(circle at 32% 28%,#fff6d8,#f4a435 70%);box-shadow:0 4px 14px rgba(244,164,53,.45),inset 0 -3px 0 rgba(0,0,0,.12);'
-      : 'background:#eef2f5;box-shadow:inset 0 0 0 2px #dde5ea;';
-    const icoStyle = b.earned ? '' : 'opacity:.28;filter:grayscale(1);';
-    const checkHtml = b.earned
-      ? `<div style="position:absolute;bottom:-2px;right:-2px;width:20px;height:20px;border-radius:50%;background:#00c896;border:2px solid white;display:flex;align-items:center;justify-content:center;"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="white" stroke-width="3" stroke-linecap="round"><path d="M4 12l6 6L20 6"/></svg></div>`
-      : '';
-    return `<div style="display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;">
-      <div style="width:64px;height:64px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:28px;position:relative;${circleStyle}">
-        <span style="${icoStyle}">${b.icon}</span>
-        ${checkHtml}
-      </div>
-      <div style="font-size:11px;font-weight:800;color:${b.earned?'#003D52':'#a8b4bd'};line-height:1.3;">${esc(b.label)}</div>
-    </div>`;
-  };
-  const badgesHtml = `<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;">${_badgeList.map(_badgeRow).join('')}</div>`;
+  _badgeSheetCat = null;
 
   const sheet = document.createElement('div');
   sheet.id = '_musicRecordSheet';
@@ -9658,7 +9702,7 @@ function _prtMusicBtnTap() {
       <div style="padding:0 20px;">
         <div style="font-size:15px;font-weight:900;color:#003D52;margin-bottom:16px;">📖 これまでの記録</div>
         <div style="font-size:11px;font-weight:800;color:#f59e0b;letter-spacing:.8px;margin-bottom:10px;">🏅 バッジ（${_earnedCount}/${_badgeList.length}個）</div>
-        ${badgesHtml}
+        <div id="badgeArea">${_badgeAreaHtml()}</div>
         <div style="font-size:11px;font-weight:800;color:#0096C7;letter-spacing:.8px;margin:18px 0 6px;">最近の宿題</div>
         ${hwHtml}
         <div style="font-size:11px;font-weight:800;color:#0096C7;letter-spacing:.8px;margin:14px 0 6px;">練習中の曲</div>
