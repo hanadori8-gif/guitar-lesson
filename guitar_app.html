@@ -116,12 +116,6 @@ body{font-family:'Zen Maru Gothic','Helvetica Neue','Hiragino Sans','Meiryo',san
   animation:floatY 3s ease-in-out infinite;filter:drop-shadow(0 4px 20px rgba(0,0,0,.35));}
 .role-title{font-size:27px;font-weight:800;margin-bottom:4px;font-family:var(--hf);letter-spacing:.5px;}
 .role-sub{font-size:15px;color:rgba(255,255,255,.9);text-shadow:0 1px 4px rgba(0,0,0,.3);margin-bottom:36px;letter-spacing:.2px;}
-.role-student-btn{background:white;color:var(--ocean-deep);
-  border:none;border-radius:18px;padding:20px 40px;width:100%;max-width:320px;
-  font-size:21px;font-weight:800;font-family:var(--hf);cursor:pointer;transition:all .2s;
-  box-shadow:0 8px 28px rgba(0,0,0,.22),0 2px 6px rgba(0,0,0,.12);
-  display:flex;align-items:center;justify-content:center;gap:12px;}
-.role-student-btn:active{transform:scale(.96) translateY(2px);box-shadow:0 4px 14px rgba(0,0,0,.18);}
 .role-student-sub{font-size:13px;opacity:.7;margin-top:10px;margin-bottom:28px;}
 .role-teacher-link{position:absolute;bottom:28px;right:24px;
   font-size:12px;color:rgba(255,255,255,.9);cursor:pointer;
@@ -147,30 +141,11 @@ body{font-family:'Zen Maru Gothic','Helvetica Neue','Hiragino Sans','Meiryo',san
   padding:10px 14px;font-size:13px;margin-bottom:14px;display:none;}
 .err-msg.show{display:block;}
 
-/* 名前選択・PIN */
-.name-wrap,.pin-wrap{min-height:100vh;display:flex;flex-direction:column;
+/* 新規登録 */
+.name-wrap{min-height:100vh;display:flex;flex-direction:column;
   align-items:center;justify-content:center;padding:24px;}
-.name-card,.pin-card{background:rgba(255,255,255,.97);border-radius:24px;padding:28px 24px;
+.name-card{background:rgba(255,255,255,.97);border-radius:24px;padding:28px 24px;
   width:100%;max-width:380px;box-shadow:0 4px 12px rgba(0,0,0,.10),0 16px 40px rgba(0,100,150,.18);}
-.sname-btn{display:block;width:100%;padding:16px;margin-bottom:8px;
-  background:white;border:1.5px solid #e2e8f0;border-radius:12px;
-  font-size:17px;font-weight:700;color:var(--text-dark);cursor:pointer;
-  transition:all .18s;text-align:left;box-shadow:0 1px 3px rgba(0,0,0,.04);}
-.sname-btn:active{border-color:var(--ocean-mid);background:#eff9ff;transform:scale(.98);}
-.pin-card{text-align:center;}
-.pin-sname{font-size:23px;font-weight:800;color:var(--ocean-deep);margin-bottom:4px;}
-.pin-prompt{font-size:16px;color:var(--text-mid);margin-bottom:22px;}
-.pin-dots{display:flex;justify-content:center;gap:16px;margin-bottom:26px;}
-.pin-dot{width:18px;height:18px;border-radius:50%;background:#e5e7eb;transition:all .2s;}
-.pin-dot.filled{background:var(--ocean-deep);transform:scale(1.1);}
-.pin-dot.error{background:var(--coral);animation:shake .4s ease;}
-@keyframes shake{0%,100%{transform:translateX(0);}25%{transform:translateX(-6px);}75%{transform:translateX(6px);}}
-.pin-pad{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;max-width:270px;margin:0 auto;}
-.pin-key{padding:18px 10px;background:#f1f5f9;border:1.5px solid #e2e8f0;border-radius:12px;
-  font-size:22px;font-weight:700;font-family:var(--hf);color:var(--text-dark);cursor:pointer;transition:all .12s;user-select:none;}
-.pin-key:active{background:#dbeafe;border-color:var(--ocean-light);transform:scale(.93);}
-.pin-key.del{background:#fef2f2;border-color:#fecaca;color:var(--coral);}
-.pin-err{color:var(--coral);font-size:13px;margin-top:12px;min-height:20px;font-weight:600;}
 
 /* アプリヘッダー */
 .app-header{position:sticky;top:0;z-index:100;background:rgba(0,100,148,.82);
@@ -789,19 +764,6 @@ details.prt-sq-card .prt-sq-detail{padding:0 14px 12px;border-top:1px solid rgba
 .mission-det-sel-btn.active{background:linear-gradient(135deg,#10b981,#059669);}
 .mission-det-sel-btn:active{opacity:.85;}
 .mission-det-close{display:block;text-align:center;color:rgba(255,255,255,.3);font-size:12px;cursor:pointer;-webkit-tap-highlight-color:transparent;padding:4px;}
-/* ヒントドロワー */
-.hint-overlay{position:fixed;inset:0;z-index:460;background:rgba(0,0,0,.55);display:none;align-items:flex-end;justify-content:center;}
-.hint-overlay.show{display:flex;}
-.hint-overlay.show .hint-sheet{animation:pmSlideUp .38s cubic-bezier(.32,1.1,.64,1);}
-.hint-sheet{background:white;border-radius:24px 24px 0 0;width:100%;max-width:480px;max-height:86vh;overflow-y:auto;padding:0 0 32px;}
-.hint-sheet-hdr{display:flex;align-items:center;justify-content:space-between;padding:16px 20px 12px;border-bottom:1px solid rgba(0,0,0,.08);font-size:16px;font-weight:900;color:#1a2540;position:sticky;top:0;background:white;z-index:1;}
-.hint-sheet-hdr-close{background:none;border:none;font-size:22px;color:rgba(0,0,0,.35);cursor:pointer;padding:4px 8px;}
-.hint-sheet .komatta-list{padding:0 16px;margin-bottom:0;}
-.hint-sheet .komatta-group-hdr{color:#1a2540;opacity:.55;}
-.hint-sheet .komatta-item{background:rgba(0,0,0,.04);border-color:rgba(0,0,0,.08);}
-.hint-sheet .komatta-q-txt{color:#1a2540;}
-.hint-sheet .komatta-arrow{color:rgba(0,0,0,.4);}
-.hint-sheet .komatta-a{color:#2a3a50;}
 /* 教科書ライフ — ヒントボタン */
 .tbook-hint-btn{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);border-radius:99px;padding:6px 14px;color:rgba(255,255,255,.65);font-size:12px;font-weight:700;cursor:pointer;font-family:var(--hf);-webkit-tap-highlight-color:transparent;white-space:nowrap;flex-shrink:0;}
 .tbook-hint-btn:active{background:rgba(255,255,255,.2);}
@@ -821,15 +783,6 @@ details.prt-sq-card .prt-sq-detail{padding:0 14px 12px;border-top:1px solid rgba
 .tbook-life-video-btn{width:100%;padding:12px;border-radius:12px;border:none;background:linear-gradient(135deg,rgba(0,160,120,.8),rgba(0,200,160,.65));color:white;font-size:14px;font-weight:800;font-family:var(--hf);cursor:pointer;letter-spacing:.3px;-webkit-tap-highlight-color:transparent;display:flex;align-items:center;justify-content:center;gap:8px;}
 .tbook-life-video-btn:disabled{background:rgba(255,255,255,.08);box-shadow:none;color:rgba(255,255,255,.25);cursor:default;}
 .tbook-life-video-btn:not(:disabled):active{opacity:.85;}
-/* 困った時アコーディオン */
-.komatta-list{display:flex;flex-direction:column;gap:8px;margin-bottom:16px;}
-.komatta-item{background:rgba(255,255,255,.1);border-radius:12px;overflow:hidden;border:1px solid rgba(255,255,255,.12);}
-.komatta-q{padding:13px 14px;font-size:14px;font-weight:700;color:white;display:flex;justify-content:space-between;align-items:center;cursor:pointer;gap:8px;-webkit-tap-highlight-color:transparent;}
-.komatta-q-txt{flex:1;line-height:1.4;}
-.komatta-arrow{font-size:16px;color:rgba(255,255,255,.5);transition:transform .25s;flex-shrink:0;}
-.komatta-item.open .komatta-arrow{transform:rotate(90deg);}
-.komatta-a{display:none;padding:0 14px 13px;font-size:13px;color:rgba(255,255,255,.78);line-height:1.8;}
-.komatta-item.open .komatta-a{display:block;}
 /* 教科書カード */
 .tbook-bubble{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.16);border-left:5px solid var(--tbcol,rgba(255,255,255,.4));border-radius:14px;overflow:hidden;margin-bottom:10px;transition:background .2s;}
 .tbook-bubble.open{background:rgba(255,255,255,.17);}
@@ -965,9 +918,6 @@ details.prt-sq-card .prt-sq-detail{padding:0 14px 12px;border-top:1px solid rgba
 .tbook-ob-sel-btn:active{background:rgba(255,255,255,.2);}
 .tbook-ob-sel-btn.active{border-color:rgba(255,255,255,.4);background:rgba(255,255,255,.18);}
 .tbook-ob-nomission{font-size:11px;color:rgba(255,255,255,.35);font-style:italic;padding:12px 4px;text-align:center;}
-/* 困った時 グループヘッダー */
-.komatta-group-hdr{font-size:11px;font-weight:800;color:rgba(255,255,255,.45);letter-spacing:.6px;padding:14px 4px 6px;margin-top:4px;}
-.komatta-group-hdr:first-child{padding-top:0;}
 /* コースタブ */
 .course-intro{font-size:13px;color:rgba(255,255,255,.75);line-height:1.7;margin-bottom:18px;}
 .course-card{background:rgba(255,255,255,.1);border:2px solid rgba(255,255,255,.18);border-radius:18px;padding:20px 16px;margin-bottom:14px;}
@@ -1497,8 +1447,6 @@ body{background:#f0ebe0!important;}
   <div class="role-wrap">
     <img class="role-logo-img" src="images/logo.webp" alt="ロゴ">
     <div class="role-title">海のみえるギター教室</div>
-    
-    <button class="role-student-btn" onclick="goStudentNameSelect()">生徒ログイン</button>
     <div style="position:absolute;bottom:28px;left:24px;">
       <span onclick="goScreen('sGuestWelcome')" style="font-size:11px;color:rgba(255,255,255,.55);cursor:pointer;background:rgba(0,0,0,.18);border-radius:16px;padding:5px 12px;border:1px solid rgba(255,255,255,.2);">ゲスト</span>
     </div>
@@ -1511,9 +1459,8 @@ body{background:#f0ebe0!important;}
   <div class="role-wrap">
     <div style="font-size:48px;margin-bottom:16px;">👀</div>
     <div class="role-title" style="margin-bottom:8px;">ゲストの方、ようこそ！</div>
-    <div class="role-sub" style="margin-bottom:32px;line-height:1.8;">この先に進むと生徒さんが使っている<br>画面を少し体験できます。<br><br>生徒の方は下のボタンから<br>ログインしてください。</div>
+    <div class="role-sub" style="margin-bottom:32px;line-height:1.8;">この先に進むと生徒さんが使っている<br>画面を少し体験できます。</div>
     <button onclick="goGuest()" style="background:rgba(255,255,255,.18);border:1.5px solid rgba(255,255,255,.4);border-radius:14px;padding:14px 32px;color:white;font-size:15px;font-weight:700;cursor:pointer;font-family:var(--hf);width:100%;max-width:320px;margin-bottom:12px;">👀 見学として体験する</button>
-    <button onclick="goScreen('sStudentName')" style="background:white;color:var(--ocean-deep);border:none;border-radius:14px;padding:14px 32px;font-size:15px;font-weight:800;cursor:pointer;font-family:var(--hf);width:100%;max-width:320px;box-shadow:0 4px 16px rgba(0,0,0,.18);">🐬 生徒ログインはこちら</button>
     <span onclick="goScreen('sRole')" style="margin-top:24px;font-size:12px;color:rgba(255,255,255,.55);cursor:pointer;text-decoration:underline;">← 戻る</span>
   </div>
 </div>
@@ -1562,22 +1509,6 @@ body{background:#f0ebe0!important;}
   </div>
 </div>
 
-<!-- SCREEN: 生徒 名前選択 -->
-<div id="sStudentName" class="screen">
-  <div class="name-wrap">
-    <div class="name-card">
-      <div class="auth-title" style="margin-bottom:6px;">こんにちは！</div>
-      <div class="auth-sub" style="margin-bottom:20px;">あなたの名前を選んでください</div>
-      <div id="nameList"><div class="loading-inline">読み込み中... 🌊</div></div>
-      <div id="registerBtnWrap" style="display:none;margin-top:20px;border-top:1px solid rgba(255,255,255,.15);padding-top:16px;">
-        <div style="font-size:13px;color:rgba(255,255,255,.6);text-align:center;margin-bottom:10px;">はじめての方はこちら</div>
-        <button class="sname-btn" style="background:linear-gradient(135deg,rgba(0,160,130,.7),rgba(0,200,160,.5));border-color:rgba(0,200,160,.4);" onclick="const _ln=sessionStorage.getItem('pending_line_name');if(_ln)document.getElementById('registerNickname').value=_ln;goScreen('sRegister')">✨ 新規登録</button>
-      </div>
-    </div>
-    <span class="auth-back" onclick="goScreen('sRole')">← 戻る</span>
-  </div>
-</div>
-
 <!-- SCREEN: 新規登録 -->
 <div id="sRegister" class="screen" style="overflow-y:auto;">
   <div class="name-wrap" style="min-height:auto;padding:40px 24px;">
@@ -1588,24 +1519,7 @@ body{background:#f0ebe0!important;}
       <div id="registerErr" style="color:#ff6b6b;font-size:13px;text-align:center;min-height:20px;margin-bottom:8px;"></div>
       <button class="btn btn-primary" onclick="goRegister()" style="width:100%;">🎸 登録してアプリを始める</button>
     </div>
-    <span class="auth-back" onclick="goScreen('sStudentName')">← 戻る</span>
-  </div>
-</div>
-
-<!-- SCREEN: 生徒 PINパッド -->
-<div id="sStudentPin" class="screen">
-  <div class="pin-wrap">
-    <div class="pin-card">
-      <div class="pin-sname" id="pinSname">---</div>
-      <div class="pin-prompt">PINコード（4桁）を入力してください</div>
-      <div class="pin-dots" id="pinDots">
-        <div class="pin-dot"></div><div class="pin-dot"></div>
-        <div class="pin-dot"></div><div class="pin-dot"></div>
-      </div>
-      <div class="pin-pad" id="pinPad"></div>
-      <div class="pin-err" id="pinErr"></div>
-    </div>
-    <span class="auth-back" onclick="goScreen('sStudentName')">← 名前選択に戻る</span>
+    <span class="auth-back" onclick="goScreen('sRole')">← 戻る</span>
   </div>
 </div>
 
@@ -2336,9 +2250,6 @@ body{background:#f0ebe0!important;}
 // =====================================================================
 // ★ Supabase設定 — ここだけ書き換えればOK（2箇所）
 // =====================================================================
-// テスト用：true にするとログイン画面・PIN入力をスキップ（本番は false に戻す）
-const DEV_SKIP_LOGIN = false;
-
 const LIFF_ID           = '2010239754-P2d3Yhg8'; // LINE LIFF ID
 const SUPABASE_URL      = 'https://khunsqvqpicqxildccgj.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtodW5zcXZxcGljcXhpbGRjY2dqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk2NzM2MzgsImV4cCI6MjA5NTI0OTYzOH0.YhWawNG9GAFGWIYGATb1DxAtN82j_OXsP4V0cGgGqmY';
@@ -2490,7 +2401,6 @@ let isGuest = false;
 let detailStudentId = null;
 let studentChannel = null;
 let teacherChannel = null;
-let pinBuf = '', pinSid = null;
 
 // =====================================================================
 // ★ 初期化
@@ -2651,8 +2561,6 @@ window.addEventListener('load', () => {
     return;
   }
   sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-  if (DEV_SKIP_LOGIN) { goStudentNameSelect(); return; }
 
   // ① 即座にログイン画面を表示（LIFFを待たない）
   goScreen('sRole');
@@ -3057,34 +2965,6 @@ function openMonthlySummary() {
 
 function closeMonthlySummary() {
   document.getElementById('monthlySummaryOv').classList.remove('show');
-}
-
-let _recommendSong = '';
-
-async function loadRecommendSong() {
-  const {data} = await sb.from('teacher_settings').select('value').eq('key','monthly_recommend_song').maybeSingle();
-  _recommendSong = data?.value || '';
-  const banner = document.getElementById('recommendSongBanner');
-  const nameEl = document.getElementById('recommendSongName');
-  if (!banner || !nameEl) return;
-  if (_recommendSong) { nameEl.textContent = _recommendSong; banner.style.display = ''; }
-  else { banner.style.display = 'none'; }
-}
-
-async function setRecommendSong() {
-  const newSong = prompt('今月のおすすめ曲を入力\n（空欄で非表示にする）', _recommendSong);
-  if (newSong === null) return;
-  const val = newSong.trim();
-  const {error} = await sb.from('teacher_settings').upsert({key:'monthly_recommend_song', value:val, updated_at:new Date().toISOString()});
-  if (error) { toast('保存に失敗しました 😢'); return; }
-  _recommendSong = val;
-  toast(val ? `🎵「${val}」を設定しました` : 'おすすめ曲を削除しました');
-  const banner = document.getElementById('recommendSongBanner');
-  const nameEl = document.getElementById('recommendSongName');
-  if (banner && nameEl) {
-    if (val) { nameEl.textContent = val; banner.style.display = ''; }
-    else { banner.style.display = 'none'; }
-  }
 }
 
 function editLessonFee() {
@@ -4461,39 +4341,6 @@ function _showTeacherLogin() {
   goScreen('sTeacherLogin');
 }
 
-async function goStudentNameSelect() {
-  goScreen('sStudentName');
-  document.getElementById('nameList').innerHTML = '<div class="loading-inline">読み込み中... 🌊</div>';
-  let q = sb.from('students').select('id, name').order('name');
-  const {data, error} = await q;
-  if (error || !data || !data.length) {
-    document.getElementById('nameList').innerHTML = '<div class="empty">まだ生徒が登録されていません。<br>先生に登録してもらってください 🌊</div>';
-    return;
-  }
-  const _SORT = ['体験さん', '初心者まぴ', 'マスターあかね'];
-  data.sort((a, b) => {
-    const ai = _SORT.indexOf(a.name), bi = _SORT.indexOf(b.name);
-    if (ai >= 0 && bi >= 0) return ai - bi;
-    if (ai >= 0) return -1; if (bi >= 0) return 1;
-    return a.name.localeCompare(b.name, 'ja');
-  });
-  document.getElementById('nameList').innerHTML = data.map(d =>
-    `<button class="sname-btn" onclick="goPin('${d.id}','${escJs(d.name)}')">${esc(d.name)}</button>`
-  ).join('');
-}
-
-async function goPin(sid, sname) {
-  currentStudentId = sid;
-  const {data} = await sb.from('students').select('*').eq('id', sid).single();
-  if (!data) return;
-  // parent_student_id を持つ子が存在すれば → 親画面へ
-  const {data: childData} = await sb.from('students').select('*').eq('parent_student_id', sid).maybeSingle();
-  if (childData) {
-    enterParent(childData, data);
-  } else {
-    enterStudent(data);
-  }
-}
 async function goRegister() {
   const nickname = (document.getElementById('registerNickname').value || '').trim();
   const errEl = document.getElementById('registerErr');
@@ -4514,41 +4361,6 @@ async function goRegister() {
   currentStudentId = data.id;
   toast('🎸 登録完了！ようこそ！');
   enterStudent(data);
-}
-
-function buildPinPad() {
-  const keys = ['1','2','3','4','5','6','7','8','9','','0','⌫'];
-  document.getElementById('pinPad').innerHTML = keys.map(k => {
-    if (!k) return '<div style="visibility:hidden"></div>';
-    return `<button class="pin-key ${k==='⌫'?'del':''}" onclick="pinKey('${k}')">${k}</button>`;
-  }).join('');
-}
-function pinKey(k) {
-  if (k === '⌫') pinBuf = pinBuf.slice(0,-1);
-  else { if (pinBuf.length >= 4) return; pinBuf += k; }
-  updateDots('pinDots', pinBuf.length);
-  document.getElementById('pinErr').textContent = '';
-  if (pinBuf.length === 4) setTimeout(verifyPin, 200);
-}
-async function verifyPin() {
-  const {data, error} = await sb.from('students').select('*').eq('id', pinSid).single();
-  if (error || !data) { pinFail(); return; }
-  const entered = await hashPin(pinBuf);
-  if (data.pin_hash === entered) {
-    currentStudentId = pinSid;
-    // parent_student_id を持つ子が存在すれば → 親画面へ
-    const {data: childData} = await sb.from('students').select('*').eq('parent_student_id', pinSid).maybeSingle();
-    if (childData) {
-      enterParent(childData, data);
-    } else {
-      enterStudent(data);
-    }
-  } else { pinFail(); }
-}
-function pinFail() {
-  pinBuf = '';
-  updateDots('pinDots', 0, true);
-  document.getElementById('pinErr').textContent = 'PINコードが違います。もう一度入力してください。';
 }
 
 // =====================================================================
@@ -4792,7 +4604,7 @@ function tutV2Start() {
 }
 
 function _tutV2HideMainUI() {
-  ['sNameBig','nextLessonCard','sStage','goalVideoBtn','homeNextLessonArea','recommendSongBanner','sHomeworkMini','sPraiseMini'].forEach(id => {
+  ['sNameBig','nextLessonCard','sStage','goalVideoBtn','homeNextLessonArea','sHomeworkMini','sPraiseMini'].forEach(id => {
     const el = document.getElementById(id); if (el) el.style.display = 'none';
   });
   ['.s-exp-block','.home-side-icons','.dev-lvup-btn'].forEach(sel => {
@@ -4967,9 +4779,8 @@ function _tutV2GoStep(step) {
         renderStudent(currentStudentData);
         const _ef12 = document.getElementById('sExpFill');
         if (_ef12) { _ef12.style.transition = 'none'; _ef12.style.width = '100%'; }
-        // renderStudent が homeNextLessonArea / おすすめ曲バナーを復元してしまうので再非表示
+        // renderStudent が homeNextLessonArea を復元してしまうので再非表示
         const _nla12 = document.getElementById('homeNextLessonArea'); if (_nla12) _nla12.style.display = 'none';
-        const _rsb12 = document.getElementById('recommendSongBanner'); if (_rsb12) _rsb12.style.display = 'none';
       }
       // レイアウトシフト防止：display:noneの要素をdisplay:''に戻しvisibility:hiddenで隠す
       ['sNameBig','sStage'].forEach(id => {
@@ -5388,7 +5199,6 @@ function _tutV2RevealAll() {
   const _tb = document.querySelector('.s-tab-bar'); if (_tb) { _tb.style.visibility = ''; _tb.style.pointerEvents = ''; _tb.style.animation = 'tut2UiReveal .6s cubic-bezier(.34,1.56,.64,1) both'; }
   reveal(document.getElementById('sStage'), 180);
   reveal(document.getElementById('homeNextLessonArea'), 120);
-  const _rsb = document.getElementById('recommendSongBanner'); if (_rsb && _recommendSong) _rsb.style.display = '';
   reveal(document.querySelector('.home-side-icons'), 240);
   reveal(document.querySelector('.dev-lvup-btn'), 0);
   reveal(document.querySelector('.s-exp-block'), 60);
@@ -6523,16 +6333,6 @@ function applyTheme(theme) {
 // =====================================================================
 // ★ 共通UI
 // =====================================================================
-function updateDots(cid, count, error=false) {
-  const container = document.getElementById(cid);
-  if (!container) return;
-  const dots = container.querySelectorAll('.pin-dot,.modal-dot');
-  dots.forEach((d,i) => {
-    d.className = d.classList.contains('modal-dot') ? 'modal-dot' : 'pin-dot';
-    if (i < count) d.classList.add('filled');
-    if (error) d.classList.add('error');
-  });
-}
 const _redFishUrl = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgNTAiPjxwYXRoIGQ9Ik0yMiwyNSBMMiw1IEwyLDQ1WiIgZmlsbD0iI2IzMWIxYiIvPjxlbGxpcHNlIGN4PSI1NCIgY3k9IjI1IiByeD0iMzQiIHJ5PSIxOSIgZmlsbD0iI2U2MjkyOSIvPjxlbGxpcHNlIGN4PSI1OCIgY3k9IjMwIiByeD0iMjAiIHJ5PSIxMSIgZmlsbD0iI2YwNzg3OCIgb3BhY2l0eT0iMC40Ii8+PHBhdGggZD0iTTM4LDcgUTUyLDAgNjYsNyBMNjMsMTEgUTUyLDUgNDEsMTFaIiBmaWxsPSIjYjMxYjFiIi8+PGVsbGlwc2UgY3g9IjUyIiBjeT0iMzMiIHJ4PSIxMCIgcnk9IjUiIGZpbGw9IiNiMzFiMWIiIHRyYW5zZm9ybT0icm90YXRlKDIwLDUyLDMzKSIvPjxjaXJjbGUgY3g9Ijc3IiBjeT0iMjEiIHI9IjUuNSIgZmlsbD0id2hpdGUiLz48Y2lyY2xlIGN4PSI3OCIgY3k9IjIxIiByPSIzIiBmaWxsPSIjMWExYTJlIi8+PGNpcmNsZSBjeD0iNzkiIGN5PSIyMCIgcj0iMS4yIiBmaWxsPSJ3aGl0ZSIvPjxwYXRoIGQ9Ik04OSwyNiBROTMsMjkgODksMzIiIHN0cm9rZT0iI2IzMWIxYiIgc3Ryb2tlLXdpZHRoPSIxLjgiIGZpbGw9Im5vbmUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjxwYXRoIGQ9Ik00OCwxNCBRNTMsMjAgNDgsMjYiIHN0cm9rZT0iI2NjMjIyMiIgc3Ryb2tlLXdpZHRoPSIxIiBmaWxsPSJub25lIiBvcGFjaXR5PSIwLjM1Ii8+PHBhdGggZD0iTTYwLDEyIFE2NSwxOCA2MCwyNCIgc3Ryb2tlPSIjY2MyMjIyIiBzdHJva2Utd2lkdGg9IjEiIGZpbGw9Im5vbmUiIG9wYWNpdHk9IjAuMzUiLz48L3N2Zz4=';
 function _tutV2SpawnSplash() {
   // バブル（画面下から上へ）
@@ -6628,10 +6428,6 @@ function toast(msg, type='') {
   setTimeout(() => el.classList.remove('show'), 2800);
 }
 function dateStr() { const d=new Date(); return `${d.getFullYear()}/${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')}`; }
-async function hashPin(pin) {
-  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(pin+'guitar-kaito-2025'));
-  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
-}
 function esc(s)   { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;'); }
 
 // ライフシステム
@@ -6659,14 +6455,6 @@ function renderTbookLife() {
     : `ライフがありません — 練習チェックインで回復します`;
 }
 // ヒントドロワー
-function openHintDrawer() {
-  const ov = document.getElementById('hintOverlay');
-  if (ov) ov.classList.add('show');
-}
-function closeHintDrawer() {
-  const ov = document.getElementById('hintOverlay');
-  if (ov) ov.classList.remove('show');
-}
 function escJs(s) { return String(s).replace(/\\/g,'\\\\').replace(/'/g,"\\'"); }
 
 // 画面が非表示になったときアニメーションを停止してバッテリー・発熱を抑える
@@ -7237,191 +7025,6 @@ document.addEventListener('DOMContentLoaded',initRouteMap);
   </div>
 </div>
 
-<!-- ヒントドロワー -->
-<div class="hint-overlay" id="hintOverlay" onclick="if(event.target===this)closeHintDrawer()">
-  <div class="hint-sheet" onclick="event.stopPropagation()">
-    <div class="hint-sheet-hdr">
-      <span>💡 練習のヒント</span>
-      <button class="hint-sheet-hdr-close" onclick="closeHintDrawer()">✕</button>
-    </div>
-            <div class="komatta-list">
-          <div class="komatta-group-hdr">📝 練習・継続のヒント</div>
-          <div class="komatta-item">
-            <div class="komatta-q" onclick="this.parentElement.classList.toggle('open')">
-              <span class="komatta-q-txt">🤔 指が痛くて練習できない</span><span class="komatta-arrow">›</span>
-            </div>
-            <div class="komatta-a">最初は指先が痛くなるのは普通です。毎日少しずつ続けることで指先にタコができてきます。無理せず1日10〜15分から。痛みが強い時は休息も大切です。</div>
-          </div>
-          <div class="komatta-item">
-            <div class="komatta-q" onclick="this.parentElement.classList.toggle('open')">
-              <span class="komatta-q-txt">⏱️ 練習時間が取れない</span><span class="komatta-arrow">›</span>
-            </div>
-            <div class="komatta-a">毎日5分でも効果があります。「テレビを見ながら左手だけコードの練習」「寝る前にチューニングだけ」など日常のすき間に組み込むのがおすすめです。</div>
-          </div>
-          <div class="komatta-item">
-            <div class="komatta-q" onclick="this.parentElement.classList.toggle('open')">
-              <span class="komatta-q-txt">💤 モチベーションが続かない</span><span class="komatta-arrow">›</span>
-            </div>
-            <div class="komatta-a">モチベーションは「弾けた！」という小さな成功体験で維持されます。目標が大きすぎる場合は1週間で達成できる小さな目標に分けましょう。好きな曲を練習に取り入れることが最大の原動力です。</div>
-          </div>
-          <div class="komatta-item">
-            <div class="komatta-q" onclick="this.parentElement.classList.toggle('open')">
-              <span class="komatta-q-txt">📊 上達の実感がない</span><span class="komatta-arrow">›</span>
-            </div>
-            <div class="komatta-a">上達は「ある日突然できるようになる」ことが多いです。1ヶ月前の自分と比べてみましょう。レベルやEXPバーの成長も立派な上達の証拠です！</div>
-          </div>
-          <div class="komatta-item">
-            <div class="komatta-q" onclick="this.parentElement.classList.toggle('open')">
-              <span class="komatta-q-txt">🤷 何を練習したらいいかわからない</span><span class="komatta-arrow">›</span>
-            </div>
-            <div class="komatta-a">まず「弾きたい曲を1曲決める」ことが一番のコツです。その曲に必要なコードを覚えていくと自然と目標が見えてきます。迷ったら遠慮なく先生に相談を！</div>
-          </div>
-
-          <div class="komatta-group-hdr">🎸 コード・フォームの壁</div>
-          <div class="komatta-item">
-            <div class="komatta-q" onclick="this.parentElement.classList.toggle('open')">
-              <span class="komatta-q-txt">🎸 コードがきれいに鳴らない</span><span class="komatta-arrow">›</span>
-            </div>
-            <div class="komatta-a">よくある原因は①フレットの端を押さえていない②指が他の弦に触れている、の2つです。指をなるべく立てて、フレットのすぐ横（ヘッド側）を押さえるのがポイントです。</div>
-          </div>
-          <div class="komatta-item">
-            <div class="komatta-q" onclick="this.parentElement.classList.toggle('open')">
-              <span class="komatta-q-txt">🔄 コードチェンジが間に合わない</span><span class="komatta-arrow">›</span>
-            </div>
-            <div class="komatta-a">コードチェンジは独立した練習が効果的です。曲を弾くのをやめてA→Bをひたすら往復するだけ。最初はゆっくり、メトロノームで徐々にテンポを上げていきましょう。</div>
-          </div>
-          <div class="komatta-item">
-            <div class="komatta-q" onclick="this.parentElement.classList.toggle('open')">
-              <span class="komatta-q-txt">🤲 Fコード・バレーコードが押さえられない</span><span class="komatta-arrow">›</span>
-            </div>
-            <div class="komatta-a">コツは①人差し指の側面（腹ではなく少し外側）で押さえる②1・2弦だけ鳴ればほぼOKと考える③親指をネック裏のやや下に引き出す、の3点。手首の角度を変えるだけで劇的に楽になることもあります。</div>
-          </div>
-          <div class="komatta-item">
-            <div class="komatta-q" onclick="this.parentElement.classList.toggle('open')">
-              <span class="komatta-q-txt">🃏 コードの種類が多くて覚えられない</span><span class="komatta-arrow">›</span>
-            </div>
-            <div class="komatta-a">最初はC・G・Am・Em・Fの5コードだけでOK！この5つで何百曲も弾けます。「今弾きたい曲に必要なコードだけ」に絞るのがコツで、使い続けることで指が自然に覚えていきます。</div>
-          </div>
-
-          <div class="komatta-group-hdr">🎵 演奏テクニックの悩み</div>
-          <div class="komatta-item">
-            <div class="komatta-q" onclick="this.parentElement.classList.toggle('open')">
-              <span class="komatta-q-txt">🥁 リズムがずれる・一定に弾けない</span><span class="komatta-arrow">›</span>
-            </div>
-            <div class="komatta-a">原因の多くは「先を読もうとして焦ること」です。確実に弾けるテンポの70〜80%から練習し、ゆっくり正確に弾けるようになると速いテンポでも自然と安定してきます。</div>
-          </div>
-          <div class="komatta-item">
-            <div class="komatta-q" onclick="this.parentElement.classList.toggle('open')">
-              <span class="komatta-q-txt">🪶 ピッキング・ストロークが安定しない</span><span class="komatta-arrow">›</span>
-            </div>
-            <div class="komatta-a">ピックは力を抜いて軽く持ち、手首を「ブラブラ」させるイメージで。弦に対してピックをわずかに傾けると引っかかりが減ります。力んでいると気づいたら一度止めてリラックス。</div>
-          </div>
-          <div class="komatta-item">
-            <div class="komatta-q" onclick="this.parentElement.classList.toggle('open')">
-              <span class="komatta-q-txt">🎻 アルペジオがうまくできない</span><span class="komatta-arrow">›</span>
-            </div>
-            <div class="komatta-a">右手と左手のタイミングを合わせるのが最初の壁です。まず右手のパターンだけを空弦（押さえずに）で練習し、馴染んだら左手でコードを押さえて合わせましょう。</div>
-          </div>
-          <div class="komatta-item">
-            <div class="komatta-q" onclick="this.parentElement.classList.toggle('open')">
-              <span class="komatta-q-txt">⚡ 速い曲・速いフレーズが弾けない</span><span class="komatta-arrow">›</span>
-            </div>
-            <div class="komatta-a">今の速度の50〜60%のテンポで完璧に弾けるようにしてから少しずつBPMを上げましょう。「速く弾く」より「ゆっくり丁寧に弾く」時間の方が確実に上達します。</div>
-          </div>
-          <div class="komatta-item">
-            <div class="komatta-q" onclick="this.parentElement.classList.toggle('open')">
-              <span class="komatta-q-txt">🎤 弾き語りはどう練習すればいい？</span><span class="komatta-arrow">›</span>
-            </div>
-            <div class="komatta-a">コツは「歌と伴奏を別々にマスターしてから合わせる」こと。コードとストロークだけで曲を通せるようになり、次に歌だけ練習。どちらも自動的にできるくらいになってから合わせましょう。</div>
-          </div>
-
-          <div class="komatta-group-hdr">🔧 ギター・道具について</div>
-          <div class="komatta-item">
-            <div class="komatta-q" onclick="this.parentElement.classList.toggle('open')">
-              <span class="komatta-q-txt">🎛️ チューニングが合わない</span><span class="komatta-arrow">›</span>
-            </div>
-            <div class="komatta-a">スマホのチューナーアプリ（GuitarTunaなど）が便利です。弦を張り替えた直後はずれやすいので、弾き始める前に毎回チューニングするクセをつけましょう。</div>
-          </div>
-          <div class="komatta-item">
-            <div class="komatta-q" onclick="this.parentElement.classList.toggle('open')">
-              <span class="komatta-q-txt">🔈 音がビビる・小さい</span><span class="komatta-arrow">›</span>
-            </div>
-            <div class="komatta-a">ビビりはフレットのすぐ横をしっかり押さえるだけで解消することが多いです。音量はサウンドホール付近でピッキングすると上がります。改善しない場合はネックの反りの可能性もあるので先生に相談を。</div>
-          </div>
-          <div class="komatta-item">
-            <div class="komatta-q" onclick="this.parentElement.classList.toggle('open')">
-              <span class="komatta-q-txt">🔧 弦の交換の仕方がわからない</span><span class="komatta-arrow">›</span>
-            </div>
-            <div class="komatta-a">慣れると10分でできます。①古い弦をゆるめて外す②新しい弦をペグに通して2〜3周巻く③チューニング。最初はレッスン時に先生に教わるのが一番早いです！</div>
-          </div>
-          <div class="komatta-item">
-            <div class="komatta-q" onclick="this.parentElement.classList.toggle('open')">
-              <span class="komatta-q-txt">🪕 ギターの選び方がわからない</span><span class="komatta-arrow">›</span>
-            </div>
-            <div class="komatta-a">まず「アコースティック」か「エレキ」かを好きな音楽のジャンルで選びましょう。予算は入門セットで2〜3万円が目安。ブランドより「弾きたいと思えるデザイン」を優先するのも大切です。迷ったら先生に相談！</div>
-          </div>
-
-          <div class="komatta-group-hdr">🌟 音楽・表現・メンタル</div>
-          <div class="komatta-item">
-            <div class="komatta-q" onclick="this.parentElement.classList.toggle('open')">
-              <span class="komatta-q-txt">🎵 どの曲から始めればいい？</span><span class="komatta-arrow">›</span>
-            </div>
-            <div class="komatta-a">コードが少なくテンポがゆっくりな曲がおすすめです。C・G・Am・Fの4コードで弾ける曲は数え切れないほどあります。好きな曲を先生に相談してみてください！</div>
-          </div>
-          <div class="komatta-item">
-            <div class="komatta-q" onclick="this.parentElement.classList.toggle('open')">
-              <span class="komatta-q-txt">🎼 楽譜が読めない・難しい</span><span class="komatta-arrow">›</span>
-            </div>
-            <div class="komatta-a">ギターにはTAB譜（タブ譜）という専用の楽譜があり、数字で弦とフレットを表すのでとても読みやすいです。五線譜が読めなくても全く問題ありません！</div>
-          </div>
-          <div class="komatta-item">
-            <div class="komatta-q" onclick="this.parentElement.classList.toggle('open')">
-              <span class="komatta-q-txt">😰 人前で緊張してうまく弾けない</span><span class="komatta-arrow">›</span>
-            </div>
-            <div class="komatta-a">緊張は「慣れ」の問題です。まずは家族や友人1人の前で弾くことから始めましょう。緊張すると速くなりがちなので、ゆっくりテンポを意識して。失敗しても止まらず弾き続けることが大切！</div>
-          </div>
-          <div class="komatta-item">
-            <div class="komatta-q" onclick="this.parentElement.classList.toggle('open')">
-              <span class="komatta-q-txt">📹 自分の弾き方が正しいか不安</span><span class="komatta-arrow">›</span>
-            </div>
-            <div class="komatta-a">スマホで動画を撮って見返すのが一番効果的です。レッスンで先生に動画を見せると的確なアドバイスをもらえます。無理のない自然な姿勢で弾けていれば基本OKです！</div>
-          </div>
-        </div>
-  </div>
-</div>
-
-<!-- プレミアムモーダル -->
-<div class="premium-modal-overlay" id="premiumModalOverlay" onclick="if(event.target===this)closePremiumModal()">
-  <div class="premium-modal">
-    <div class="pm-handle"></div>
-    <div class="pm-title">🐚 プレミアムプラン</div>
-    <div class="pm-sub">教室の外でもギターを楽しもう</div>
-    <div class="pm-plans">
-      <div class="pm-plan free">
-        <div class="pm-plan-badge">FREE</div>
-        <div class="pm-plan-name">無料プラン</div>
-        <div class="pm-plan-price">¥0 / 月</div>
-        <div class="pm-feature"><span class="pm-feature-on">✓</span> レベル5まで</div>
-        <div class="pm-feature"><span class="pm-feature-on">✓</span> タイムライン閲覧</div>
-        <div class="pm-feature"><span class="pm-feature-off">✕</span> タイムライン投稿</div>
-        <div class="pm-feature"><span class="pm-feature-off">✕</span> ミッション全解放</div>
-        <div class="pm-feature"><span class="pm-feature-off">✕</span> レベル無制限</div>
-      </div>
-      <div class="pm-plan paid">
-        <div class="pm-plan-badge">PREMIUM ★</div>
-        <div class="pm-plan-name">プレミアム</div>
-        <div class="pm-plan-price">近日公開</div>
-        <div class="pm-feature"><span class="pm-feature-on">✓</span> レベル無制限</div>
-        <div class="pm-feature"><span class="pm-feature-on">✓</span> タイムライン投稿</div>
-        <div class="pm-feature"><span class="pm-feature-on">✓</span> ミッション全解放</div>
-        <div class="pm-feature"><span class="pm-feature-on">✓</span> レッスン記録保存</div>
-        <div class="pm-feature"><span class="pm-feature-on">✓</span> 今後の特典も</div>
-      </div>
-    </div>
-    <button class="pm-cta" onclick="closePremiumModal();toast('📩 LINEでご連絡ください！')">詳細・お申し込みはLINEで 🐬</button>
-    <span class="pm-close" onclick="closePremiumModal()">閉じる</span>
-  </div>
-</div>
 
 <!-- マスタリー更新ボトムシート -->
 <!-- 録音画面 -->
