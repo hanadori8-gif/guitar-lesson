@@ -1518,8 +1518,8 @@ body{background:#f0ebe0!important;}
         <input type="text" id="stuSearchInput" placeholder="生徒名で検索" oninput="_onStuSearch(this.value)">
       </div>
       <div class="si2-sortrow" style="margin:0 8px;">
-        <button class="si2-sorttab active" onclick="_setStuSort('reg')" id="ssReg">登録順</button>
-        <button class="si2-sorttab" onclick="_setStuSort('recent')" id="ssRecent">直近来た順</button>
+        <button class="si2-sorttab" onclick="_setStuSort('reg')" id="ssReg">登録順</button>
+        <button class="si2-sorttab active" onclick="_setStuSort('recent')" id="ssRecent">直近来た順</button>
         <button class="si2-sorttab" onclick="_setStuSort('old')" id="ssOld">来ていない順</button>
       </div>
       <div id="studentListArea" style="padding:0 8px;"><div class="loading-inline">読み込み中... 🌊</div></div>
@@ -2784,10 +2784,10 @@ function _calShowDayPopup(dateStr) {
   const ov = document.createElement('div');
   ov.id = '_calDayPopup';
   ov.onclick = e => { if (e.target === ov) ov.remove(); };
-  ov.style.cssText = 'position:fixed;inset:0;z-index:600;background:rgba(0,0,0,.45);display:flex;align-items:flex-end;justify-content:center;';
-  ov.innerHTML = `<div style="width:100%;max-width:460px;max-height:82vh;overflow-y:auto;padding:14px 14px calc(14px + env(safe-area-inset-bottom,0px));box-sizing:border-box;">
+  ov.style.cssText = 'position:fixed;inset:0;z-index:600;background:transparent;display:flex;align-items:flex-start;justify-content:center;padding-top:min(14vh,120px);';
+  ov.innerHTML = `<div style="width:100%;max-width:460px;max-height:70vh;overflow-y:auto;padding:14px 14px calc(14px + env(safe-area-inset-bottom,0px));box-sizing:border-box;">
     ${_renderSelectedDayTimeline(dateStr)}
-    <button onclick="document.getElementById('_calDayPopup').remove()" style="display:block;width:100%;margin-top:10px;background:rgba(255,255,255,.92);border:none;border-radius:12px;padding:12px;color:#778899;font-size:14px;font-weight:700;cursor:pointer;font-family:var(--hf);">閉じる</button>
+    <button onclick="document.getElementById('_calDayPopup').remove()" style="display:block;width:100%;margin-top:10px;background:rgba(255,255,255,.92);border:none;border-radius:12px;padding:12px;color:#778899;font-size:14px;font-weight:700;cursor:pointer;font-family:var(--hf);box-shadow:0 4px 16px rgba(0,40,60,.15);">閉じる</button>
   </div>`;
   document.body.appendChild(ov);
 }
@@ -3343,7 +3343,7 @@ async function saveLesson() {
 }
 
 // ===== 生徒管理 =====
-let _stuSort = 'reg';
+let _stuSort = 'recent';
 let _stuSearchQuery = '';
 function _onStuSearch(v) {
   _stuSearchQuery = (v || '').trim();
