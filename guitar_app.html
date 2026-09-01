@@ -611,20 +611,6 @@ body{font-family:'Zen Maru Gothic','Helvetica Neue','Hiragino Sans','Meiryo',san
 .tl-songs-preview{display:flex;flex-wrap:wrap;gap:4px;margin-top:5px;}
 .tl-song-chip{background:rgba(255,255,255,.15);border-radius:20px;padding:2px 8px;font-size:11px;color:rgba(255,255,255,.85);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:140px;}
 .tl-song-more{background:rgba(255,255,255,.08);color:rgba(255,255,255,.55);}
-/* 曲リストポップアップ（タイムライン投稿タップ時） */
-.post-songs-ov{position:fixed;inset:0;z-index:350;background:rgba(0,0,0,.45);display:none;align-items:flex-end;justify-content:center;}
-.post-songs-ov.show{display:flex;}
-.post-songs-sheet{background:white;border-radius:22px 22px 0 0;padding:20px 20px calc(env(safe-area-inset-bottom,0px) + 28px);width:100%;max-width:480px;animation:slideUp .25s ease;}
-.post-songs-sheet details[open]>summary{display:none;}
-.post-songs-hdr{display:flex;align-items:center;gap:10px;margin-bottom:16px;}
-.post-songs-char{width:44px;height:44px;object-fit:contain;border-radius:50%;background:rgba(0,150,220,.1);}
-.post-songs-title{font-size:13px;font-weight:800;color:#1a1a1a;}
-.post-songs-sub{font-size:11px;color:#aaa;margin-top:1px;}
-.post-songs-item{display:flex;align-items:center;gap:10px;padding:11px 14px;background:linear-gradient(135deg,rgba(0,150,220,.06),rgba(0,100,180,.03));border-radius:12px;margin-bottom:8px;border:1.5px solid rgba(0,150,220,.1);}
-.post-songs-item:last-child{margin-bottom:0;}
-.post-songs-ico{font-size:20px;flex-shrink:0;}
-.post-songs-name{font-size:15px;font-weight:700;color:#003060;}
-.post-songs-empty{text-align:center;padding:16px 0;color:#bbb;font-size:14px;}
 /* 保護者画面 */
 #sParent{position:fixed!important;inset:0;overflow:hidden;min-height:unset;}
 .prt-screen{height:100%;display:flex;flex-direction:column;background:var(--ocean-grad);}
@@ -1400,25 +1386,6 @@ body{background:#f0ebe0!important;}
       <button class="home-sheet-close" onclick="closeMonthlySummary()">✕</button>
     </div>
     <div id="monthlySummaryContent" style="padding:16px;overflow-y:auto;"></div>
-  </div>
-</div>
-
-<!-- 曲リストポップアップ（タイムライン投稿タップ時） -->
-<div class="post-songs-ov" id="postSongsOv" onclick="closePostSongs()">
-  <div class="post-songs-sheet" onclick="event.stopPropagation()">
-    <div class="post-songs-hdr">
-      <img class="post-songs-char" id="postSongsChar" src="">
-      <div>
-        <div class="post-songs-title" id="postSongsTitle">練習中の曲</div>
-        <div class="post-songs-sub" id="postSongsSub">この人が挑戦した曲</div>
-      </div>
-    </div>
-    <div id="postSongsList"></div>
-    <div id="postBadgesSection" style="display:none;margin-top:12px;border-top:1px solid rgba(0,0,0,.06);padding-top:12px;">
-      <div style="font-size:11px;font-weight:800;color:#888;margin-bottom:8px;">🏅 獲得バッジ</div>
-      <div id="postBadgesList"></div>
-    </div>
-    <button onclick="closePostSongs()" style="width:100%;margin-top:14px;padding:13px;border:1.5px solid #e5e7eb;background:white;border-radius:14px;font-size:14px;font-weight:700;color:#888;cursor:pointer;font-family:var(--hf);">閉じる</button>
   </div>
 </div>
 
@@ -5853,53 +5820,6 @@ function _applyAlreadyPosted(list) {
   }
 }
 
-async function showPostSongs(charId, studentId) {
-  const ov = document.getElementById('postSongsOv');
-  if (!ov) return;
-  const _cObj = CHARS.find(c => c.id === charId) || CHARS[0];
-  document.getElementById('postSongsChar').src = _cObj.img;
-  document.getElementById('postSongsTitle').textContent = '読み込み中…';
-  document.getElementById('postSongsSub').textContent = 'この人が挑戦した曲';
-  const list = document.getElementById('postSongsList');
-  list.innerHTML = '<div class="post-songs-empty">読み込み中…</div>';
-  const badgesSection = document.getElementById('postBadgesSection');
-  const badgesList = document.getElementById('postBadgesList');
-  if (badgesSection) { badgesSection.style.display = ''; badgesList.innerHTML = ''; }
-  ov.classList.add('show');
-  if (studentId) {
-    try {
-      const {data: _sdRows} = await sb.rpc('rpc_get_public_profile', {p_student_id: studentId});
-      const _sdata = (_sdRows && _sdRows[0]) || {};
-      document.getElementById('postSongsTitle').textContent = _sdata.name || '';
-      const _songRow = n => `<div class="post-songs-item"><span class="post-songs-ico">🎵</span><span class="post-songs-name">${esc(n)}</span></div>`;
-      if (_sdata.songs && _sdata.songs.length) {
-        const _visSongs = _sdata.songs.slice(0, 3);
-        const _hidSongs = _sdata.songs.slice(3);
-        list.innerHTML = _visSongs.map(_songRow).join('') +
-          (_hidSongs.length ? `<details style="margin-top:4px;"><summary style="font-size:11px;color:#888;cursor:pointer;padding:4px 0;list-style:none;text-align:center;">もっと見る（${_hidSongs.length}件）▼</summary><div style="margin-top:4px;">${_hidSongs.map(_songRow).join('')}</div></details>` : '');
-      } else {
-        list.innerHTML = '<div class="post-songs-empty">まだ曲が登録されていません</div>';
-      }
-      if (badgesSection && badgesList) {
-        const earned = BADGES_DEF.filter(b => b.check(_sdata));
-        if (earned.length) {
-          const _badgeRow = b => `<div style="display:flex;align-items:center;gap:8px;padding:7px 10px;background:linear-gradient(135deg,rgba(255,200,0,.08),rgba(255,150,0,.04));border-radius:10px;margin-bottom:6px;border:1px solid rgba(255,200,0,.2);"><span style="font-size:18px;flex-shrink:0;">${b.icon}</span><span style="font-size:12px;font-weight:700;color:#92400e;">${esc(b.label)}</span></div>`;
-          const _visBadges = earned.slice(0, 3);
-          const _hidBadges = earned.slice(3);
-          badgesList.innerHTML = _visBadges.map(_badgeRow).join('') +
-            (_hidBadges.length ? `<details><summary style="font-size:11px;color:#888;cursor:pointer;padding:4px 0;list-style:none;text-align:center;">もっと見る（${_hidBadges.length}件）▼</summary><div style="margin-top:4px;">${_hidBadges.map(_badgeRow).join('')}</div></details>` : '');
-        } else {
-          badgesList.innerHTML = '<div class="post-songs-empty" style="font-size:12px;">まだバッジはありません</div>';
-        }
-      }
-    } catch(e) { if (badgesSection) badgesSection.style.display = 'none'; }
-  }
-}
-function closePostSongs() {
-  const ov = document.getElementById('postSongsOv');
-  if (ov) ov.classList.remove('show');
-}
-
 function renderSharedPosts(posts) {
   const el = document.getElementById('sSharedTimeline');
   if (!el) return;
@@ -5935,7 +5855,7 @@ function renderSharedPosts(posts) {
       .replace(/^🎸 練習した！（(\d+)日連続🔥）$/, '$1日連続')
       .replace(/^🎸 /, '')
       .replace(/^🔥 /, '');
-    return `<div class="tl-post${isOwn ? ' own' : ''}" onclick="showPostSongs('${escJs(p.char_id||'')}','${escJs(p.student_id||'')}')" style="cursor:pointer;-webkit-tap-highlight-color:transparent;">
+    return `<div class="tl-post${isOwn ? ' own' : ''}">
       <div class="tl-post-icon"><img src="${_cObj.img}" style="width:36px;height:36px;object-fit:contain;"></div>
       <div style="flex:1;min-width:0;">
         <div class="tl-post-phrase">${esc(_displayPhrase)}</div>
@@ -6875,7 +6795,7 @@ function renderNakamaFeed(posts) {
       return `<div class="rm-feed-hw">${esc(t)}${phrase}</div>`;
     }).join('') : '';
     const songLine = primarySong ? `<div class="rm-feed-song">🎵 ${esc(primarySong)}</div>` : '';
-    return `<div class="rm-feed-card" onclick="showPostSongs('${escJs(p.char_id||'')}','${escJs(p.student_id||'')}')" style="cursor:pointer;">
+    return `<div class="rm-feed-card">
       <div class="rm-feed-left">
         <div class="rm-feed-char-circle"><img src="${charObj.img}" style="width:48px;height:48px;object-fit:contain;"></div>
         ${cmBadge}
