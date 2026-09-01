@@ -2938,6 +2938,7 @@ function _renderSelectedDayTimeline(dateStr) {
 function _calOpenLessonRecord(studentId) {
   const s = students.find(x => x.id === studentId);
   if (!s) { toast('生徒が見つかりません'); return; }
+  document.getElementById('_calDayPopup')?.remove();
   _seqMode = false;
   teacherSid = s.id;
   _showSeqFormOverlay();
