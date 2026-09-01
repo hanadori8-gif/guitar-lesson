@@ -412,15 +412,6 @@ body{font-family:'Zen Maru Gothic','Helvetica Neue','Hiragino Sans','Meiryo',san
   font-size:10px;color:var(--text-mid);white-space:nowrap;font-weight:600;}
 .shelf-wrap{padding-bottom:28px;}
 
-/* テーマ */
-.theme-btns{display:flex;gap:8px;}
-.theme-btn{flex:1;padding:10px 6px;border:2px solid transparent;border-radius:var(--radius-sm);
-  font-size:12px;font-weight:700;cursor:pointer;text-align:center;transition:all .2s;}
-.theme-btn.normal{background:linear-gradient(135deg,#0077b6,#00b4d8);color:white;}
-.theme-btn.summer{background:linear-gradient(135deg,#ff6b35,#ffd166);color:white;}
-.theme-btn.gold{background:linear-gradient(135deg,#b8860b,#ffd700);color:white;}
-.theme-btn.active{box-shadow:0 0 0 3px white,0 0 0 5px var(--ocean-deep);}
-
 /* トースト・レベルアップ */
 .toast{position:fixed;top:70px;left:50%;transform:translateX(-50%) translateY(-20px);
   background:#0077a8;color:white;padding:12px 24px;border-radius:24px;
@@ -1151,12 +1142,6 @@ body{background:#f0ebe0!important;}
 .mastery-sheet-body{position:absolute;bottom:0;left:0;right:0;background:#fffaf4;border-radius:28px 28px 0 0;padding:22px 20px 44px;box-shadow:0 -8px 40px rgba(44,26,14,.25);}
 .mastery-sheet-title{font-size:18px;font-weight:900;color:#2c1a0e;margin-bottom:4px;}
 .mastery-sheet-sub{font-size:12px;color:#a08870;margin-bottom:18px;}
-.mastery-option{display:flex;align-items:center;gap:12px;padding:13px 16px;border-radius:14px;margin-bottom:6px;cursor:pointer;border:2px solid transparent;background:#f0ebe0;transition:all .18s;}
-.mastery-option.cur{background:#fef9ec;border-color:#fde8a0;}
-.mastery-option:not(.cur):hover{background:#f5ede0;border-color:rgba(245,166,35,.3);}
-.mastery-option-num{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#f5a623,#e8844a);color:white;font-size:13px;font-weight:900;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
-.mastery-option-label{font-size:14px;font-weight:800;color:#2c1a0e;}
-.mastery-option-desc{font-size:11px;color:#a08870;margin-top:2px;}
 /* === ビーチ装飾レイヤー === */
 #sp-home{overflow:hidden!important;}
 .h-beach-sun{position:absolute;top:28px;right:44px;width:52px;height:52px;background:radial-gradient(circle,#fff8c0 0%,#ffd040 50%,#f5a020 100%);border-radius:50%;box-shadow:0 0 36px rgba(255,200,50,.5);z-index:1;pointer-events:none;}
@@ -1793,27 +1778,6 @@ body{background:#f0ebe0!important;}
         </div>
       </div>
 
-      <!-- 曲選択ボトムシート -->
-      <div id="songSelectSheet" onclick="if(event.target===this)closeSongSelectSheet()" style="display:none;position:absolute;inset:0;z-index:30;background:rgba(0,0,0,.45);flex-direction:column;justify-content:flex-end;">
-        <div style="background:white;border-radius:24px 24px 0 0;padding:0 0 24px;max-height:70%;overflow-y:auto;">
-          <div style="width:40px;height:4px;background:#ddd;border-radius:2px;margin:12px auto 14px;"></div>
-          <div style="padding:0 18px;">
-            <div style="margin-bottom:10px;">
-              <div style="font-size:16px;font-weight:900;color:#003D52;">曲を選ぶ</div>
-            </div>
-            <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;padding:10px 14px;background:#f4f8fb;border-radius:14px;">
-              <div style="font-size:10px;color:#aaa;font-weight:700;letter-spacing:.04em;white-space:nowrap;">難易度</div>
-              <div style="background:#EBF8FF;border-radius:22px;padding:3px;display:inline-flex;gap:2px;flex:1;">
-                <button onclick="setRmDifficulty('nobinobi')" id="diffBtn_nobinobi" style="flex:1;padding:7px 4px;border:none;border-radius:19px;font-size:11px;font-weight:900;cursor:pointer;font-family:inherit;background:transparent;color:#9ca3af;transition:all .18s;">かんたん</button>
-                <button onclick="setRmDifficulty('jikkuri')" id="diffBtn_jikkuri" style="flex:1;padding:7px 4px;border:none;border-radius:19px;font-size:11px;font-weight:900;cursor:pointer;font-family:inherit;background:white;color:#0096C7;box-shadow:0 1px 5px rgba(0,0,0,.13);transition:all .18s;">ふつう</button>
-                <button onclick="setRmDifficulty('tokoton')" id="diffBtn_tokoton" style="flex:1;padding:7px 4px;border:none;border-radius:19px;font-size:11px;font-weight:900;cursor:pointer;font-family:inherit;background:transparent;color:#9ca3af;transition:all .18s;">むずかしい</button>
-              </div>
-            </div>
-            <div id="songSelectList"></div>
-            <button onclick="closeSongSelectSheet()" style="display:block;width:100%;background:#f4f8fb;border:none;border-radius:12px;padding:12px;color:#778899;font-size:14px;font-weight:700;margin-top:8px;cursor:pointer;">キャンセル</button>
-          </div>
-        </div>
-      </div>
 
       <!-- キャラ解放オーバーレイ -->
       <div id="rmCharUnlock" style="display:none;position:absolute;inset:0;z-index:35;background:rgba(0,0,0,.82);flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:32px;text-align:center;">
@@ -2352,6 +2316,7 @@ let isGuest = false;
 let detailStudentId = null;
 let studentChannel = null;
 let teacherChannel = null;
+let parentChannel = null;
 
 // =====================================================================
 // ★ 初期化
@@ -2725,7 +2690,7 @@ async function _todayRemove(sid, type) {
   } else if (type === 'cancel') {
     const s = students.find(x => x.id === sid);
     if (s) {
-      const newTl = [{type:'cancel', text:'直前キャンセル', date: todayJST()}, ...(s.timeline || [])].slice(0, 80);
+      const newTl = [{type:'cancel', text:'直前キャンセル', date: todayJST()}, ...(s.timeline || [])].slice(0, 150);
       await sb.from('students').update({timeline: newTl}).eq('id', sid);
     }
     _renderTodayCard();
@@ -2761,21 +2726,6 @@ function _todayAddById(sid) {
   toast('✅ ' + esc(s.name) + ' を追加しました');
 }
 
-function _startLessonSeq() {
-  const todayStr = todayJST();
-  const list = _getTodayList();
-  list.sort((a, b) => {
-    if (!a.next_lesson_at) return 1;
-    if (!b.next_lesson_at) return -1;
-    return a.next_lesson_at > b.next_lesson_at ? 1 : -1;
-  });
-  _seqStudents = list.filter(s => !(s.last_lesson_at && s.last_lesson_at.slice(0,10) === todayStr));
-  if (!_seqStudents.length) { toast('全員の記録が完了しています ✅'); return; }
-  _seqMode = true;
-  _seqIdx = 0;
-  _showSeqForm();
-}
-
 function _showSeqForm() {
   const s = _seqStudents[_seqIdx];
   if (!s) return;
@@ -2809,8 +2759,6 @@ function _seqNext() {
     _showSeqForm();
   }
 }
-
-function _seqSkip() { _seqNext(); }
 
 function _exitSeqMode() {
   _seqMode = false; _seqStudents = []; _seqIdx = 0;
@@ -3519,7 +3467,7 @@ async function saveLesson() {
   if (hw && !_seqHwItems.includes(hw)) _seqHwItems.push(hw);
   const hwEntries = _seqHwItems.map(t => ({type:'hw', text:t, exp:0, date:today}));
 
-  const newTimeline = [...hwEntries, ...entries.map(e=>({date:today,...e})), ...(s.timeline||[])].slice(0,50);
+  const newTimeline = [...hwEntries, ...entries.map(e=>({date:today,...e})), ...(s.timeline||[])].slice(0,150);
   const newExp = (s.total_exp || 0) + exp;
 
   const _songInVal = (document.getElementById('songIn')?.value || '').trim();
@@ -3535,7 +3483,7 @@ async function saveLesson() {
       const _d = (document.getElementById('nextLessonDateIn') || {}).value || '';
       const _t = (document.getElementById('nextLessonTimeIn') || {}).value || '';
       if (!_d) return {};
-      const _dt = new Date(_d + 'T' + (_t || '00:00'));
+      const _dt = new Date(`${_d}T${_t || '00:00'}:00+09:00`);
       const _wd = ['日','月','火','水','木','金','土'][_dt.getDay()];
       const _lbl = `${_dt.getMonth()+1}月${_dt.getDate()}日(${_wd})${_t ? ' '+_t : ''}`;
       return { next_lesson: _lbl, next_lesson_at: _dt.toISOString() };
@@ -3563,20 +3511,6 @@ async function saveLesson() {
     document.getElementById('seqFormView').style.display = 'none';
     document.getElementById('todayDashView').style.display = '';
   }
-}
-
-async function addSong() {
-  if (!teacherSid) return;
-  const inp = document.getElementById('songIn');
-  const name = inp.value.trim();
-  if (!name) { toast('曲名を入力してください'); return; }
-  const s = students.find(x => x.id === teacherSid);
-  const songs = s ? [...(s.songs||[])] : [];
-  if (songs.includes(name)) { toast('すでに追加されています'); return; }
-  songs.push(name);
-  const {error} = await sb.from('students').update({songs}).eq('id', teacherSid);
-  if (!error) { inp.value = ''; toast(`🎵 「${name}」を追加しました！`); await loadStudents(); }
-  else toast('追加に失敗しました');
 }
 
 // ===== 生徒管理 =====
@@ -3671,11 +3605,6 @@ function renderStudentList() {
   renderMonthSummary();
 }
 
-async function toggleSimpleMode(id, newVal) {
-  await loadStudents();
-  if (detailStudentId === id) showStudentDetail(id);
-}
-
 async function renameStudent(id, currentName) {
   const newName = prompt('新しい名前を入力してください', currentName);
   if (!newName || newName.trim() === currentName) return;
@@ -3703,6 +3632,7 @@ async function enterParent(studentData, selfData) {
   const switchBtn = document.getElementById('prtSwitchBtn');
   if (switchBtn) switchBtn.style.display = _parentSelf ? '' : 'none';
   const s = studentData;
+  const _prtTl = typeof s.timeline === 'string' ? JSON.parse(s.timeline || '[]') : (s.timeline || []);
 
   // ヘッダー
   document.getElementById('prtChildName').textContent = s.name + 'さん';
@@ -3727,7 +3657,7 @@ async function enterParent(studentData, selfData) {
   // 直前キャンセル通知
   const cancelNoteEl = document.getElementById('prtCancelNote');
   if (cancelNoteEl) {
-    const _cItems = (s.timeline || []).filter(e => e.type === 'cancel').slice(0, 1);
+    const _cItems = _prtTl.filter(e => e.type === 'cancel').slice(0, 1);
     if (_cItems.length) {
       cancelNoteEl.style.display = '';
       cancelNoteEl.innerHTML = `<div style="background:#fff7ed;border:1.5px solid #fde68a;border-radius:10px;padding:8px 12px;font-size:12px;font-weight:700;color:#92400e;">${esc(_cItems[0].text||'')}（${fmtDate(_cItems[0].date)}）</div>`;
@@ -3737,7 +3667,7 @@ async function enterParent(studentData, selfData) {
   }
 
   // 先生から褒められたこと（常時表示・最新1件 + 2件目以降アコーディオン）
-  const shells = (s.timeline || []).filter(e => e.type === 'shell');
+  const shells = _prtTl.filter(e => e.type === 'shell');
   const praiseEl = document.getElementById('prtPraise');
   const praiseMoreEl = document.getElementById('prtPraiseMore');
   const praiseMoreBody = document.getElementById('prtPraiseMoreBody');
@@ -3761,7 +3691,7 @@ async function enterParent(studentData, selfData) {
   if (lockCard) lockCard.style.display = 'none';
   // 2列チップカード（曲 + 最新チャレンジ）
   const _songs = s.songs || [];
-  const _hwItems = (s.timeline || []).filter(e => e.type === 'hw');
+  const _hwItems = _prtTl.filter(e => e.type === 'hw');
   if (songChalCard) songChalCard.style.display = '';
   const _songChipText = document.getElementById('prtSongChipText');
   const _chalChipText = document.getElementById('prtChalChipText');
@@ -3791,10 +3721,31 @@ async function enterParent(studentData, selfData) {
   }
   // 親画面FESカード更新
   _renderParentFesCard();
+
+  // リアルタイム更新（先生がレッスン後に宿題・次回予定を保存したら開きっぱなしの保護者画面にも反映する）
+  if (parentChannel) sb.removeChannel(parentChannel);
+  parentChannel = sb.channel('parent-' + _prtChildId)
+    .on('postgres_changes', {event:'UPDATE', schema:'public', table:'students', filter:`id=eq.${_prtChildId}`},
+      async () => {
+        let _rtData = null;
+        try {
+          if (_prtParentLineId) {
+            const {data:_rtRows} = await sb.rpc('rpc_lookup_child_by_parent_line', {p_parent_line_user_id: _prtParentLineId});
+            _rtData = _rtRows && _rtRows[0];
+          }
+          if (!_rtData) {
+            const {data} = await sb.from('students').select('*').eq('id', _prtChildId).maybeSingle();
+            _rtData = data;
+          }
+        } catch(e) {}
+        if (_rtData) enterParent(_rtData);
+      })
+    .subscribe();
 }
 
 function _switchToOwnAccount() {
   if (!_parentSelf) return;
+  if (parentChannel) { sb.removeChannel(parentChannel); parentChannel = null; }
   const self = _parentSelf;
   _parentSelf = null;
   currentStudentId = self.id;
@@ -3836,7 +3787,7 @@ async function doParentGiftSushi() {
   if (btn) { btn.disabled = true; btn.textContent = '送信中...'; }
   const {error: upErr} = await sb.rpc('rpc_student_self_update', {
     p_student_id: _prtChildId, p_line_user_id: _prtParentLineId,
-    p_timeline_prepend: {type:'parent_sushi', ts: Date.now()}
+    p_timeline_prepend: {type:'parent_sushi', ts: Date.now()}, p_timeline_limit: 150
   });
   if (upErr) {
     if (btn) { btn.disabled = false; btn.textContent = '🎁 エサをプレゼントする！'; }
@@ -3856,7 +3807,7 @@ async function _parentCancelLesson() {
   await sb.rpc('rpc_student_self_update', {
     p_student_id: _prtChildId, p_line_user_id: _prtParentLineId,
     p_timeline_prepend: {type:'cancel', text:label, date: new Date().toISOString().slice(0,10)},
-    p_clear_next_lesson: true
+    p_clear_next_lesson: true, p_timeline_limit: 150
   });
   _prtChildNextAt = null;
   document.getElementById('prtNextLesson').innerHTML = `<div class="prt-empty">まだ予定が登録されていません</div>`;
@@ -4084,9 +4035,6 @@ function showStudentDetail(sid) {
     document.getElementById('detailTimeline').innerHTML = tlHtml;
   }
 
-  const nlInput = document.getElementById('nextLessonInput');
-  if (nlInput) nlInput.value = s.next_lesson || '';
-
   // info bar
   const infoBar = document.getElementById('detailInfoBar');
   if (infoBar) {
@@ -4234,7 +4182,7 @@ async function addLessonRecord() {
   const hwEntries = _lessonHwItems.map(t => ({ type: 'hw', text: t, date: dateStr() }));
   const entry = { type: 'lesson', text: 'レッスン来訪', exp, date: dateStr() };
   const newExp = (s.total_exp || 0) + exp;
-  const newTl  = [...hwEntries, entry, ...(s.timeline || [])].slice(0, 80);
+  const newTl  = [...hwEntries, entry, ...(s.timeline || [])].slice(0, 150);
 
   // 曲：新しい曲のみ追加
   const existingSongs = s.songs || [];
@@ -4266,10 +4214,6 @@ async function addLessonRecord() {
 // =====================================================================
 // ★ 生徒認証
 // =====================================================================
-function _showTeacherLogin() {
-  goScreen('sTeacherLogin');
-}
-
 async function goRegister() {
   const nickname = (document.getElementById('registerNickname').value || '').trim();
   const errEl = document.getElementById('registerErr');
@@ -4521,16 +4465,6 @@ let _tutV2StudentId = null;
 let _tutV2WaitAction = null;
 let _tutV2PracticeSnapshot = null;
 let _tutV2NextLock = false;
-
-function tutV2Start() {
-  if (_tutV2Active) return;
-  _tutV2Active = true;
-  _tutV2StudentId = currentStudentId;
-  document.getElementById('tutV2Skip').style.display = 'block';
-  _tutV2HideMainUI();
-  _tutV2SetInitialStage();
-  _tutV2GoStep(0);
-}
 
 function _tutV2HideMainUI() {
   ['sNameBig','nextLessonCard','sStage','goalVideoBtn','homeNextLessonArea','sHomeworkMini','sPraiseMini'].forEach(id => {
@@ -4920,27 +4854,6 @@ function _tutV2BringKumanomi() {
   setTimeout(() => { if (_tutV2Active) _tutV2ShowBubble(`僕は${starter.name}！\n今からアプリの使い方を教えるね`, true); }, 1800);
 }
 
-function _tutV2ShowPracticeTabOnly() {
-  ['stab-home','stab-homework'].forEach(id => {
-    const el = document.getElementById(id); if (el) { el.style.visibility = 'hidden'; el.style.pointerEvents = 'none'; }
-  });
-  const stl = document.getElementById('stab-timeline');
-  if (stl) {
-    stl.style.background = 'linear-gradient(135deg,#00eaff,#0099dd)';
-    stl.style.color = '#fff';
-    stl.style.border = '2px solid rgba(255,255,255,.85)';
-    stl.style.boxShadow = '0 0 0 4px rgba(0,220,255,.35)';
-    stl.style.filter = 'brightness(1.12)';
-    stl.style.animation = 'tutTabGlow .9s ease-in-out infinite alternate';
-  }
-  const tabBar = document.querySelector('.s-tab-bar');
-  if (tabBar) { tabBar.style.visibility = ''; tabBar.style.animation = 'tut2TabPop .5s cubic-bezier(.34,1.56,.64,1) both'; }
-  setTimeout(() => {
-    if (!_tutV2Active) return;
-    _tutV2ShowDim();
-  }, 600);
-}
-
 function _tutV2OnPracticeTabTap() {
   if (_tutV2WaitAction !== 'practiceTab') return;
   _tutV2WaitAction = null;
@@ -5097,16 +5010,6 @@ function _tutV2OnHomeTabTap() {
   _tutV2GoStep(9);
 }
 
-function _tutV2ShowExpBarHome() {
-  document.querySelectorAll('.s-panel').forEach(p => p.classList.remove('sp-active'));
-  const hp = document.getElementById('sp-home'); if (hp) hp.classList.add('sp-active');
-  const eb = document.querySelector('.s-exp-block');
-  if (eb) { eb.style.animation = 'tut2UiReveal .5s cubic-bezier(.34,1.56,.64,1) both'; eb.style.display = ''; }
-  const fill = document.getElementById('sExpFill');
-  if (fill) { fill.style.transition = 'none'; fill.style.width = '0%'; }
-  setTimeout(() => { if (_tutV2Active && fill) { fill.style.transition = 'width 1.5s ease-in-out'; fill.style.width = '100%'; } }, 700);
-}
-
 function _tutV2DoLevelUp() {
   setTimeout(() => {
     if (!_tutV2Active) return;
@@ -5175,7 +5078,6 @@ function _tutV2RevealAll() {
   }, 600);
 }
 
-function showTutorial() { /* legacy stub — replaced by tutV2 */ }
 function hideTutorial() { /* legacy stub — replaced by tutV2 */ }
 
 function switchSTab(tab) {
@@ -5264,11 +5166,6 @@ function _updateSubFood() {
     bubble.style.cursor      = avail ? 'pointer' : 'default';
     if (cntEl) cntEl.textContent = cnt > 0 ? '×' + cnt : '';
   });
-}
-function _getSubSizeCm() {
-  const charId = _subSelectedChar || 'kumanomi';
-  const growth = parseInt(localStorage.getItem('sub_growth_' + charId)||'0');
-  return Math.round(3 + (growth / 100) * 27);
 }
 function _updateSubGrowth() {
   const charId = _subSelectedChar || 'kumanomi';
@@ -5446,20 +5343,6 @@ function _showGrowthMaxPopup() {
   document.body.appendChild(ov);
   ov.querySelector('#_growthMaxOkBtn').onclick = () => ov.remove();
   ov.onclick = e => { if (e.target === ov) ov.remove(); };
-}
-function _bounceSubChar() {
-  const el = document.getElementById('subCharImgEl');
-  if (!el) return;
-  const savedAnim = el.style.animation;
-  el.style.animation = 'none';
-  el.style.transition = 'transform .22s cubic-bezier(.34,1.56,.64,1)';
-  requestAnimationFrame(() => requestAnimationFrame(() => {
-    el.style.transform = 'translateY(-20px) scale(1.18)';
-    setTimeout(() => {
-      el.style.transform = 'translateY(0) scale(1)';
-      setTimeout(() => { el.style.transition = ''; el.style.transform = ''; el.style.animation = savedAnim; }, 280);
-    }, 220);
-  }));
 }
 function _showSubStageUnlock(bg) {
   const toast = document.createElement('div');
@@ -5909,13 +5792,56 @@ function showPracticeCharPopup() {
   }, 2200);
 }
 
+// 練習チェックインの共通コア処理。
+// timelineには'practice'イベントを追加しない（practice_streak/practice_count/
+// last_practice_dateの専用カラムだけで十分管理でき、timelineは表示にも判定にも
+// 使われていなかった。宿題・レッスン記録が古い順に押し出されて消える原因だったため廃止）。
+// UI演出（ポップアップ・toast等）は呼び出し元（practiceCheckIn/_doRmCheckIn）が担当する。
+async function _corePracticeCheckIn() {
+  const s = currentStudentData;
+  if (!s || !currentStudentId) return null;
+  const today = todayJST();
+  if (s.last_practice_date === today) return null;
+
+  const yesterday = yesterdayJST();
+  const streak    = s.practice_streak || 0;
+  const newStreak = (s.last_practice_date === yesterday) ? streak + 1 : 1;
+  const exp       = streakExp(newStreak);
+  const newExp = (s.total_exp || 0) + exp;
+  const newPracticeCount = (s.practice_count || 0) + 1;
+  const newData = {...s, total_exp: newExp, practice_streak: newStreak, last_practice_date: today, practice_count: newPracticeCount};
+
+  // チュートリアル中も内部データだけは最新化しないと、直後のミッション判定が古いデータを見てしまう
+  if (_tutV2Active) currentStudentData = newData; else renderStudent(newData);
+  _updateSubMissionUnlocks();
+
+  sb.rpc('rpc_student_self_update', {
+    p_student_id: currentStudentId, p_line_user_id: s.line_user_id,
+    p_total_exp: newExp, p_practice_streak: newStreak,
+    p_last_practice_date: today, p_practice_count: newPracticeCount,
+  }).then(({error}) => {
+    if (error) toast('同期エラーが発生しました 😢');
+  });
+
+  const _cid0 = localStorage.getItem('custom_char_' + currentStudentId) || 'kumanomi';
+  const _co0  = CHARS.find(c => c.id === _cid0) || CHARS[0];
+  const _cm0  = (_co0.startCm || 3) + parseInt(localStorage.getItem('sub_cm_' + _cid0) || '0');
+  const _hw0  = _getAllLatestHomeworks();
+  sb.rpc('rpc_post_shared_timeline', {
+    p_student_id: currentStudentId, p_line_user_id: s.line_user_id,
+    p_phrase: JSON.stringify({ streak: newStreak, cm: _cm0, hw: _hw0 }),
+    p_char_id: _cid0
+  }).then(() => { _tlCache = null; loadSharedPosts(); });
+
+  return { streak: newStreak, exp };
+}
+
 async function practiceCheckIn() {
   if (isGuest) { toast('生徒登録が必要です 🐬'); return; }
   if (!currentStudentId) { toast('ログインが必要です'); return; }
-  const today = todayJST();
-  // ローカルキャッシュを使って即時判定（DB fetchを省く）
   const s = currentStudentData;
   if (!s) return;
+  const today = todayJST();
   const _alreadyDone = s.last_practice_date === today;
   if (_tutV2Active) { _tutV2OnCheckIn(); } else if (!_alreadyDone) { showPracticeCharPopup(); }
   if (_alreadyDone) return;
@@ -5923,31 +5849,6 @@ async function practiceCheckIn() {
   if (_tutV2Active && !_tutV2PracticeSnapshot) {
     _tutV2PracticeSnapshot = {total_exp: s.total_exp||0, practice_streak: s.practice_streak||0, last_practice_date: s.last_practice_date||null, timeline: s.timeline||[], practice_count: s.practice_count||0};
   }
-
-  const yesterday = yesterdayJST();
-  const streak    = s.practice_streak || 0;
-  const newStreak = (s.last_practice_date === yesterday) ? streak + 1 : 1;
-  const exp       = streakExp(newStreak);
-  const newExp = (s.total_exp || 0) + exp;
-  const tlEntry = {
-    type: 'practice',
-    text: `自主練習！${newStreak >= 14 ? '🏆MAX ' : '🔥'}${newStreak}日連続`,
-    exp,
-    date: dateStr()
-  };
-  const newTimeline = [tlEntry, ...(s.timeline || [])].slice(0, 50);
-  const newPracticeCount = (s.practice_count || 0) + 1;
-  const newData = {...s, total_exp: newExp, practice_streak: newStreak, last_practice_date: today, timeline: newTimeline, practice_count: newPracticeCount};
-
-  // ── 即座にUI更新（楽観的更新）──────────────────────
-  _setLife(_LIFE_MAX);
-  if (!_tutV2Active) {
-    renderStudent(newData);
-    const _isTutorial = !localStorage.getItem('tutorial_done_' + currentStudentId);
-    if (_isTutorial) { localStorage.setItem('tutorial_done_' + currentStudentId, '1'); hideTutorial(); }
-    toast(`🎸 練習チェック！ +${exp} EXP${newStreak >= 2 ? `（${newStreak}日連続🔥）` : ''}`, 'bonus');
-  }
-  _updateSubMissionUnlocks();
 
   // 面白バッジ用: チェックインした時刻・曜日を記録（失敗しても本筋の処理には影響させない）
   try {
@@ -5960,24 +5861,14 @@ async function practiceCheckIn() {
     if (!_dows.includes(_dow)) { _dows.push(_dow); localStorage.setItem('sub_practice_dows', JSON.stringify(_dows)); }
   } catch(e) {}
 
-  // ── DB書き込みはバックグラウンドで（待たない）──────
-  sb.rpc('rpc_student_self_update', {
-    p_student_id: currentStudentId, p_line_user_id: s.line_user_id,
-    p_total_exp: newExp, p_practice_streak: newStreak,
-    p_last_practice_date: today, p_timeline: newTimeline, p_practice_count: newPracticeCount,
-  }).then(({error}) => {
-    if (error) toast('同期エラーが発生しました 😢');
-  });
+  _setLife(_LIFE_MAX);
+  const result = await _corePracticeCheckIn();
+  if (!result) return;
 
-  { const _cid0 = localStorage.getItem('custom_char_' + currentStudentId) || 'kumanomi';
-    const _co0  = CHARS.find(c => c.id === _cid0) || CHARS[0];
-    const _cm0  = (_co0.startCm || 3) + parseInt(localStorage.getItem('sub_cm_' + _cid0) || '0');
-    const _hw0  = _getAllLatestHomeworks();
-    sb.rpc('rpc_post_shared_timeline', {
-      p_student_id: currentStudentId, p_line_user_id: s.line_user_id,
-      p_phrase: JSON.stringify({ streak: newStreak, cm: _cm0, hw: _hw0 }),
-      p_char_id: _cid0
-    }).then(() => { _tlCache = null; loadSharedPosts(); });
+  if (!_tutV2Active) {
+    const _isTutorial = !localStorage.getItem('tutorial_done_' + currentStudentId);
+    if (_isTutorial) { localStorage.setItem('tutorial_done_' + currentStudentId, '1'); hideTutorial(); }
+    toast(`🎸 練習チェック！ +${result.exp} EXP${result.streak >= 2 ? `（${result.streak}日連続🔥）` : ''}`, 'bonus');
   }
 }
 
@@ -6149,45 +6040,19 @@ function openHomePanel(type, tab) {
       }
     }
 
-    // ── バッジ（アコーディオン・四角グリッド） ──
-    const _badgeGrid = '<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;padding:4px 0;">' +
-      BADGES_DEF.map(b => {
-        const earned = b.check(currentStudentData || {});
-        return `<div style="background:${earned?'linear-gradient(135deg,#fffbeb,#fef3c7)':'rgba(0,0,0,.04)'};border:1.5px solid ${earned?'#fcd34d':'#e5e7eb'};border-radius:12px;padding:10px 8px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:4px;">
-          <span style="font-size:26px;${earned?'':'filter:grayscale(1);opacity:.35;'}">${b.icon}</span>
-          <div style="font-size:11px;font-weight:800;color:${earned?'#92400e':'#aaa'};line-height:1.2;">${b.label}</div>
-          <div style="font-size:10px;color:${earned?'#d97706':'#ccc'};line-height:1.3;">${b.desc}</div>
-          <span style="font-size:14px;margin-top:2px;">${earned ? '✅' : '🔒'}</span>
-        </div>`;
-      }).join('') + '</div>';
+    // ── バッジ（アコーディオン・タップで条件表示、なかまタブの記録シートと同じ表示ロジック） ──
+    const _badgeList = [
+      ...BADGES_DEF.map(b => ({...b, earned: b.check(currentStudentData || {})})),
+      ...LOCAL_BADGES_DEF.map(b => ({...b, earned: b.check()})),
+    ];
+    const _badgeGrid = `<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;padding:4px 0;">${_badgeList.map(_badgeMedalHtml).join('')}</div>`;
     html += `<div class="acc-section" style="margin-top:12px;">
-      <div class="acc-header" onclick="toggleAcc(this)"><span>🏅 バッジ</span><span class="acc-arrow">▼</span></div>
+      <div class="acc-header" onclick="toggleAcc(this)"><span>🏅 バッジ（${_badgeList.filter(b=>b.earned).length}/${_badgeList.length}個）</span><span class="acc-arrow">▼</span></div>
       <div class="acc-body">${_badgeGrid}</div>
     </div>`;
 
     el.innerHTML = html;
     document.getElementById('homeOvShells').classList.add('show');
-  }
-}
-
-function spawnBubbles(e) {
-  const wrap = e.currentTarget.parentElement;
-  const rect = e.currentTarget.getBoundingClientRect();
-  const wRect = wrap.getBoundingClientRect();
-  const clientX = (e.changedTouches && e.changedTouches[0]) ? e.changedTouches[0].clientX : (e.clientX || rect.left + rect.width/2);
-  const clientY = (e.changedTouches && e.changedTouches[0]) ? e.changedTouches[0].clientY : (e.clientY || rect.top + rect.height/2);
-  const cx = clientX - wRect.left;
-  const cy = clientY - wRect.top;
-  const count = 3 + Math.floor(Math.random()*3);
-  for (let i = 0; i < count; i++) {
-    const b = document.createElement('div');
-    b.className = 'bubble';
-    const size = 4 + Math.random()*7;
-    const dx = (Math.random()-0.5)*50;
-    const dy = (Math.random()-0.5)*30;
-    b.style.cssText = `width:${size}px;height:${size}px;left:${cx+dx-size/2}px;top:${cy+dy-size/2}px;animation-delay:${Math.random()*0.08}s;animation-duration:${0.35+Math.random()*0.2}s;`;
-    wrap.appendChild(b);
-    b.addEventListener('animationend', () => b.remove());
   }
 }
 
@@ -6213,14 +6078,9 @@ function renderShelf(songs) {
   }).join('');
 }
 
-async function changeTheme(theme) {
-  applyTheme(theme);
-  if (currentStudentId && currentStudentData) await sb.rpc('rpc_student_self_update', {p_student_id: currentStudentId, p_line_user_id: currentStudentData.line_user_id, p_theme: theme});
-}
 function applyTheme(theme) {
   [...document.body.classList].filter(c => c.startsWith('theme-')).forEach(c => document.body.classList.remove(c));
   if (theme !== 'normal') document.body.classList.add(`theme-${theme}`);
-  document.querySelectorAll('.theme-btn').forEach(b => b.classList.toggle('active', b.classList.contains(theme)));
 }
 
 // =====================================================================
@@ -6300,8 +6160,10 @@ function renderNextLesson(data) {
   const areaEl = document.getElementById('homeNextLessonArea');
   if (areaEl) areaEl.style.display = 'flex';
   if (card) card.style.display = 'none';
+  const rmTm = document.getElementById('rmNextLessonTime');
   if (!data.next_lesson_at) {
     if (dateEl) dateEl.textContent = '—';
+    if (rmTm) rmTm.textContent = '—';
     return;
   }
   const dt = new Date(data.next_lesson_at);
@@ -6310,6 +6172,8 @@ function renderNextLesson(data) {
   if (dateEl) dateEl.textContent = dateStr2;
   const rmDt = document.getElementById('rmNextLessonDate');
   if (rmDt) rmDt.textContent = dateStr2;
+  const hh = dt.getHours(), mm = String(dt.getMinutes()).padStart(2,'0');
+  if (rmTm) rmTm.textContent = `${hh}:${mm}〜`;
 }
 
 function toast(msg, type='') {
@@ -6405,19 +6269,6 @@ const _rmDiffItems = {
     tokoton:  ['歌いながら弾く', '動きをつけて弾く', '人前で披露する'],
   },
 };
-function setRmDifficulty(level, stageId) {
-  _rmDifficulty = level;
-  _rmChecked = {};
-  const textCols = {nobinobi:'#10B981', jikkuri:'#0096C7', tokoton:'#7C3AED'};
-  ['nobinobi','jikkuri','tokoton'].forEach(d => {
-    const b = document.getElementById('diffBtn_' + d);
-    if (!b) return;
-    b.style.background   = d === level ? 'white' : 'transparent';
-    b.style.color        = d === level ? textCols[d] : '#9ca3af';
-    b.style.boxShadow    = d === level ? '0 1px 5px rgba(0,0,0,.13)' : 'none';
-  });
-  if (stageId) openCheckPanel(stageId);
-}
 const _rmStages = [
   {id:'chords',label:'全コードをさらう',  done:false,active:true, locked:false,checkItems:['全コードの形を覚えた','押さえながら音が鳴った','指が痛くなくなった'],defaultChecked:[false,false,false]},
   {id:'tempo', label:'テンポ通りに弾ける',done:false,active:false,locked:true, checkItems:['BPM60で弾けた','BPM80で弾けた','止まらず通して弾けた'],defaultChecked:[false,false,false]},
@@ -6647,62 +6498,6 @@ function acceptNewChar(){
   toast('🐡 フグがなかまに加わった！');
 }
 function dismissCharUnlock(){document.getElementById('rmCharUnlock').style.display='none';}
-function openSongSelectSheet(){
-  const list=document.getElementById('songSelectList');if(!list)return;
-  const N=_rmStages.length;
-  const seg=Math.round((2*Math.PI*44-N*5)/N);
-  function lpDash(done){
-    if(done<=0)return null;
-    if(done>=N)return `${seg} 5`;
-    return Array(done).fill(seg).join(' 5 ')+' 9999';
-  }
-  const themeCol='#00B4CC';
-  const cards=RM_SONGS.map(s=>{
-    const isCur=s.id===_rmCurrentSong;
-    const done=isCur?_rmStages.filter(st=>st.done).length:0;
-    const bright=lpDash(done);
-    const col=s.color||'#0096C7';
-    const isAll=done>=N;
-    return `<div onclick="selectRmSong('${s.id}')" style="cursor:pointer;-webkit-tap-highlight-color:transparent;display:flex;flex-direction:column;align-items:center;gap:6px;border-radius:14px;${isCur?'outline:3px solid #0096C7;outline-offset:2px;':''}padding:2px;">
-      <div style="width:100%;aspect-ratio:1;border-radius:10px;overflow:hidden;position:relative;background:linear-gradient(135deg,#B8EEFF,#7DD8F8);padding:7px;box-sizing:border-box;">
-        <svg viewBox="0 0 100 100" style="width:100%;height:100%;">
-          <circle cx="50" cy="50" r="46" fill="#1a1a2e"/>
-          <circle cx="50" cy="50" r="40" fill="none" stroke="#2a2a3e" stroke-width="2"/>
-          <circle cx="50" cy="50" r="33" fill="none" stroke="#252538" stroke-width="1.5"/>
-          <circle cx="50" cy="50" r="27" fill="none" stroke="#222234" stroke-width="1"/>
-          <circle cx="50" cy="50" r="21" fill="none" stroke="#222234" stroke-width="0.8"/>
-          <circle cx="50" cy="50" r="15" fill="${col}"/>
-          <circle cx="50" cy="50" r="44" fill="none" stroke="rgba(0,150,200,.18)" stroke-width="5" stroke-dasharray="${seg} 5" transform="rotate(-90 50 50)"/>
-          ${bright?`<circle cx="50" cy="50" r="44" fill="none" stroke="${themeCol}" stroke-width="5" stroke-dasharray="${bright}" stroke-linecap="round" transform="rotate(-90 50 50)"/>`:''}
-          ${isAll?`<circle cx="50" cy="50" r="44" fill="none" stroke="rgba(0,180,228,.4)" stroke-width="9" stroke-dasharray="${seg} 5" transform="rotate(-90 50 50)"/>`:''}
-        </svg>
-      </div>
-      <div style="font-size:13px;font-weight:${isCur?900:700};color:${isCur?'#003D52':'#445566'};text-align:center;line-height:1.3;">${s.name}</div>
-    </div>`;
-  }).join('');
-  const addCard=`<div style="display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;padding:2px;">
-    <div style="width:100%;aspect-ratio:1;border-radius:10px;background:#EBF8FF;display:flex;align-items:center;justify-content:center;">
-      <span style="font-size:30px;color:#0096C7;font-weight:900;line-height:1;">＋</span>
-    </div>
-    <div style="font-size:13px;font-weight:700;color:#0096C7;text-align:center;">追加する</div>
-  </div>`;
-  list.innerHTML=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:4px 2px 8px;">${cards}${addCard}</div>`;
-  document.getElementById('songSelectSheet').style.display='flex';
-}
-function closeSongSelectSheet(){document.getElementById('songSelectSheet').style.display='none';}
-function selectRmSong(songId){
-  _rmCurrentSong=songId;
-  const song=RM_SONGS.find(s=>s.id===songId);
-  if(song){
-    document.getElementById('rmSongName').textContent=song.name;
-    document.getElementById('rmRecordMark').style.display=song.hasRec?'inline':'none';
-  }
-  closeSongSelectSheet();
-}
-function showRmStreakToast(){
-  toast('🔥 7日連続練習中！ この調子！');
-}
-
 // なかまタブ
 let _rmSelectedChar='kumanomi';
 const _rmFeedPosts=[
@@ -6781,16 +6576,6 @@ function renderNakamaFeed(posts) {
   }).join('') || '<div style="text-align:center;padding:20px;color:#aaa;font-size:13px;">まだ投稿がありません 🌊</div>';
 }
 
-function _nakamaRelTime(isoStr) {
-  if (!isoStr) return '';
-  const diff = (Date.now() - new Date(isoStr).getTime()) / 1000;
-  if (diff < 60) return 'たった今';
-  if (diff < 3600) return `${Math.floor(diff/60)}分前`;
-  if (diff < 86400) return `${Math.floor(diff/3600)}時間前`;
-  if (diff < 86400*7) return `${Math.floor(diff/86400)}日前`;
-  return '7日前';
-}
-
 function initNakamaTab(){
   // フィードはloadSharedPostsが描画する
   const feed=document.getElementById('nakamaFeed');
@@ -6817,7 +6602,7 @@ function renderMissionCard() {
       <div style="position:absolute;left:0;top:0;bottom:0;width:5px;background:rgba(255,255,255,.4);"></div>
       <div style="margin-left:8px;">
         <div style="font-size:11px;color:rgba(255,255,255,.8);font-weight:700;margin-bottom:5px;">練習中の曲</div>
-        <div style="font-size:30px;font-weight:900;color:white;line-height:1.1;">${songName}</div>
+        <div style="font-size:30px;font-weight:900;color:white;line-height:1.1;">${esc(songName)}</div>
       </div>
       <svg viewBox="0 0 300 20" xmlns="http://www.w3.org/2000/svg" style="position:absolute;bottom:-1px;left:0;width:100%;display:block;">
         <path d="M0,10 C50,20 100,0 150,10 C200,20 250,0 300,10 L300,20 L0,20 Z" fill="white"/>
@@ -6826,7 +6611,7 @@ function renderMissionCard() {
     <div style="padding:10px 14px 6px;">
       <div style="font-size:11px;font-weight:800;color:#0096C7;letter-spacing:.8px;margin-bottom:6px;padding-left:2px;">宿題</div>
       ${allItems.map(it => `<div style="display:flex;align-items:center;gap:12px;padding:12px 14px;background:#f0fafb;border-radius:14px;margin-bottom:8px;">
-        <span style="font-size:17px;font-weight:700;color:#0077a8;line-height:1.4;">${it.label}</span>
+        <span style="font-size:17px;font-weight:700;color:#0077a8;line-height:1.4;">${esc(it.label)}</span>
       </div>`).join('')}
     </div>
     ${allItems.length > 0
@@ -6842,10 +6627,6 @@ function renderMissionCard() {
     const _recBtn = document.getElementById('rmRecordBtn');
     if (_recBtn) _recBtn.style.display = 'none';
   }
-}
-function _toggleMissionCheck(id) {
-  _missionChecked[id] = !_missionChecked[id];
-  renderMissionCard();
 }
 function _missionRecord() {
   const foodIdx = 0;
@@ -6865,38 +6646,9 @@ function _missionRecord() {
   _doRmCheckIn();
 }
 async function _doRmCheckIn() {
-  if (!currentStudentId || !currentStudentData) return;
-  const today = todayJST();
-  const s = currentStudentData;
-  // 今日すでにチェックイン済み（このボタン経由でもホーム下部バナー経由でも）なら何もしない。
-  // 重複投稿・練習回数の二重カウントを防ぐため、判定はlast_practice_dateに一本化している。
-  if (s.last_practice_date === today) return;
-  const yesterday = yesterdayJST();
-  const streak = s.practice_streak || 0;
-  const newStreak = (s.last_practice_date === yesterday) ? streak + 1 : 1;
-  const exp = streakExp(newStreak);
-  const newExp = (s.total_exp || 0) + exp;
-  const newPracticeCount = (s.practice_count || 0) + 1;
-  const tlEntry = {type:'practice', text:`自主練習！${newStreak >= 14 ? '🏆MAX ' : '🔥'}${newStreak}日連続`, exp, date:dateStr()};
-  const newTimeline = [tlEntry, ...(s.timeline || [])].slice(0, 50);
-  const newData = {...s, total_exp: newExp, practice_streak: newStreak, last_practice_date: today, timeline: newTimeline, practice_count: newPracticeCount};
-  renderStudent(newData);
-  _updateSubMissionUnlocks();
-  sb.rpc('rpc_student_self_update', {
-    p_student_id: currentStudentId, p_line_user_id: s.line_user_id,
-    p_total_exp: newExp, p_practice_streak: newStreak,
-    p_last_practice_date: today, p_timeline: newTimeline, p_practice_count: newPracticeCount,
-  }).then(({error}) => { if (error) toast('同期エラーが発生しました 😢'); });
-
-  const _cid1 = localStorage.getItem('custom_char_' + currentStudentId) || 'kumanomi';
-  const _co1  = CHARS.find(c => c.id === _cid1) || CHARS[0];
-  const _cm1  = (_co1.startCm || 3) + parseInt(localStorage.getItem('sub_cm_' + _cid1) || '0');
-  const _hw1  = _getAllLatestHomeworks().slice(0, 1);
-  sb.rpc('rpc_post_shared_timeline', {
-    p_student_id: currentStudentId, p_line_user_id: s.line_user_id,
-    p_phrase: JSON.stringify({ streak: newStreak, cm: _cm1, hw: _hw1 }),
-    p_char_id: _cid1
-  }).then(() => { _tlCache = null; loadSharedPosts(); });
+  // 今日すでにチェックイン済み（このボタン経由でもホーム上部バナー経由でも）なら何もしない。
+  // 重複投稿・練習回数の二重カウントを防ぐため、判定は_corePracticeCheckIn内のlast_practice_dateに一本化している。
+  await _corePracticeCheckIn();
 }
 function initRouteMap(){
   renderRouteMap();
@@ -7042,13 +6794,6 @@ function getGoalPhase(sid, song) {
   if (v) return parseInt(v);
   return 2;
 }
-function setGoalOverride(sid, song, phase) {
-  if (phase === 0) localStorage.removeItem('goal_phase_' + sid + '_' + song);
-  else localStorage.setItem('goal_phase_' + sid + '_' + song, phase);
-  openMasterySheet(song);
-  renderMasteryList();
-}
-
 function getPhaseChecks(sid, song) {
   const raw = localStorage.getItem('phase_checks_' + sid + '_' + song);
   if (raw) { try { return JSON.parse(raw); } catch(e) {} }
@@ -7200,24 +6945,6 @@ function openMasterySheet(song, viewRank) {
   document.getElementById('masterySheetOptions').innerHTML =
     `<div style="display:flex;gap:4px;margin-bottom:14px;">${rankPills}</div>${checkItems}${clearHtml}`;
   document.getElementById('masterySheet').classList.add('show');
-}
-
-function selectMastery(stage) {
-  if (!_masteryTargetSong) return;
-  const sid = currentStudentId || 'guest';
-  const prev = getMastery(sid, _masteryTargetSong);
-  const goalPhase = getGoalPhase(sid, _masteryTargetSong);
-  setMastery(sid, _masteryTargetSong, stage);
-  renderMasteryList();
-  if (stage > prev) {
-    closeMasterySheet();
-    const justCleared = stage >= goalPhase && prev < goalPhase;
-    showMasteryAchieve(_masteryTargetSong, prev, stage, justCleared);
-  } else {
-    document.querySelectorAll('.mastery-option').forEach((el, i) => {
-      el.classList.toggle('cur', i + 1 === stage);
-    });
-  }
 }
 
 function showMasteryAchieve(song, prev, stage, justCleared) {
