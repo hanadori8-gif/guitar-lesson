@@ -3122,7 +3122,8 @@ function _calOpenStudentPicker() {
   let h = `<div id="_calStudentPickerModal" style="position:fixed;inset:0;z-index:800;background:rgba(0,0,0,.5);display:flex;flex-direction:column;" onclick="if(event.target===this)this.remove();">`;
   h += `<div style="flex:1;min-height:0;display:flex;flex-direction:column;background:white;margin-top:80px;border-radius:20px 20px 0 0;padding:16px 16px 0;">`;
   h += `<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-shrink:0;"><div style="font-size:15px;font-weight:900;color:${oc};">生徒を選ぶ</div><button onclick="document.getElementById('_calStudentPickerModal').remove()" style="width:28px;height:28px;border:none;background:rgba(0,0,0,.08);border-radius:50%;font-size:13px;cursor:pointer;font-family:var(--hf);">✕</button></div>`;
-  h += `<input type="text" placeholder="🔍 検索..." oninput="_calPickerFilter(this.value)" style="width:100%;padding:9px 12px;border:1.5px solid #e2e8f0;border-radius:10px;font-size:14px;font-family:var(--hf);box-sizing:border-box;margin-bottom:12px;flex-shrink:0;">`;
+  h += `<input type="text" placeholder="🔍 検索..." oninput="_calPickerFilter(this.value)" style="width:100%;padding:9px 12px;border:1.5px solid #e2e8f0;border-radius:10px;font-size:14px;font-family:var(--hf);box-sizing:border-box;margin-bottom:8px;flex-shrink:0;">`;
+  h += `<button onclick="_calAddNewStudentInline()" style="width:100%;padding:10px;margin-bottom:12px;border:1.5px dashed ${oc};border-radius:10px;background:rgba(0,119,182,.05);color:${oc};font-size:13px;font-weight:700;cursor:pointer;font-family:var(--hf);flex-shrink:0;">＋ 初めての生徒として名前だけ追加</button>`;
   h += `<div id="_calPickerList" style="flex:1;overflow-y:auto;padding-bottom:40px;display:grid;grid-template-columns:1fr 1fr;gap:8px;">${items}</div>`;
   h += `</div></div>`;
   document.body.insertAdjacentHTML('beforeend', h);
@@ -3138,6 +3139,19 @@ function _calPickerSelectStudent(sid, sname) {
   const btn = document.getElementById('_calPickBtn');
   if (btn) { btn.textContent = '👤 ' + sname + ' ▼'; btn.style.color = 'var(--ocean-deep)'; btn.style.borderColor = 'var(--ocean-mid)'; }
   document.getElementById('_calStudentPickerModal')?.remove();
+}
+// LINE登録前の初回生徒を名前だけでその場に追加する。後日本人がLINE登録しても
+// このレコードとは自動で紐付かない（別アカウントになる）が、初回来訪の
+// レッスン回数・宿題記録を残す目的なので割り切っている。
+async function _calAddNewStudentInline() {
+  const name = prompt('生徒の名前を入力してください（初回のみ・LINE未登録の生徒用）');
+  if (!name || !name.trim()) return;
+  const trimmed = name.trim();
+  const {data, error} = await sb.from('students').insert({name: trimmed}).select().single();
+  if (error) { toast('追加に失敗しました'); return; }
+  students.push(data);
+  _calPickerSelectStudent(data.id, data.name);
+  toast('✅ ' + trimmed + ' を追加しました');
 }
 async function _calSaveForm(defaultDate) {
   if (_calFormMode === 'student') {
