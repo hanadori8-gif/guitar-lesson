@@ -924,13 +924,6 @@ details.prt-sq-card .prt-sq-detail{padding:0 14px 12px;border-top:1px solid rgba
 .stage-sel-ico{font-size:22px;flex-shrink:0;}
 .stage-sel-name{font-size:13px;font-weight:700;}
 .stage-sel-req{font-size:10px;color:rgba(255,255,255,.6);}
-/* コレクションアコーディオン */
-.acc-section{margin-bottom:10px;border-radius:14px;overflow:hidden;background:rgba(0,119,168,.07);border:1px solid rgba(0,119,168,.12);}
-.acc-header{display:flex;align-items:center;justify-content:space-between;padding:13px 16px;cursor:pointer;font-weight:800;font-size:14px;color:var(--ocean-deep);user-select:none;}
-.acc-arrow{transition:transform .2s;font-size:12px;opacity:.7;}
-.acc-section.open>.acc-header .acc-arrow{transform:rotate(180deg);}
-.acc-body{display:none;padding:4px 12px 14px;}
-.acc-section.open>.acc-body{display:block;}
 /* 図鑑 */
 .zukan-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;}
 .zukan-card{background:rgba(0,119,168,.08);border-radius:12px;padding:8px 2px 6px;text-align:center;border:1px solid rgba(0,119,168,.1);overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:76px;}
@@ -1471,20 +1464,16 @@ body{background:#f0ebe0!important;}
     <button class="hd-btn" onclick="teacherLogout()">ログアウト</button>
   </div>
 
-  <div id="tabLessonArea" class="main t-tab-area hidden">
+  <div id="tabCalendarArea" class="main t-tab-area">
     <select id="teacherSel" style="display:none;" onchange="onTeacherSelChange()"></select>
-    <div id="todayDashView">
-      <div id="overdueArea" style="margin-bottom:12px;"></div>
-      <div class="card" style="padding:14px 14px 10px;">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
-          <div style="font-size:13px;font-weight:900;color:var(--ocean-deep);">📅 今日のレッスン</div>
-          <button onclick="_todayAddStudent()" style="border:none;background:rgba(0,150,220,.12);color:var(--ocean-deep);font-size:20px;font-weight:900;width:32px;height:32px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent;">＋</button>
-        </div>
-        <div id="todayListArea" style="min-height:40px;"></div>
-      </div>
-      <div id="todayDoneArea"></div>
-    </div>
-    <div id="seqFormView" style="display:none;">
+    <div class="cal-wrap" id="calWrap"></div>
+    <button class="cal-fab" onclick="_calQuickAdd()">＋</button>
+  </div>
+
+  <!-- レッスン記録フォーム（カレンダー日付ポップアップの「記録」ボタンから開くオーバーレイ） -->
+  <div id="seqFormViewOv" style="display:none;position:fixed;inset:0;z-index:750;background:rgba(0,0,0,.45);align-items:flex-end;justify-content:center;">
+    <div style="width:100%;max-width:460px;max-height:88vh;overflow-y:auto;background:#eef6fa;padding:16px 14px calc(16px + env(safe-area-inset-bottom,0px));box-sizing:border-box;border-radius:20px 20px 0 0;">
+    <div id="seqFormView">
       <div class="card" style="padding:14px 14px 12px;margin-bottom:4px;background:linear-gradient(135deg,rgba(0,100,200,.1),rgba(0,60,150,.06));border:1.5px solid rgba(0,100,200,.15);">
         <div style="font-size:11px;color:rgba(0,80,160,.55);font-weight:700;margin-bottom:3px;" id="seqProgress">レッスン記録</div>
         <div style="font-size:20px;font-weight:900;color:var(--ocean-deep);" id="seqStudentName">—</div>
@@ -1515,11 +1504,7 @@ body{background:#f0ebe0!important;}
         <div id="prevSongsList" style="display:flex;flex-wrap:wrap;gap:5px;"></div>
       </div>
     </div>
-  </div>
-
-  <div id="tabCalendarArea" class="main t-tab-area">
-    <div class="cal-wrap" id="calWrap"></div>
-    <button class="cal-fab" onclick="_calQuickAdd()">＋</button>
+    </div>
   </div>
 
   <div id="tabStudentsArea" class="main t-tab-area hidden">
@@ -1544,7 +1529,6 @@ body{background:#f0ebe0!important;}
   <!-- 下タブバー -->
   <div class="t-tab-bar">
     <button class="t-tab-btn active" id="tabCalendar" onclick="switchTab('calendar')"><span class="t-tab-ico">📅</span>カレンダー</button>
-    <button class="t-tab-btn" id="tabLesson" onclick="switchTab('lesson')"><span class="t-tab-ico">📝</span>レッスン</button>
     <button class="t-tab-btn" id="tabStudents" onclick="switchTab('students')"><span class="t-tab-ico">👥</span>生徒</button>
   </div>
 
@@ -2537,182 +2521,58 @@ async function teacherLogout() {
 }
 
 // =====================================================================
-// ★ 今日のレッスン管理
+// ★ レッスン記録フォーム（カレンダー日付ポップアップの「記録」から開く）
 // =====================================================================
 let _seqMode = false, _seqStudents = [], _seqIdx = 0;
 
-function _todayKey() {
-  return 'today_list_' + todayJST();
-}
-
-function _getTodayList() {
-  const todayStr = todayJST();
-  const dbIds = students.filter(s => s.next_lesson_at && s.next_lesson_at.slice(0,10) === todayStr).map(s => s.id);
-  const saved = JSON.parse(localStorage.getItem(_todayKey()) || 'null');
-  let ids;
-  if (saved === null) {
-    ids = [...dbIds];
-  } else {
-    ids = [...saved];
-    dbIds.forEach(id => { if (!ids.includes(id)) ids.push(id); });
-  }
-  return ids.map(id => students.find(s => s.id === id)).filter(Boolean);
-}
-
-function _saveTodayList(list) {
-  localStorage.setItem(_todayKey(), JSON.stringify(list.map(s => s.id)));
-}
-
-function _renderTodayCard() {
-  const area = document.getElementById('todayListArea');
-  if (!area) return;
-  const todayStr = todayJST();
-  const list = _getTodayList();
-  list.sort((a, b) => {
-    if (!a.next_lesson_at) return 1;
-    if (!b.next_lesson_at) return -1;
-    return a.next_lesson_at > b.next_lesson_at ? 1 : -1;
-  });
-  if (!list.length) {
-    area.innerHTML = '<div style="text-align:center;padding:12px 0;font-size:13px;color:rgba(0,0,0,.3);">今日のレッスンはまだありません</div>';
-  } else {
-    const pending = list.filter(s => !(s.last_lesson_at && s.last_lesson_at.slice(0,10) === todayStr));
-    const done    = list.filter(s =>   s.last_lesson_at && s.last_lesson_at.slice(0,10) === todayStr);
-
-    // 未登録欄
-    let html = '';
-    if (pending.length) {
-      html += pending.map(s => {
-        const timeStr = s.next_lesson_at
-          ? new Date(s.next_lesson_at).toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit',hour12:false})
-          : '―';
-        return '<div class="td-row" style="cursor:default;">'
-          + '<span class="td-time">' + timeStr + '</span>'
-          + '<span class="td-name" style="cursor:pointer;" onclick="_calOpenLessonRecord(\'' + s.id + '\')">' + esc(s.name) + '</span>'
-          + '<button onclick="event.stopPropagation();_stuRowMenu(\'' + s.id + '\')" style="flex-shrink:0;font-size:12px;border:none;background:rgba(0,0,0,.07);border-radius:50%;width:26px;height:26px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;color:#666;margin-right:2px;">✕</button>'
-          + '</div>';
-      }).join('');
-    } else {
-      html += '<div style="text-align:center;padding:6px 0;font-size:12px;color:rgba(0,0,0,.3);">未登録の生徒はいません</div>';
-    }
-    area.innerHTML = html;
-
-    // 登録済み欄（別カード）
-    const doneArea = document.getElementById('todayDoneArea');
-    if (doneArea) {
-      if (done.length) {
-        doneArea.innerHTML = '<div class="card" style="padding:12px 14px 10px;margin-top:10px;border:1.5px solid rgba(22,163,74,.25);background:rgba(240,253,244,.8);">'
-          + '<div style="font-size:12px;font-weight:900;color:rgba(22,163,74,.9);margin-bottom:8px;">✅ 登録済み（' + done.length + '名）</div>'
-          + done.map(s => {
-              const timeStr = s.next_lesson_at
-                ? new Date(s.next_lesson_at).toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit',hour12:false})
-                : '―';
-              return '<div class="td-row" style="opacity:.85;cursor:pointer;" onclick="_calOpenLessonRecord(\'' + s.id + '\')">'
-                + '<span class="td-time">' + timeStr + '</span>'
-                + '<span class="td-name">' + esc(s.name) + '</span>'
-                + '<span class="td-done">済</span>'
-                + '</div>';
-            }).join('')
-          + '</div>';
-      } else {
-        doneArea.innerHTML = '';
-      }
-    }
-  }
-  // 前日以前の未記録
-  const overdueArea = document.getElementById('overdueArea');
-  if (!overdueArea) return;
-  const overdue = students.filter(s => {
-    if (!s.next_lesson_at) return false;
-    const ld = s.next_lesson_at.slice(0,10);
-    if (ld >= todayStr) return false;
-    if (s.last_lesson_at && s.last_lesson_at.slice(0,10) === ld) return false;
-    return true;
-  });
-  if (!overdue.length) { overdueArea.innerHTML = ''; return; }
-  overdueArea.innerHTML = '<div style="background:rgba(239,68,68,.07);border:1.5px solid rgba(239,68,68,.3);border-radius:14px;padding:12px 14px;box-shadow:0 2px 10px rgba(239,68,68,.1);">'
-    + '<div style="font-size:13px;font-weight:900;color:#dc2626;margin-bottom:8px;">⚠️ 未登録のレッスンがあります</div>'
-    + overdue.map(s => {
-        const d = s.next_lesson_at.slice(0,10).slice(5).replace('-','/');
-        return '<div class="td-row" style="background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.18);margin-bottom:4px;cursor:pointer;" onclick="_calOpenLessonRecord(\'' + s.id + '\')">'
-          + '<span class="td-time" style="color:#dc2626;font-weight:800;">' + d + '</span>'
-          + '<span class="td-name">' + esc(s.name) + '</span>'
-          + '<span style="font-size:10px;color:#dc2626;font-weight:800;flex-shrink:0;background:rgba(239,68,68,.12);padding:2px 7px;border-radius:6px;">未登録</span>'
-          + '</div>';
-      }).join('')
-    + '</div>';
-}
-
-function _closeTdModal() { const m = document.getElementById('_tdModal'); if (m) m.remove(); }
-function _stuRowMenu(sid) {
+// カレンダー日付ポップアップの生徒行にある操作メニュー（直前キャンセル／予約削除）
+function _closeCalStuModal() { const m = document.getElementById('_calStuModal'); if (m) m.remove(); }
+function _calStuMenu(sid, dateStr) {
   const s = students.find(x => x.id === sid);
   if (!s) return;
   const m = document.createElement('div');
-  m.id = '_tdModal';
+  m.id = '_calStuModal';
   m.style.cssText = 'position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.5);display:flex;align-items:flex-end;';
   m.innerHTML = '<div style="width:100%;background:white;border-radius:24px 24px 0 0;padding:20px 20px 40px;font-family:var(--hf);">'
     + '<div style="font-size:14px;font-weight:900;text-align:center;margin-bottom:4px;color:#0077b6;">' + esc(s.name) + '</div>'
     + '<div style="font-size:11px;text-align:center;color:rgba(0,0,0,.4);margin-bottom:16px;">操作を選んでください</div>'
-    + '<button class="td-modal-btn" style="background:#fffbeb;color:#92400e;" onclick="_closeTdModal();_todayRemove(\'' + sid + '\',\'cancel\')">⚡ 直前キャンセル（レッスン料発生）</button>'
-    + '<button class="td-modal-btn" style="background:#fef2f2;color:#b91c1c;" onclick="_closeTdModal();_todayRemove(\'' + sid + '\',\'delete\')">🗑 削除（予約もクリア）</button>'
-    + '<button class="td-modal-btn" style="background:rgba(0,0,0,.05);color:#555;margin-top:4px;" onclick="_closeTdModal()">キャンセル</button>'
+    + '<button class="td-modal-btn" style="background:#fffbeb;color:#92400e;" onclick="_closeCalStuModal();_calStuCancel(\'' + sid + '\',\'cancel\',\'' + dateStr + '\')">⚡ 直前キャンセル（レッスン料発生）</button>'
+    + '<button class="td-modal-btn" style="background:#fef2f2;color:#b91c1c;" onclick="_closeCalStuModal();_calStuCancel(\'' + sid + '\',\'delete\',\'' + dateStr + '\')">🗑 削除（予約もクリア）</button>'
+    + '<button class="td-modal-btn" style="background:rgba(0,0,0,.05);color:#555;margin-top:4px;" onclick="_closeCalStuModal()">キャンセル</button>'
     + '</div>';
   document.body.appendChild(m);
   m.addEventListener('click', e => { if (e.target === m) m.remove(); });
 }
-
-async function _todayRemove(sid, type) {
-  let list = _getTodayList();
-  list = list.filter(s => s.id !== sid);
-  _saveTodayList(list);
+async function _calStuCancel(sid, type, dateStr) {
   if (type === 'delete') {
     await sb.from('students').update({next_lesson: null, next_lesson_at: null}).eq('id', sid);
-    await loadStudents();
-  } else if (type === 'cancel') {
+  } else {
     const s = students.find(x => x.id === sid);
     if (s) {
       const newTl = [{type:'cancel', text:'直前キャンセル', date: todayJST()}, ...(s.timeline || [])].slice(0, 150);
       await sb.from('students').update({timeline: newTl}).eq('id', sid);
     }
-    _renderTodayCard();
-  } else {
-    _renderTodayCard();
   }
+  await loadStudents();
+  _renderCalendar();
+  document.getElementById('_calDayPopup')?.remove();
+  if (dateStr) _calShowDayPopup(dateStr);
   toast(type === 'cancel' ? '⚡ 直前キャンセルしました' : '🗑 削除しました');
 }
 
-function _todayAddStudent() {
-  const todayIds = _getTodayList().map(s => s.id);
-  const available = students.filter(s => !todayIds.includes(s.id));
-  if (!available.length) { toast('追加できる生徒はいません'); return; }
-  const m = document.createElement('div');
-  m.id = '_tdModal';
-  m.style.cssText = 'position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.5);display:flex;align-items:flex-end;';
-  m.innerHTML = '<div style="width:100%;background:white;border-radius:24px 24px 0 0;padding:20px 20px 40px;font-family:var(--hf);max-height:70vh;overflow-y:auto;">'
-    + '<div style="font-size:14px;font-weight:900;text-align:center;margin-bottom:16px;color:#0077b6;">生徒を追加</div>'
-    + available.map(s => '<button class="td-modal-btn" style="text-align:left;background:rgba(0,0,0,.04);color:#1a1a2e;" onclick="_closeTdModal();_todayAddById(\'' + s.id + '\')">'
-        + esc(s.name) + '</button>').join('')
-    + '<button class="td-modal-btn" style="background:rgba(0,0,0,.05);color:#555;margin-top:4px;" onclick="_closeTdModal()">キャンセル</button>'
-    + '</div>';
-  document.body.appendChild(m);
-  m.addEventListener('click', e => { if (e.target === m) m.remove(); });
+function _closeSeqForm() {
+  const ov = document.getElementById('seqFormViewOv');
+  if (ov) ov.style.display = 'none';
 }
-
-function _todayAddById(sid) {
-  const s = students.find(x => x.id === sid);
-  if (!s) return;
-  let list = _getTodayList();
-  if (!list.find(x => x.id === sid)) { list.push(s); _saveTodayList(list); }
-  _renderTodayCard();
-  toast('✅ ' + esc(s.name) + ' を追加しました');
+function _showSeqFormOverlay() {
+  const ov = document.getElementById('seqFormViewOv');
+  if (ov) ov.style.display = 'flex';
 }
-
 function _showSeqForm() {
   const s = _seqStudents[_seqIdx];
   if (!s) return;
   teacherSid = s.id;
-  document.getElementById('todayDashView').style.display = 'none';
-  document.getElementById('seqFormView').style.display = '';
+  _showSeqFormOverlay();
   document.getElementById('seqProgress').textContent = (_seqIdx + 1) + ' / ' + _seqStudents.length + '人目';
   document.getElementById('seqStudentName').textContent = s.name;
   document.getElementById('hwIn').value = '';
@@ -2743,8 +2603,7 @@ function _seqNext() {
 
 function _exitSeqMode() {
   _seqMode = false; _seqStudents = []; _seqIdx = 0;
-  document.getElementById('seqFormView').style.display = 'none';
-  document.getElementById('todayDashView').style.display = '';
+  _closeSeqForm();
   loadStudents();
 }
 
@@ -2775,7 +2634,6 @@ async function loadStudents() {
       students = JSON.parse(_c);
       rebuildTeacherSel();
       renderStudentList();
-      _renderTodayCard();
       if (_isCalendarVisible()) _renderCalendar();
     }
   } catch(e) {}
@@ -2786,15 +2644,12 @@ async function loadStudents() {
   try { localStorage.setItem('_tc_stu_v2', JSON.stringify(students)); } catch(e) {}
   rebuildTeacherSel();
   renderStudentList();
-  _renderTodayCard();
   if (_isCalendarVisible()) _renderCalendar();
 }
 
 function switchTab(tab) {
-  document.getElementById('tabLessonArea').classList.toggle('hidden',    tab !== 'lesson');
   document.getElementById('tabStudentsArea').classList.toggle('hidden',  tab !== 'students');
   document.getElementById('tabCalendarArea').classList.toggle('hidden',  tab !== 'calendar');
-  document.getElementById('tabLesson').classList.toggle('active',    tab === 'lesson');
   document.getElementById('tabStudents').classList.toggle('active',  tab === 'students');
   document.getElementById('tabCalendar').classList.toggle('active',  tab === 'calendar');
   if (tab === 'students') loadStudents();
@@ -3056,7 +2911,7 @@ function _renderSelectedDayTimeline(dateStr) {
         h += `<div style="flex:1;padding:9px 10px;font-size:13px;font-weight:800;color:#1e293b;background:#fff8f4;">${esc(ev.title)}</div>`;
         h += `<button onclick="_calEditStudentLesson('${ev._studentId}')" style="padding:0 10px;border:none;background:#fff8f4;color:#0077a8;cursor:pointer;flex-shrink:0;font-size:11px;font-weight:700;border-left:1px solid rgba(249,115,22,.12);font-family:var(--hf);">✏️</button>`;
         h += `<button onclick="_calOpenLessonRecord('${ev._studentId}')" style="padding:0 11px;border:none;background:#fff8f4;color:#0077a8;cursor:pointer;flex-shrink:0;font-size:11px;font-weight:700;border-left:1px solid rgba(249,115,22,.12);font-family:var(--hf);">記録</button>`;
-        h += `<button onclick="_calCancelLesson('${ev._studentId}')" style="padding:0 10px;border:none;background:#fff8f4;color:rgba(220,38,38,.4);cursor:pointer;flex-shrink:0;font-size:12px;border-left:1px solid rgba(249,115,22,.12);">✕</button>`;
+        h += `<button onclick="_calStuMenu('${ev._studentId}','${dateStr}')" style="padding:0 10px;border:none;background:#fff8f4;color:rgba(220,38,38,.4);cursor:pointer;flex-shrink:0;font-size:12px;border-left:1px solid rgba(249,115,22,.12);">✕</button>`;
         h += `</div>`;
       } else {
         // 通常イベント：左カラーバー＋タイトル
@@ -3083,11 +2938,9 @@ function _renderSelectedDayTimeline(dateStr) {
 function _calOpenLessonRecord(studentId) {
   const s = students.find(x => x.id === studentId);
   if (!s) { toast('生徒が見つかりません'); return; }
-  switchTab('lesson');
   _seqMode = false;
   teacherSid = s.id;
-  document.getElementById('todayDashView').style.display = 'none';
-  document.getElementById('seqFormView').style.display = '';
+  _showSeqFormOverlay();
   document.getElementById('seqProgress').textContent = 'レッスン記録';
   document.getElementById('seqStudentName').textContent = s.name;
 
@@ -3510,10 +3363,7 @@ async function saveLesson() {
   toast(`💾 保存しました！ +${exp} EXP`);
   if (_saveBtn) { _saveBtn.disabled = false; _saveBtn.textContent = '登録する'; }
   if (_seqMode) { _seqNext(); }
-  else {
-    document.getElementById('seqFormView').style.display = 'none';
-    document.getElementById('todayDashView').style.display = '';
-  }
+  else { _closeSeqForm(); _renderCalendar(); }
 }
 
 // ===== 生徒管理 =====
@@ -5932,13 +5782,6 @@ function renderPraiseMini(tl) {
   if (!items.length) { el.innerHTML = ''; return; }
   const _latest = items[items.length - 1];
   el.innerHTML = `<div style="display:flex;align-items:flex-start;gap:9px;margin-top:10px;padding-top:10px;border-top:1px solid rgba(200,184,160,.2);"><span style="font-size:15px;flex-shrink:0;line-height:1.4;">⭐</span><div style="font-size:13px;font-weight:700;color:#6b3a00;line-height:1.55;">${esc(_latest.text||'')}</div></div>`;
-}
-
-function toggleAcc(el) {
-  const section = el.closest('.acc-section');
-  const isOpen = section.classList.contains('open');
-  section.parentElement.querySelectorAll('.acc-section').forEach(s => s.classList.remove('open'));
-  if (!isOpen) section.classList.add('open');
 }
 
 function fmtDate(d) {
