@@ -1702,23 +1702,6 @@ body{background:#f0ebe0!important;}
         <div id="prtCharImg"></div><div id="prtStageImg"></div>
       </div>
 
-      <!-- 曲一覧シート -->
-      <div id="prtSongsSheet" onclick="_prtCloseSongsSheet()" style="display:none;position:absolute;inset:0;z-index:30;background:rgba(0,0,0,.45);flex-direction:column;justify-content:flex-end;">
-        <div onclick="event.stopPropagation()" style="background:white;border-radius:24px 24px 0 0;padding:20px 20px 32px;max-height:65%;overflow-y:auto;-webkit-overflow-scrolling:touch;">
-          <div style="width:36px;height:4px;background:#e0e7ef;border-radius:4px;margin:0 auto 16px;"></div>
-          <div style="font-size:15px;font-weight:900;color:#003D52;margin-bottom:14px;">♫ 練習中の曲</div>
-          <div id="prtSongsSheetList"></div>
-        </div>
-      </div>
-
-      <!-- チャレンジ一覧シート -->
-      <div id="prtChalSheet" onclick="_prtCloseChalSheet()" style="display:none;position:absolute;inset:0;z-index:30;background:rgba(0,0,0,.45);flex-direction:column;justify-content:flex-end;">
-        <div onclick="event.stopPropagation()" style="background:white;border-radius:24px 24px 0 0;padding:20px 20px 32px;max-height:65%;overflow-y:auto;-webkit-overflow-scrolling:touch;">
-          <div style="width:36px;height:4px;background:#e0e7ef;border-radius:4px;margin:0 auto 16px;"></div>
-          <div style="font-size:15px;font-weight:900;color:#003D52;margin-bottom:14px;">✅ チャレンジ一覧</div>
-          <div id="prtChalSheetList"></div>
-        </div>
-      </div>
       <!-- 曲＋チャレンジ 統合シート -->
       <div id="prtInfoSheet" onclick="_prtCloseInfoSheet()" style="display:none;position:absolute;inset:0;z-index:30;background:rgba(0,0,0,.45);flex-direction:column;justify-content:flex-end;">
         <div onclick="event.stopPropagation()" style="background:white;border-radius:24px 24px 0 0;padding:20px 20px 32px;max-height:70%;overflow-y:auto;-webkit-overflow-scrolling:touch;">
@@ -3771,53 +3754,31 @@ async function enterParent(studentData, selfData) {
     if (praiseMoreEl) praiseMoreEl.style.display = 'none';
   }
 
-  // メッセージ欄リセット
-  const msgArea = document.getElementById('prtMsgArea');
-  if (msgArea) {
-    msgArea.value = '';
-    msgArea.oninput = () => { const cnt = document.getElementById('prtMsgCount'); if (cnt) cnt.textContent = `${msgArea.value.length} / 200`; };
-  }
-
   // 許可制セクション（常に詳細表示）
   const lockCard = document.getElementById('prtLockCard');
   const ikiView  = document.getElementById('prtRowCharStage');
   const songChalCard = document.getElementById('prtSongChalCard');
-  if (true) {
-    if (lockCard) lockCard.style.display = 'none';
-    // 2列チップカード（曲 + 最新チャレンジ）
-    const _songs = s.songs || [];
-    const _hwItems = (s.timeline || []).filter(e => e.type === 'hw');
-    if (songChalCard) songChalCard.style.display = '';
-    const _songChipText = document.getElementById('prtSongChipText');
-    const _chalChipText = document.getElementById('prtChalChipText');
-    const _songDisplay = _songs.length ? _songs[0].replace(/（[^）]*）/, '').replace(/\([^)]*\)/, '').trim() : '曲なし';
-    if (_songChipText) _songChipText.textContent = _songDisplay;
-    if (_chalChipText) _chalChipText.textContent = _hwItems.length ? (_hwItems[_hwItems.length - 1].text || '—') : 'チャレンジなし';
-    // シート用リスト更新
-    const _songsSheetList = document.getElementById('prtSongsSheetList');
-    if (_songsSheetList) _songsSheetList.innerHTML = _songs.length
-      ? _songs.map(n => `<div style="font-size:14px;font-weight:700;color:#1a1a1a;padding:10px 0;border-bottom:1px solid rgba(0,0,0,.06);display:flex;align-items:center;gap:10px;"><span style="color:#38bdf8;font-size:11px;">●</span>${esc(n)}</div>`).join('')
-      : `<div class="prt-empty">まだ曲がありません</div>`;
-    const _chalSheetList = document.getElementById('prtChalSheetList');
-    if (_chalSheetList) _chalSheetList.innerHTML = _hwItems.length
-      ? _hwItems.slice().reverse().map(e => `<div style="padding:10px 0;border-bottom:1px solid #f0f9ff;display:flex;align-items:flex-start;gap:8px;"><span style="font-size:14px;flex-shrink:0;">✅</span><div style="font-size:13px;font-weight:700;color:#334155;line-height:1.4;">${esc(e.text||'')}</div></div>`).join('')
-      : `<div class="prt-empty">まだチャレンジがありません</div>`;
-    // 統合シート用リスト更新
-    const _infoSheetSongList = document.getElementById('prtInfoSheetSongList');
-    if (_infoSheetSongList) _infoSheetSongList.innerHTML = _songs.length
-      ? _songs.map(n => `<div style="font-size:14px;font-weight:700;color:#1a1a1a;padding:10px 0;border-bottom:1px solid rgba(0,0,0,.06);display:flex;align-items:center;gap:10px;"><span style="color:#38bdf8;font-size:11px;">●</span>${esc(n)}</div>`).join('')
-      : `<div class="prt-empty">まだ曲がありません</div>`;
-    const _infoSheetChalList = document.getElementById('prtInfoSheetChalList');
-    if (_infoSheetChalList) _infoSheetChalList.innerHTML = _hwItems.length
-      ? _hwItems.slice().reverse().map(e => `<div style="padding:10px 0;border-bottom:1px solid #f0f9ff;display:flex;align-items:flex-start;gap:8px;"><span style="font-size:14px;flex-shrink:0;">✅</span><div style="font-size:13px;font-weight:700;color:#334155;line-height:1.4;">${esc(e.text||'')}</div></div>`).join('')
-      : `<div class="prt-empty">まだチャレンジがありません</div>`;
-    // いきもの表示（解放状態は生徒本人の端末にのみ保存されており、保護者画面からは確認できないため非表示）
-    if (ikiView) ikiView.style.display = 'none';
-  } else {
-    if (lockCard) lockCard.style.display = '';
-    if (songChalCard) songChalCard.style.display = 'none';
-    if (ikiView)      ikiView.style.display      = 'none';
-  }
+  if (lockCard) lockCard.style.display = 'none';
+  // 2列チップカード（曲 + 最新チャレンジ）
+  const _songs = s.songs || [];
+  const _hwItems = (s.timeline || []).filter(e => e.type === 'hw');
+  if (songChalCard) songChalCard.style.display = '';
+  const _songChipText = document.getElementById('prtSongChipText');
+  const _chalChipText = document.getElementById('prtChalChipText');
+  const _songDisplay = _songs.length ? _songs[0].replace(/（[^）]*）/, '').replace(/\([^)]*\)/, '').trim() : '曲なし';
+  if (_songChipText) _songChipText.textContent = _songDisplay;
+  if (_chalChipText) _chalChipText.textContent = _hwItems.length ? (_hwItems[_hwItems.length - 1].text || '—') : 'チャレンジなし';
+  // 統合シート用リスト更新
+  const _infoSheetSongList = document.getElementById('prtInfoSheetSongList');
+  if (_infoSheetSongList) _infoSheetSongList.innerHTML = _songs.length
+    ? _songs.map(n => `<div style="font-size:14px;font-weight:700;color:#1a1a1a;padding:10px 0;border-bottom:1px solid rgba(0,0,0,.06);display:flex;align-items:center;gap:10px;"><span style="color:#38bdf8;font-size:11px;">●</span>${esc(n)}</div>`).join('')
+    : `<div class="prt-empty">まだ曲がありません</div>`;
+  const _infoSheetChalList = document.getElementById('prtInfoSheetChalList');
+  if (_infoSheetChalList) _infoSheetChalList.innerHTML = _hwItems.length
+    ? _hwItems.slice().reverse().map(e => `<div style="padding:10px 0;border-bottom:1px solid #f0f9ff;display:flex;align-items:flex-start;gap:8px;"><span style="font-size:14px;flex-shrink:0;">✅</span><div style="font-size:13px;font-weight:700;color:#334155;line-height:1.4;">${esc(e.text||'')}</div></div>`).join('')
+    : `<div class="prt-empty">まだチャレンジがありません</div>`;
+  // いきもの表示（解放状態は生徒本人の端末にのみ保存されており、保護者画面からは確認できないため非表示）
+  if (ikiView) ikiView.style.display = 'none';
 
   // ギフトボタン初期化
   const giftBtn = document.getElementById('prtGiftBtn');
@@ -7555,22 +7516,6 @@ function _renderParentFesCard() {
   if ($('prtFesBackDate'))  $('prtFesBackDate').textContent  = date;
   if ($('prtFesBackTime'))  $('prtFesBackTime').textContent  = time;
   if ($('prtFesBackVenue')) $('prtFesBackVenue').textContent = venue;
-}
-function _prtOpenSongsSheet() {
-  const el = document.getElementById('prtSongsSheet');
-  if (el) { el.style.display = 'flex'; }
-}
-function _prtCloseSongsSheet() {
-  const el = document.getElementById('prtSongsSheet');
-  if (el) { el.style.display = 'none'; }
-}
-function _prtOpenChalSheet() {
-  const el = document.getElementById('prtChalSheet');
-  if (el) { el.style.display = 'flex'; }
-}
-function _prtCloseChalSheet() {
-  const el = document.getElementById('prtChalSheet');
-  if (el) { el.style.display = 'none'; }
 }
 function _prtOpenInfoSheet() {
   const el = document.getElementById('prtInfoSheet');
