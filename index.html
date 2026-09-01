@@ -1341,17 +1341,6 @@ body{background:#f0ebe0!important;}
   </div>
 </div>
 
-<!-- 貝殻パネル -->
-<div class="home-ov" id="homeOvShells" onclick="if(event.target===this)closeHomePanel()">
-  <div class="home-sheet">
-    <div class="home-sheet-hdr">
-      <div class="home-sheet-title">🐚 成長記録</div>
-      <button class="home-sheet-close" onclick="closeHomePanel()">✕</button>
-    </div>
-    <div id="homeShellsContent"></div>
-  </div>
-</div>
-
 <!-- 宿題パネル -->
 <div class="home-ov" id="homeOvHomework" onclick="if(event.target===this)closeHomePanel()">
   <div class="home-sheet">
@@ -1864,14 +1853,6 @@ body{background:#f0ebe0!important;}
         <div id="sExpTotal" style="display:none;"></div>
       </div>
       <span id="sLikeCount" style="display:none;"></span>
-      <!-- サイドアイコン -->
-      <div class="home-side-icons">
-        <button class="home-side-btn" id="growthBadgeBtn" onclick="openHomePanel('shells')" style="position:relative;">
-          <span class="hsb-ico">🐚</span>
-          <span class="hsb-lbl">記録</span>
-          <span class="growth-badge-cnt" id="growthBadgeCnt"></span>
-        </button>
-      </div>
       <!-- 1タップチェックインバナー（白カードスタイル） -->
       <div id="homeCheckinBanner" style="display:none;">
         <button onclick="practiceCheckIn()" style="width:100%;cursor:pointer;border:none;">
@@ -4417,7 +4398,6 @@ function renderStudent(data) {
   if (_simpleLvNum) _simpleLvNum.textContent = '';
   const _simpleStr = document.getElementById('simpleStreakNum');
   if (_simpleStr) _simpleStr.textContent = (data.practice_streak||0) >= 1 ? `🔥 ${data.practice_streak}日連続！` : '今日練習しよう';
-  renderShells(tl);
   renderHomeworkMini(tl);
   renderPraiseMini(tl);
   renderCancelNote(tl);
@@ -5900,30 +5880,6 @@ function renderNotices(tl) {
   ).join('');
 }
 
-function renderShells(tl) {
-  const el = document.getElementById('sShells');
-  const cntEl = document.getElementById('growthBadgeCnt');
-  if (cntEl) {
-    const _cnt = tl.filter(e => e.type === 'shell' || e.type === 'growth').length;
-    const _seen = parseInt(localStorage.getItem('shell_seen_' + currentStudentId) || '0', 10);
-    const _new = Math.max(0, _cnt - _seen);
-    cntEl.textContent = _new;
-    cntEl.style.display = _new > 0 ? 'flex' : 'none';
-  }
-  if (!el) return;
-  const shells = tl.filter(e => e.type === 'shell');
-  if (!shells.length) { el.innerHTML = '<div class="empty">まだ貝殻がありません 🌊<br><span style="font-size:12px;">先生が小さな褒めを記録します</span></div>'; return; }
-  el.innerHTML = '<div class="shell-grid">' + shells.slice(0,20).map(e =>
-    `<div class="shell-card">
-      <div class="shell-ico">🐚</div>
-      <div>
-        <div class="shell-txt">${esc(e.text||'')}</div>
-        <div class="shell-date">${fmtDate(e.date)}</div>
-      </div>
-    </div>`
-  ).join('') + '</div>';
-}
-
 function renderHomeworkMini(tl) {
   if (_tutV2Active) return;
   const el = document.getElementById('sHomeworkMini');
@@ -5963,14 +5919,6 @@ function toggleAcc(el) {
   if (!isOpen) section.classList.add('open');
 }
 
-function _shellToggleMore(btn) {
-  const target = document.getElementById(btn.dataset.target);
-  if (!target) return;
-  const open = target.style.display !== 'none';
-  target.style.display = open ? 'none' : 'block';
-  btn.textContent = open ? 'もっと見る' : '閉じる';
-}
-
 function fmtDate(d) {
   if (!d) return '';
   const ps = d.includes('/') ? d.split('/') : d.split('-');
@@ -5993,72 +5941,11 @@ function openHomePanel(type, tab) {
       el.innerHTML = '<div style="text-align:center;padding:24px 16px;font-size:13px;color:#bbb;font-weight:700;">宿題はまだありません 📝</div>';
     }
     document.getElementById('homeOvHomework').classList.add('show');
-    return;
-  }
-  if (type === 'shells') {
-    const rawTl = currentStudentData ? currentStudentData.timeline : [];
-    const tl = typeof rawTl === 'string' ? JSON.parse(rawTl || '[]') : (rawTl || []);
-    const el = document.getElementById('homeShellsContent');
-
-    // 既読にする
-    const _seenCnt = tl.filter(e => e.type === 'shell' || e.type === 'growth').length;
-    if (currentStudentId) localStorage.setItem('shell_seen_' + currentStudentId, String(_seenCnt));
-    const _cntBadge = document.getElementById('growthBadgeCnt');
-    if (_cntBadge) _cntBadge.style.display = 'none';
-
-    let html = '';
-
-    // ── ほめられたこと ──
-    const growthMemos = tl.filter(e => e.type === 'shell');
-    {
-      const _rm = growthMemos.length > 1 ? growthMemos.slice(0, growthMemos.length - 1).reverse() : [];
-      html += `<div class="shell-sec-hdr" style="margin-top:20px;display:flex;align-items:center;justify-content:space-between;"><span>🐚 ほめられたこと</span>${_rm.length ? `<button onclick="_shellToggleMore(this)" data-target="_shellMoreList" style="font-size:10px;font-weight:700;color:rgba(0,119,168,.65);background:none;border:none;cursor:pointer;padding:0;font-family:var(--hf);">もっと見る</button>` : ''}</div>`;
-      if (!growthMemos.length) {
-        html += '<div style="text-align:center;padding:12px 0 8px;color:var(--text-mid);font-size:13px;">先生が褒めたことが記録されます 🌊</div>';
-      } else {
-        const _lm = growthMemos[growthMemos.length - 1];
-        html += `<div class="shell-recent"><div class="shell-ico">🐚</div><div><div class="shell-txt">${esc(_lm.text)}</div><div class="shell-date">${fmtDate(_lm.date)}</div></div></div>`;
-        if (_rm.length) {
-          html += `<div id="_shellMoreList" style="display:none;">` + _rm.map(e => `<div class="shell-recent"><div class="shell-ico">🐚</div><div><div class="shell-txt">${esc(e.text)}</div><div class="shell-date">${fmtDate(e.date)}</div></div></div>`).join('') + `</div>`;
-        }
-      }
-    }
-
-    // ── 練習した曲 ──
-    const songs = currentStudentData ? (currentStudentData.songs || []) : [];
-    {
-      const _rs = songs.length > 1 ? songs.slice(0, songs.length - 1).reverse() : [];
-      html += `<div class="shell-sec-hdr" style="margin-top:20px;display:flex;align-items:center;justify-content:space-between;"><span>🎵 練習した曲</span>${_rs.length ? `<button onclick="_shellToggleMore(this)" data-target="_songMoreList" style="font-size:10px;font-weight:700;color:rgba(0,119,168,.65);background:none;border:none;cursor:pointer;padding:0;font-family:var(--hf);">もっと見る</button>` : ''}</div>`;
-      if (!songs.length) {
-        html += '<div style="text-align:center;padding:12px 0 8px;color:var(--text-mid);font-size:13px;">レッスンを記録するとここに表示されます 🎸</div>';
-      } else {
-        const _ls = songs[songs.length - 1];
-        html += `<div class="shell-recent"><div class="shell-ico">🎸</div><div><div class="shell-txt">${esc(_ls)}</div></div></div>`;
-        if (_rs.length) {
-          html += `<div id="_songMoreList" style="display:none;">` + _rs.map(n => `<div class="shell-recent"><div class="shell-ico">🎸</div><div><div class="shell-txt">${esc(n)}</div></div></div>`).join('') + `</div>`;
-        }
-      }
-    }
-
-    // ── バッジ（アコーディオン・タップで条件表示、なかまタブの記録シートと同じ表示ロジック） ──
-    const _badgeList = [
-      ...BADGES_DEF.map(b => ({...b, earned: b.check(currentStudentData || {})})),
-      ...LOCAL_BADGES_DEF.map(b => ({...b, earned: b.check()})),
-    ];
-    const _badgeGrid = `<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;padding:4px 0;">${_badgeList.map(_badgeMedalHtml).join('')}</div>`;
-    html += `<div class="acc-section" style="margin-top:12px;">
-      <div class="acc-header" onclick="toggleAcc(this)"><span>🏅 バッジ（${_badgeList.filter(b=>b.earned).length}/${_badgeList.length}個）</span><span class="acc-arrow">▼</span></div>
-      <div class="acc-body">${_badgeGrid}</div>
-    </div>`;
-
-    el.innerHTML = html;
-    document.getElementById('homeOvShells').classList.add('show');
   }
 }
 
 function closeHomePanel() {
   document.getElementById('homeOvReward').classList.remove('show');
-  document.getElementById('homeOvShells').classList.remove('show');
   document.getElementById('homeOvHomework').classList.remove('show');
 }
 
