@@ -2638,7 +2638,7 @@ async function loadStudents() {
     }
   } catch(e) {}
   // 最新データをフェッチしてキャッシュ更新
-  const {data, error} = await sb.from('students').select('id,name,total_exp,practice_streak,last_practice_date,line_user_id,next_lesson,next_lesson_at,tier,last_lesson_at,access_extended_until,parent_line_id,parent_student_id,songs,timeline,bonus_given,elder_mode').order('name');
+  const {data, error} = await sb.from('students').select('id,name,total_exp,practice_streak,last_practice_date,line_user_id,next_lesson,next_lesson_at,next_lesson_end_at,tier,last_lesson_at,access_extended_until,parent_line_id,parent_student_id,songs,timeline,bonus_given,elder_mode').order('name');
   if (error) { if (!students.length) toast('生徒データの読み込みに失敗しました'); return; }
   students = data || [];
   try { localStorage.setItem('_tc_stu_v2', JSON.stringify(students)); } catch(e) {}
@@ -2996,6 +2996,7 @@ function _calOpenAddForm(dateStr, editStudentId) {
   ).join('');
   const oc = 'var(--ocean-mid)';
   const startTimeVal = editStu && editStu.next_lesson_at ? new Date(editStu.next_lesson_at).toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit',hour12:false}) : '10:00';
+  const endTimeVal = editStu && editStu.next_lesson_end_at ? new Date(editStu.next_lesson_end_at).toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit',hour12:false}) : '11:00';
   let h = `<div style="position:fixed;inset:0;z-index:700;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;" onclick="if(event.target===this)this.remove();" id="_calModal">`;
   h += `<div style="width:calc(100% - 32px);max-width:420px;background:white;border-radius:20px;padding:20px 16px 24px;max-height:85vh;overflow-y:auto;">`;
   h += `<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;"><div style="font-size:15px;font-weight:900;color:${oc};">${editStu ? '予定を編集' : '予定を追加'}</div><button onclick="document.getElementById('_calModal').remove()" style="width:28px;height:28px;border:none;background:rgba(0,0,0,.08);border-radius:50%;font-size:13px;cursor:pointer;font-family:var(--hf);">✕</button></div>`;
@@ -3012,7 +3013,7 @@ function _calOpenAddForm(dateStr, editStudentId) {
   h += `<div style="margin-top:10px;"><div style="font-size:11px;font-weight:700;color:rgba(0,0,0,.4);margin-bottom:4px;">📝 今回の宿題（任意）</div><input type="text" id="_calHwIn" placeholder="宿題を入力..." style="width:100%;padding:10px 12px;border:1.5px solid #e2e8f0;border-radius:10px;font-size:14px;font-family:var(--hf);box-sizing:border-box;"></div>`;
   h += `</div>`;
   h += `<div style="display:flex;gap:20px;margin-bottom:12px;"><label style="display:flex;align-items:center;gap:6px;cursor:pointer;"><input type="checkbox" id="_calAllDayChk" onchange="_calToggleAllDay(this.checked)"><span style="font-size:13px;font-weight:700;">終日</span></label></div>`;
-  h += `<div id="_calTimeFields" style="display:flex;gap:8px;margin-bottom:14px;"><div style="flex:1;"><div style="font-size:11px;font-weight:700;color:rgba(0,0,0,.4);margin-bottom:4px;">開始</div><input type="time" id="_calStartIn" value="${startTimeVal}" onchange="_calAutoEndTime()" style="width:100%;padding:9px 10px;border:1.5px solid #e2e8f0;border-radius:10px;font-size:14px;font-family:var(--hf);"></div><div style="flex:1;"><div style="font-size:11px;font-weight:700;color:rgba(0,0,0,.4);margin-bottom:4px;">終了</div><input type="time" id="_calEndIn" value="11:00" style="width:100%;padding:9px 10px;border:1.5px solid #e2e8f0;border-radius:10px;font-size:14px;font-family:var(--hf);"></div></div>`;
+  h += `<div id="_calTimeFields" style="display:flex;gap:8px;margin-bottom:14px;"><div style="flex:1;"><div style="font-size:11px;font-weight:700;color:rgba(0,0,0,.4);margin-bottom:4px;">開始</div><input type="time" id="_calStartIn" value="${startTimeVal}" onchange="_calAutoEndTime()" style="width:100%;padding:9px 10px;border:1.5px solid #e2e8f0;border-radius:10px;font-size:14px;font-family:var(--hf);"></div><div style="flex:1;"><div style="font-size:11px;font-weight:700;color:rgba(0,0,0,.4);margin-bottom:4px;">終了</div><input type="time" id="_calEndIn" value="${endTimeVal}" style="width:100%;padding:9px 10px;border:1.5px solid #e2e8f0;border-radius:10px;font-size:14px;font-family:var(--hf);"></div></div>`;
   h += `<div id="_calDateRecurSec" style="display:none;">`;
   h += `<div id="_calOnceFields" style="margin-bottom:10px;"><div style="font-size:11px;font-weight:700;color:rgba(0,0,0,.4);margin-bottom:4px;">日付</div><input type="date" id="_calDateIn" value="${dateStr}" style="padding:9px 10px;border:1.5px solid #e2e8f0;border-radius:10px;font-size:14px;font-family:var(--hf);"></div>`;
   h += `<div style="margin-bottom:8px;"><label style="display:flex;align-items:center;gap:8px;cursor:pointer;"><input type="checkbox" id="_calRecurChk" onchange="_calToggleRecur(this.checked)"><span style="font-size:13px;font-weight:700;">毎週繰り返す</span></label></div>`;
@@ -3158,11 +3159,13 @@ async function _calSaveForm(defaultDate) {
     if (!_calFormStudentId) { toast('生徒を選択してください'); return; }
     const isAllDay = document.getElementById('_calAllDayChk')?.checked;
     const startTime = isAllDay ? null : (document.getElementById('_calStartIn')?.value || '10:00');
+    const endTime = isAllDay ? null : (document.getElementById('_calEndIn')?.value || null);
     const nextAt = isAllDay ? null : (defaultDate + 'T' + startTime + ':00+09:00');
+    const nextEndAt = (isAllDay || !endTime) ? null : (defaultDate + 'T' + endTime + ':00+09:00');
     const d = new Date(defaultDate + 'T00:00:00');
     const dow = ['日','月','火','水','木','金','土'][d.getDay()];
     const label = isAllDay ? `${d.getMonth()+1}月${d.getDate()}日（${dow}）` : `${d.getMonth()+1}月${d.getDate()}日（${dow}）${startTime}`;
-    const updateRow = {next_lesson_at: nextAt, next_lesson: label};
+    const updateRow = {next_lesson_at: nextAt, next_lesson_end_at: nextEndAt, next_lesson: label};
     const hwVal = (document.getElementById('_calHwIn')?.value || '').trim();
     if (hwVal) {
       const s = students.find(x => x.id === _calFormStudentId);
@@ -3476,7 +3479,12 @@ async function enterParent(studentData, selfData) {
     const m = dt.getMonth()+1, d = dt.getDate();
     const dow = ['日','月','火','水','木','金','土'][dt.getDay()];
     const hh = dt.getHours(), mm = String(dt.getMinutes()).padStart(2,'0');
-    nlEl.innerHTML = `<div class="prt-new-ticket"><div class="prt-new-ticket-grad"><div class="prt-new-ticket-dots"></div><div class="prt-new-ticket-dots-r"></div><div class="prt-new-ticket-lbl">次回のレッスン日</div><div class="prt-new-ticket-date">${m}月${d}日（${dow}）</div><div class="prt-new-ticket-sep"><div class="prt-new-ticket-sep-l"></div><div class="prt-new-ticket-sep-dash"></div><div class="prt-new-ticket-sep-r"></div></div></div><div class="prt-new-ticket-bot"><div class="prt-new-ticket-time">${hh}:${mm}〜</div></div></div>`;
+    let prtTimeStr = `${hh}:${mm}〜`;
+    if (s.next_lesson_end_at) {
+      const edt = new Date(s.next_lesson_end_at);
+      prtTimeStr += `${edt.getHours()}:${String(edt.getMinutes()).padStart(2,'0')}`;
+    }
+    nlEl.innerHTML = `<div class="prt-new-ticket"><div class="prt-new-ticket-grad"><div class="prt-new-ticket-dots"></div><div class="prt-new-ticket-dots-r"></div><div class="prt-new-ticket-lbl">次回のレッスン日</div><div class="prt-new-ticket-date">${m}月${d}日（${dow}）</div><div class="prt-new-ticket-sep"><div class="prt-new-ticket-sep-l"></div><div class="prt-new-ticket-sep-dash"></div><div class="prt-new-ticket-sep-r"></div></div></div><div class="prt-new-ticket-bot"><div class="prt-new-ticket-time">${prtTimeStr}</div></div></div>`;
     if (cancelBtn) cancelBtn.style.display = '';
   } else {
     nlEl.innerHTML = `<div class="prt-new-ticket"><div class="prt-new-ticket-grad"><div class="prt-new-ticket-dots"></div><div class="prt-new-ticket-dots-r"></div><div class="prt-new-ticket-lbl">次回のレッスン日</div><div class="prt-new-ticket-date" style="font-size:16px;opacity:.7;margin-top:8px;">まだ予定がありません</div><div class="prt-new-ticket-sep"><div class="prt-new-ticket-sep-l"></div><div class="prt-new-ticket-sep-dash"></div><div class="prt-new-ticket-sep-r"></div></div></div><div class="prt-new-ticket-bot"><div class="prt-new-ticket-time" style="font-size:14px;color:#aaa;">—</div></div></div>`;
@@ -5901,7 +5909,12 @@ function renderNextLesson(data) {
   const rmDt = document.getElementById('rmNextLessonDate');
   if (rmDt) rmDt.textContent = dateStr2;
   const hh = dt.getHours(), mm = String(dt.getMinutes()).padStart(2,'0');
-  if (rmTm) rmTm.textContent = `${hh}:${mm}〜`;
+  let timeStr2 = `${hh}:${mm}〜`;
+  if (data.next_lesson_end_at) {
+    const edt = new Date(data.next_lesson_end_at);
+    timeStr2 += `${edt.getHours()}:${String(edt.getMinutes()).padStart(2,'0')}`;
+  }
+  if (rmTm) rmTm.textContent = timeStr2;
 }
 
 function toast(msg, type='') {
