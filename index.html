@@ -3012,6 +3012,9 @@ function _calOpenAddForm(dateStr, editStudentId) {
   h += `<button onclick="_calOpenStudentPicker()" id="_calPickBtn" style="width:100%;padding:12px;border:1.5px solid ${oc};border-radius:10px;font-size:14px;font-weight:700;color:${editStu?'var(--ocean-deep)':oc};background:white;cursor:pointer;font-family:var(--hf);">👤 ${editStu ? esc(editStu.name) + ' ▼' : '生徒を選ぶ'}</button>`;
   h += `<div style="margin-top:10px;"><div style="font-size:11px;font-weight:700;color:rgba(0,0,0,.4);margin-bottom:4px;">🎵 チャレンジした曲（任意）</div><input type="text" id="_calSongIn" placeholder="例：チェリー" value="${editStu && editStu.songs && editStu.songs.length ? esc(editStu.songs[0]) : ''}" style="width:100%;padding:10px 12px;border:1.5px solid #e2e8f0;border-radius:10px;font-size:14px;font-family:var(--hf);box-sizing:border-box;"></div>`;
   h += `<div style="margin-top:10px;"><div style="font-size:11px;font-weight:700;color:rgba(0,0,0,.4);margin-bottom:4px;">📝 今回の宿題（任意）</div><input type="text" id="_calHwIn" placeholder="宿題を入力..." style="width:100%;padding:10px 12px;border:1.5px solid #e2e8f0;border-radius:10px;font-size:14px;font-family:var(--hf);box-sizing:border-box;"></div>`;
+  if (!editStu) {
+    h += `<div id="_calRecordPrevWrap" style="display:none;margin-top:10px;padding:10px 12px;background:#fff7ed;border-radius:10px;border:1.5px solid #fed7aa;"><label style="display:flex;align-items:center;gap:8px;cursor:pointer;"><input type="checkbox" id="_calRecordPrevChk" checked><span style="font-size:13px;font-weight:800;color:#9a3412;" id="_calRecordPrevLabel"></span></label></div>`;
+  }
   h += `</div>`;
   h += `<div style="display:flex;gap:20px;margin-bottom:12px;"><label style="display:flex;align-items:center;gap:6px;cursor:pointer;"><input type="checkbox" id="_calAllDayChk" onchange="_calToggleAllDay(this.checked)"><span style="font-size:13px;font-weight:700;">終日</span></label></div>`;
   h += `<div id="_calTimeFields" style="display:flex;gap:8px;margin-bottom:14px;"><div style="flex:1;"><div style="font-size:11px;font-weight:700;color:rgba(0,0,0,.4);margin-bottom:4px;">開始</div><input type="time" id="_calStartIn" value="${startTimeVal}" onchange="_calAutoEndTime()" style="width:100%;padding:9px 10px;border:1.5px solid #e2e8f0;border-radius:10px;font-size:14px;font-family:var(--hf);"></div><div style="flex:1;"><div style="font-size:11px;font-weight:700;color:rgba(0,0,0,.4);margin-bottom:4px;">終了</div><input type="time" id="_calEndIn" value="${endTimeVal}" style="width:100%;padding:9px 10px;border:1.5px solid #e2e8f0;border-radius:10px;font-size:14px;font-family:var(--hf);"></div></div>`;
@@ -3141,6 +3144,24 @@ function _calPickerSelectStudent(sid, sname) {
   const btn = document.getElementById('_calPickBtn');
   if (btn) { btn.textContent = '👤 ' + sname + ' ▼'; btn.style.color = 'var(--ocean-deep)'; btn.style.borderColor = 'var(--ocean-mid)'; }
   document.getElementById('_calStudentPickerModal')?.remove();
+  _calUpdateRecordPrevUI(sid);
+}
+// 生徒選択時、その生徒に既に次回予約（＝今回来訪した日の予約だったはず）が
+// 入っていれば「前回のレッスンを記録する」チェックを出す。予定編集モードでは
+// このUI自体が存在しない（時間だけ変更したい時に誤って来訪記録が付くのを防ぐため）。
+function _calUpdateRecordPrevUI(sid) {
+  const wrap = document.getElementById('_calRecordPrevWrap');
+  if (!wrap) return;
+  const s = students.find(x => x.id === sid);
+  if (s && s.next_lesson_at) {
+    const pd = new Date(s.next_lesson_at);
+    document.getElementById('_calRecordPrevLabel').textContent = `${pd.getMonth()+1}月${pd.getDate()}日のレッスンを記録する`;
+    wrap.style.display = '';
+    const chk = document.getElementById('_calRecordPrevChk');
+    if (chk) chk.checked = true;
+  } else {
+    wrap.style.display = 'none';
+  }
 }
 // LINE登録前の初回生徒を名前だけでその場に追加する。後日本人がLINE登録しても
 // このレコードとは自動で紐付かない（別アカウントになる）が、初回来訪の
@@ -3169,9 +3190,19 @@ async function _calSaveForm(defaultDate) {
     const updateRow = {next_lesson_at: nextAt, next_lesson_end_at: nextEndAt, next_lesson: label};
     const s = students.find(x => x.id === _calFormStudentId);
     const hwVal = (document.getElementById('_calHwIn')?.value || '').trim();
-    if (hwVal) {
-      const hwEntry = {type:'hw', text: hwVal, date: dateStr()};
-      updateRow.timeline = [hwEntry, ...(s?.timeline || [])].slice(0, 150);
+    const recChk = document.getElementById('_calRecordPrevChk');
+    const willRecord = !!(recChk && recChk.checked && s?.next_lesson_at);
+    if (hwVal || willRecord) {
+      const hwEntry = hwVal ? [{type:'hw', text: hwVal, date: dateStr()}] : [];
+      let lessonEntry = [];
+      if (willRecord) {
+        const pd = new Date(s.next_lesson_at);
+        const prevDateStr = pd.getFullYear() + '-' + String(pd.getMonth()+1).padStart(2,'0') + '-' + String(pd.getDate()).padStart(2,'0');
+        lessonEntry = [{type:'lesson', text:'レッスン来訪', exp:50, date: prevDateStr}];
+        updateRow.total_exp = (s.total_exp || 0) + 50;
+        updateRow.last_lesson_at = s.next_lesson_at;
+      }
+      updateRow.timeline = [...hwEntry, ...lessonEntry, ...(s?.timeline || [])].slice(0, 150);
     }
     const songVal = (document.getElementById('_calSongIn')?.value || '').trim();
     if (songVal) {
@@ -3183,7 +3214,7 @@ async function _calSaveForm(defaultDate) {
     if (error) { toast('保存に失敗しました'); return; }
     document.getElementById('_calModal')?.remove();
     await loadStudents(); _renderCalendar();
-    toast(hwVal ? 'レッスン予定と宿題を登録しました 📅' : 'レッスン予定を登録しました 📅');
+    toast(willRecord ? '来訪記録と次回予定を登録しました 📅✅' : (hwVal ? 'レッスン予定と宿題を登録しました 📅' : 'レッスン予定を登録しました 📅'));
   } else {
     await _calSaveEvent(defaultDate);
   }
