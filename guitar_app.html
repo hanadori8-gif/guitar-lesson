@@ -3153,14 +3153,18 @@ function _calUpdateRecordPrevUI(sid) {
   const wrap = document.getElementById('_calRecordPrevWrap');
   if (!wrap) return;
   const s = students.find(x => x.id === sid);
-  if (s && s.next_lesson_at) {
+  const chk = document.getElementById('_calRecordPrevChk');
+  // 次回予約が「今日以前」＝もう終わっているはずのレッスンの時だけ記録対象にする。
+  // まだ来ていない未来の予約に誤って来訪記録が付くのを防ぐため。
+  const isPastOrToday = s && s.next_lesson_at && s.next_lesson_at.slice(0,10) <= dateStr().replace(/\//g,'-');
+  if (isPastOrToday) {
     const pd = new Date(s.next_lesson_at);
     document.getElementById('_calRecordPrevLabel').textContent = `${pd.getMonth()+1}月${pd.getDate()}日のレッスンを記録する`;
     wrap.style.display = '';
-    const chk = document.getElementById('_calRecordPrevChk');
     if (chk) chk.checked = true;
   } else {
     wrap.style.display = 'none';
+    if (chk) chk.checked = false;
   }
 }
 // LINE登録前の初回生徒を名前だけでその場に追加する。後日本人がLINE登録しても
@@ -3191,13 +3195,14 @@ async function _calSaveForm(defaultDate) {
     const s = students.find(x => x.id === _calFormStudentId);
     const hwVal = (document.getElementById('_calHwIn')?.value || '').trim();
     const recChk = document.getElementById('_calRecordPrevChk');
-    const willRecord = !!(recChk && recChk.checked && s?.next_lesson_at);
+    // 記録対象は「今日以前」の予約に限る（未来の予約に誤って来訪記録が付かないためのガード。
+    // UI側の_calUpdateRecordPrevUIでも同じ条件でチェックを出し分けているが、保存時にも二重に確認する）
+    const willRecord = !!(recChk && recChk.checked && s?.next_lesson_at && s.next_lesson_at.slice(0,10) <= dateStr().replace(/\//g,'-'));
     if (hwVal || willRecord) {
       const hwEntry = hwVal ? [{type:'hw', text: hwVal, date: dateStr()}] : [];
       let lessonEntry = [];
       if (willRecord) {
-        const pd = new Date(s.next_lesson_at);
-        const prevDateStr = pd.getFullYear() + '-' + String(pd.getMonth()+1).padStart(2,'0') + '-' + String(pd.getDate()).padStart(2,'0');
+        const prevDateStr = s.next_lesson_at.slice(0,10).replace(/-/g,'/');
         lessonEntry = [{type:'lesson', text:'レッスン来訪', exp:50, date: prevDateStr}];
         updateRow.total_exp = (s.total_exp || 0) + 50;
         updateRow.last_lesson_at = s.next_lesson_at;
