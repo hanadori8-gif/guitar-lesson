@@ -328,19 +328,6 @@ body{font-family:'Zen Maru Gothic','Helvetica Neue','Hiragino Sans','Meiryo',san
 /* インスタボタン */
 .insta-link{display:flex;align-items:center;justify-content:center;gap:8px;color:rgba(255,255,255,.8);font-size:11px;font-weight:700;text-decoration:none;padding:6px 12px;background:rgba(255,255,255,.12);border-radius:20px;border:1px solid rgba(255,255,255,.25);width:fit-content;margin:0 auto;}
 .insta-link:active{background:rgba(255,255,255,.22);}
-/* ゲスト画面 */
-.guest-wrap{display:flex;flex-direction:column;align-items:center;padding:28px 20px 40px;gap:0;overflow-y:auto;height:100%;}
-.guest-badge{background:rgba(255,255,255,.2);border:1.5px solid rgba(255,255,255,.4);border-radius:20px;padding:4px 14px;font-size:11px;font-weight:700;color:white;margin-bottom:14px;}
-.guest-title{font-size:24px;font-weight:800;color:white;font-family:var(--hf);margin-bottom:6px;text-align:center;}
-.guest-sub{font-size:13px;color:rgba(255,255,255,.8);margin-bottom:22px;text-align:center;line-height:1.6;}
-.guest-section-title{font-size:12px;font-weight:800;color:rgba(255,255,255,.7);margin-bottom:10px;letter-spacing:.3px;align-self:flex-start;}
-.guest-timeline-wrap{width:100%;margin-bottom:20px;}
-.guest-cta-box{background:rgba(255,255,255,.12);border:1.5px solid rgba(255,255,255,.2);border-radius:16px;padding:16px 18px;width:100%;margin-bottom:16px;}
-.guest-cta-title{font-size:13px;font-weight:800;color:white;margin-bottom:10px;font-family:var(--hf);}
-.guest-cta-item{font-size:13px;color:rgba(255,255,255,.85);padding:3px 0;}
-.guest-btn-primary{width:100%;padding:16px;background:white;color:var(--ocean-deep);border:none;border-radius:14px;font-size:16px;font-weight:800;cursor:pointer;box-shadow:0 4px 16px rgba(0,0,0,.18);font-family:var(--hf);margin-bottom:10px;display:flex;align-items:center;justify-content:center;gap:8px;text-decoration:none;}
-.guest-btn-sub{width:100%;padding:14px;background:rgba(255,255,255,.15);color:white;border:1.5px solid rgba(255,255,255,.3);border-radius:14px;font-size:14px;font-weight:700;cursor:pointer;margin-bottom:20px;font-family:var(--hf);}
-.guest-back{font-size:12px;color:rgba(255,255,255,.6);cursor:pointer;text-decoration:underline;}
 /* タイムライン読み込みアニメーション */
 @keyframes tlFishSwim{0%,100%{transform:translateX(0) scaleX(1);}50%{transform:translateX(7px) scaleX(1);}}
 @keyframes tlCharBob{0%,100%{transform:translateY(0);}50%{transform:translateY(-4px);}}
@@ -1399,32 +1386,6 @@ body{background:#f0ebe0!important;}
   </div>
 </div>
 
-<!-- SCREEN: ゲスト -->
-<div id="sGuest" class="screen">
-  <div class="guest-wrap">
-    <div class="guest-badge">👀 見学中</div>
-    <div class="guest-title">海のみえるギター教室</div>
-    <div class="guest-sub">下関の海を感じながらギターを楽しく続けられる教室です</div>
-    <div class="guest-timeline-wrap">
-      <div class="guest-section-title">📣 みんなの練習記録</div>
-      <div id="guestTimeline"><div class="empty" style="color:rgba(255,255,255,.6);">読み込み中... 🌊</div></div>
-    </div>
-    <div class="guest-cta-box">
-      <div class="guest-cta-title">生徒さんになると使えること</div>
-      <div class="guest-cta-item">📚 宿題・メッセージが届く</div>
-      <div class="guest-cta-item">🐚 レッスンの記録・目標</div>
-      <div class="guest-cta-item">❤️ タイムラインに投稿</div>
-      <div class="guest-cta-item">🎁 レベルアップでご褒美アンロック</div>
-      <div class="guest-cta-item">✨ スペシャルテキスト（準備中）</div>
-    </div>
-    <a href="https://www.instagram.com/hanadori8/" target="_blank" class="guest-btn-primary">
-      📸 Instagramで問い合わせ・体験申込み
-    </a>
-    <button class="guest-btn-sub" onclick="void 0" style="opacity:.6;">✨ 特典・サブスクについて（準備中）</button>
-    <span class="guest-back" onclick="goScreen('sRole')">← ログイン画面に戻る</span>
-  </div>
-</div>
-
 <!-- SCREEN: 先生ログイン -->
 <div id="sTeacherLogin" class="screen">
   <div style="overflow-y:auto;height:100%;display:flex;flex-direction:column;align-items:center;">
@@ -2441,6 +2402,12 @@ window.addEventListener('load', () => {
     toast('⚠️ Supabase設定が必要です（手順書を参照）');
     return;
   }
+  if (typeof supabase === 'undefined') {
+    // Supabase SDKの読み込み失敗（通信エラー等）。ログイン画面固まり防止でロールへ逃がす。
+    goScreen('sRole');
+    toast('⚠️ 通信エラーが発生しました。再読み込みしてください');
+    return;
+  }
   sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
   // ① 即座にログイン画面を表示（LIFFを待たない）
@@ -2579,15 +2546,6 @@ function _showSeqForm() {
   document.getElementById('songIn').value = '';
   const _pIn = document.getElementById('praiseIn');
   if (_pIn) _pIn.value = '';
-  const _dIn = document.getElementById('nextLessonDateIn');
-  const _tIn = document.getElementById('nextLessonTimeIn');
-  if (_dIn && _tIn) {
-    if (s.next_lesson_at) {
-      const _nd = new Date(s.next_lesson_at);
-      _dIn.value = _nd.toISOString().slice(0,10);
-      _tIn.value = _nd.toTimeString().slice(0,5);
-    } else { _dIn.value = ''; _tIn.value = new Date().toTimeString().slice(0,2) + ':00'; }
-  }
   todayChecked[teacherSid] = todayChecked[teacherSid] || [];
 }
 
@@ -3311,19 +3269,6 @@ function onTeacherSelChange() {
   teacherSid = document.getElementById('teacherSel').value;
   document.getElementById('hwIn').value = '';
   document.getElementById('songIn').value = '';
-  // 次回レッスン日時をセット
-  const _s = students.find(x => x.id === teacherSid);
-  const _dIn = document.getElementById('nextLessonDateIn');
-  const _tIn = document.getElementById('nextLessonTimeIn');
-  if (_dIn && _tIn) {
-    if (_s && _s.next_lesson_at) {
-      const _nd = new Date(_s.next_lesson_at);
-      _dIn.value = _nd.toISOString().slice(0,10);
-      _tIn.value = _nd.toTimeString().slice(0,5);
-    } else {
-      _dIn.value = ''; _tIn.value = new Date().toTimeString().slice(0,2) + ':00';
-    }
-  }
   todayChecked[teacherSid] = todayChecked[teacherSid] || [];
 }
 
@@ -3357,15 +3302,6 @@ async function saveLesson() {
     timeline:  newTimeline,
     songs: newSongs,
     last_lesson_at: new Date().toISOString(),
-    ...(() => {
-      const _d = (document.getElementById('nextLessonDateIn') || {}).value || '';
-      const _t = (document.getElementById('nextLessonTimeIn') || {}).value || '';
-      if (!_d) return {};
-      const _dt = new Date(`${_d}T${_t || '00:00'}:00+09:00`);
-      const _wd = ['日','月','火','水','木','金','土'][_dt.getDay()];
-      const _lbl = `${_dt.getMonth()+1}月${_dt.getDate()}日(${_wd})${_t ? ' '+_t : ''}`;
-      return { next_lesson: _lbl, next_lesson_at: _dt.toISOString() };
-    })(),
   }).eq('id', teacherSid);
 
   if (error) {
@@ -5507,6 +5443,7 @@ function updatePracticeBtn(streak, lastDate) {
 async function loadSharedPosts(forceRefresh) {
   const el = document.getElementById('sSharedTimeline');
   if (!el) return;
+  if (!sb) { el.innerHTML = '<div class="empty">読み込みエラー 😢</div>'; return; }
   const d = todayJST();
   const now = Date.now();
   // キャッシュが有効（同日・60秒以内）なら再利用
@@ -6367,11 +6304,6 @@ function initNakamaTab(){
     feed.dataset.inited='1';
     feed.innerHTML='<div style="text-align:center;padding:30px;color:rgba(255,255,255,.5);font-size:13px;">読み込み中...</div>';
   }
-  const liveDate=new Date('2026-08-15');
-  const today=new Date();today.setHours(0,0,0,0);
-  const diff=Math.ceil((liveDate-today)/86400000);
-  const cntEl=document.getElementById('liveCountdown');
-  if(cntEl) cntEl.textContent=diff>0?diff:0;
 }
 let _missionChecked = {};
 function renderMissionCard() {
