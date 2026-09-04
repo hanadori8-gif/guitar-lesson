@@ -2121,16 +2121,16 @@ const _aoSangoImg  = 'images/ao_sango.webp';
 const _fuguImg = 'images/fugu.webp';
 const _chinanagozuImg = 'images/chinanagozu.webp';
 const CHARS = [
-  {id:'kumanomi',    name:'クマノミ',     img:_kumanomiImg,    size:92,  offsetY:-40, startCm:3},
-  {id:'kani',        name:'カニ',         img:_kaniImg,        size:170,              startCm:1},
-  {id:'kurage',      name:'クラゲ',       img:_kurageImg,      size:140, offsetY:-25, startCm:2},
-  {id:'kame',        name:'カメ',         img:_kameImg,        size:215, offsetX:12, offsetY:12, startCm:5},
-  {id:'penguin',     name:'ペンギン',      img:_penguinImg,     size:190,              startCm:8},
-  {id:'fugu',        name:'フグ',          img:_fuguImg,        size:130,              startCm:2},
-  {id:'shumokuzame', name:'シュモクザメ', img:_shumokuzameImg, size:185,              startCm:30},
-  {id:'manta',       name:'マンタ',       img:_mantaImg,       size:230,              startCm:50},
-  {id:'kurione',     name:'クリオネ',     img:_kurioneImg,     size:150,              startCm:1},
-  {id:'sunameri',    name:'スナメリ',     img:_sunameriImg,    size:200,              startCm:40},
+  {id:'kumanomi',    name:'クマノミ',     img:_kumanomiImg,    size:92,  offsetY:-40},
+  {id:'kani',        name:'カニ',         img:_kaniImg,        size:170},
+  {id:'kurage',      name:'クラゲ',       img:_kurageImg,      size:140, offsetY:-25},
+  {id:'kame',        name:'カメ',         img:_kameImg,        size:215, offsetX:12, offsetY:12},
+  {id:'penguin',     name:'ペンギン',      img:_penguinImg,     size:190},
+  {id:'fugu',        name:'フグ',          img:_fuguImg,        size:130},
+  {id:'shumokuzame', name:'シュモクザメ', img:_shumokuzameImg, size:185},
+  {id:'manta',       name:'マンタ',       img:_mantaImg,       size:230},
+  {id:'kurione',     name:'クリオネ',     img:_kurioneImg,     size:150},
+  {id:'sunameri',    name:'スナメリ',     img:_sunameriImg,    size:200},
   {id:'chinanagozu', name:'チンアナゴ', img:_chinanagozuImg, size:210},
 ];
 
@@ -2216,8 +2216,8 @@ const LOCAL_BADGES_DEF = [
   {id:'feed_100', icon:'😋', label:'くいしんぼう',    desc:'エサを合計100回あげた',                   check: () => parseInt(localStorage.getItem('sub_total_feed_cnt')||'0') >= 100},
   {id:'max_one',  icon:'📏', label:'デカくなったね',  desc:'いきものを1体MAXまで育てた',           check: () => CHARS.some(c => localStorage.getItem('sub_char_stage_done_'+c.id)==='1')},
   {id:'max_all',  icon:'🌊', label:'水槽が狭く感じる', desc:'全いきものをMAXまで育てた',                check: () => CHARS.every(c => localStorage.getItem('sub_char_stage_done_'+c.id)==='1')},
-  {id:'meter_1',  icon:'🐋', label:'海のヌシ',        desc:'いきものが1体、1m(100cm)を超えて育った',   check: () => CHARS.some(c => (c.startCm||3) + parseInt(localStorage.getItem('sub_cm_'+c.id)||'0') >= 100)},
-  {id:'meter_3',  icon:'🏛️', label:'もはや水族館',    desc:'いきものが3体、1m(100cm)を超えて育った（水槽どうなってるの）', check: () => CHARS.filter(c => (c.startCm||3) + parseInt(localStorage.getItem('sub_cm_'+c.id)||'0') >= 100).length >= 3},
+  {id:'meter_1',  icon:'🐋', label:'海のヌシ',        desc:'いきものが1体、1m(100cm)を超えて育った',   check: () => CHARS.some(c => parseInt(localStorage.getItem('sub_cm_'+c.id)||'0') >= 100)},
+  {id:'meter_3',  icon:'🏛️', label:'もはや水族館',    desc:'いきものが3体、1m(100cm)を超えて育った（水槽どうなってるの）', check: () => CHARS.filter(c => parseInt(localStorage.getItem('sub_cm_'+c.id)||'0') >= 100).length >= 3},
   {id:'sushi_1',  icon:'🍣', label:'お寿司デビュー',  desc:'はじめてお寿司をあげた',                  check: () => parseInt(localStorage.getItem('sub_sushi_cnt')||'0') >= 1},
   {id:'sushi_5',  icon:'🍣', label:'プチ贅沢',        desc:'お寿司を5回あげた（かなり贅沢！）',       check: () => parseInt(localStorage.getItem('sub_sushi_cnt')||'0') >= 5},
   {id:'sushi_20', icon:'🤤', label:'お寿司中毒',      desc:'お寿司を20回あげた（食べさせすぎ注意！）', check: () => parseInt(localStorage.getItem('sub_sushi_cnt')||'0') >= 20},
@@ -3556,7 +3556,7 @@ async function enterParent(studentData, selfData) {
     const _giftBtn = document.getElementById('prtGiftBtn');
     const _emptyMsg = document.getElementById('prtCharEmptyMsg');
     if (_charObj) {
-      const _cm = (_charObj.startCm || 3) + (s.current_char_cm || 0);
+      const _cm = s.current_char_cm || 0;
       if (_imgEl) { _imgEl.style.visibility = 'visible'; _imgEl.src = _charObj.img; }
       if (_nameEl) _nameEl.textContent = _charObj.name;
       if (_cmEl) _cmEl.textContent = '・' + _cm + ' cm';
@@ -5066,8 +5066,7 @@ function _updateSubGrowth() {
   const charObj = CHARS.find(c => c.id === _subSelectedChar) || CHARS[0];
   const nameLabel = document.getElementById('subCharNameLabel');
   if (nameLabel) nameLabel.textContent = charObj.name;
-  const gainedCm = parseInt(localStorage.getItem('sub_cm_' + _subSelectedChar) || '0');
-  const dispCm = (charObj.startCm || 3) + gainedCm;
+  const dispCm = parseInt(localStorage.getItem('sub_cm_' + _subSelectedChar) || '0');
   const cmEl = document.getElementById('subSizeCm');
   if (cmEl) cmEl.textContent = dispCm >= 100 ? (dispCm / 100).toFixed(1) + 'm' : dispCm + 'cm';
   const charEl = document.getElementById('subCharImgEl');
@@ -5182,16 +5181,23 @@ function feedCharSlot(idx) {
   _startFeedingMode();
   // エサ食べる演出
   _showFoodEatAnim(foodEmojis[idx] || '🌿', cx, cy);
-  // cm加算
-  const cmIncs = [10, 25, 15];
-  const cmKey = 'sub_cm_' + _subSelectedChar;
-  localStorage.setItem(cmKey, String(parseInt(localStorage.getItem(cmKey) || '0') + (cmIncs[idx] || 3)));
-  _syncCurrentChar();
-  // 成長処理
+  // 成長ゲージの状態を先に見ておく（cm加算のペースを決めるため）
   const growthKey = 'sub_growth_' + charId;
   const charStageDoneKey = 'sub_char_stage_done_' + charId;
   let g = parseInt(localStorage.getItem(growthKey) || '0');
   const wasMaxed = g >= 100;
+  // cm加算：ゲージMAX(100cm)に到達するまではゲージの増加率と同じペースで大きくなる
+  // （全キャラ0cmスタート・ゲージ100%=100cmで統一）。MAX到達後は今まで通りのペースで
+  // 上限なくどんどん大きくなり続ける。MAX直前でゲージが100にキャップされる時は、
+  // キャップ後の実際の増加分だけcmにも足す（そうしないとゲージ100%なのにcmが100を
+  // 超えて/下回って表示される不整合が起きるため）。
+  const cmIncsAfterMax = [10, 25, 15];
+  const growthIncActual = Math.min(growths[idx] || 3, 100 - g);
+  const cmInc = wasMaxed ? (cmIncsAfterMax[idx] || 3) : growthIncActual;
+  const cmKey = 'sub_cm_' + _subSelectedChar;
+  localStorage.setItem(cmKey, String(parseInt(localStorage.getItem(cmKey) || '0') + cmInc));
+  _syncCurrentChar();
+  // 成長処理
   if (!wasMaxed) {
     g = Math.min(100, g + growths[idx]);
     localStorage.setItem(growthKey, String(g));
@@ -5723,8 +5729,7 @@ async function _corePracticeCheckIn() {
   });
 
   const _cid0 = localStorage.getItem('custom_char_' + currentStudentId) || 'kumanomi';
-  const _co0  = CHARS.find(c => c.id === _cid0) || CHARS[0];
-  const _cm0  = (_co0.startCm || 3) + parseInt(localStorage.getItem('sub_cm_' + _cid0) || '0');
+  const _cm0  = parseInt(localStorage.getItem('sub_cm_' + _cid0) || '0');
   const _hw0  = _getAllLatestHomeworks();
   sb.rpc('rpc_post_shared_timeline', {
     p_student_id: currentStudentId, p_line_user_id: s.line_user_id,
