@@ -2729,7 +2729,8 @@ function _getEventsForDate(dateStr) {
   students.forEach(s => {
     if (s.next_lesson_at && s.next_lesson_at.slice(0,10) === dateStr) {
       const t = new Date(s.next_lesson_at).toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit',hour12:false});
-      evs.push({id:'lesson_'+s.id, title:displayName(s), color:'#f97316', start_time:t, _isLesson:true, _studentId:s.id, _dateStr:dateStr});
+      const et = s.next_lesson_end_at ? new Date(s.next_lesson_end_at).toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit',hour12:false}) : '';
+      evs.push({id:'lesson_'+s.id, title:displayName(s), color:'#f97316', start_time:t, end_time:et, _isLesson:true, _studentId:s.id, _dateStr:dateStr});
     }
   });
   evs.sort((a,b) => (a.start_time||'') > (b.start_time||'') ? 1 : -1);
@@ -2887,10 +2888,10 @@ function _renderSelectedDayTimeline(dateStr) {
       const c = ev.color || '#3b82f6';
       if (ev._isLesson) {
         // 生徒レッスン：時間バッジ＋名前
-        const timeStr = ev.start_time || '';
+        const timeStr = ev.start_time ? (ev.start_time + (ev.end_time ? `〜${ev.end_time}` : '')) : '';
         h += `<div style="display:flex;align-items:stretch;margin-bottom:7px;border-radius:10px;overflow:hidden;box-shadow:0 1px 5px rgba(249,115,22,.18);border:1.5px solid rgba(249,115,22,.18);">`;
         h += `<div onclick="_calOpenAddForm('${dateStr}','${ev._studentId}')" style="display:flex;flex:1;cursor:pointer;-webkit-tap-highlight-color:transparent;">`;
-        h += `<div style="background:#f97316;color:white;font-size:11px;font-weight:800;padding:0 10px;min-width:46px;display:flex;align-items:center;justify-content:center;flex-shrink:0;letter-spacing:.3px;">${esc(timeStr)}</div>`;
+        h += `<div style="background:#f97316;color:white;font-size:11px;font-weight:800;padding:0 8px;min-width:46px;display:flex;align-items:center;justify-content:center;flex-shrink:0;letter-spacing:.2px;white-space:nowrap;">${esc(timeStr)}</div>`;
         h += `<div style="flex:1;padding:9px 10px;font-size:13px;font-weight:800;color:#1e293b;background:#fff8f4;">${esc(ev.title)}</div>`;
         h += `</div>`;
         h += `<button onclick="_calOpenLessonRecord('${ev._studentId}')" style="padding:0 11px;border:none;background:#fff8f4;color:#0077a8;cursor:pointer;flex-shrink:0;font-size:11px;font-weight:700;border-left:1px solid rgba(249,115,22,.12);font-family:var(--hf);">記録</button>`;
