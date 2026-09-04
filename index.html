@@ -3541,7 +3541,7 @@ async function enterParent(studentData, selfData) {
     const _charId = s.current_char_id;
     const _charObj = _charId ? CHARS.find(c => c.id === _charId) : null;
     if (_charObj) {
-      charCard.style.display = 'flex';
+      charCard.style.display = 'block';
       const _cm = (_charObj.startCm || 3) + (s.current_char_cm || 0);
       const _imgEl = document.getElementById('prtCharImgEl');
       if (_imgEl) _imgEl.src = _charObj.img;
