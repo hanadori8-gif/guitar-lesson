@@ -1299,7 +1299,7 @@ body{background:#f0ebe0!important;}
       <div>
         <div style="display:flex;align-items:center;gap:8px;">
           <div class="detail-hdr-name" id="detailName"></div>
-          <button onclick="renameStudent(detailStudentId, document.getElementById('detailName').textContent)" style="border:none;background:none;font-size:16px;cursor:pointer;padding:2px;line-height:1;color:#94a3b8;">✏️</button>
+          <button onclick="renameStudent(detailStudentId)" style="border:none;background:none;font-size:16px;cursor:pointer;padding:2px;line-height:1;color:#94a3b8;">✏️</button>
         </div>
       </div>
       <button class="detail-close" onclick="closeStudentDetail()">✕</button>
@@ -2534,7 +2534,7 @@ function _calStuMenu(sid, dateStr) {
   m.id = '_calStuModal';
   m.style.cssText = 'position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.5);display:flex;align-items:flex-end;';
   m.innerHTML = '<div style="width:100%;background:white;border-radius:24px 24px 0 0;padding:20px 20px 40px;font-family:var(--hf);">'
-    + '<div style="font-size:14px;font-weight:900;text-align:center;margin-bottom:4px;color:#0077b6;">' + esc(s.name) + '</div>'
+    + '<div style="font-size:14px;font-weight:900;text-align:center;margin-bottom:4px;color:#0077b6;">' + esc(displayName(s)) + '</div>'
     + '<div style="font-size:11px;text-align:center;color:rgba(0,0,0,.4);margin-bottom:16px;">操作を選んでください</div>'
     + '<button class="td-modal-btn" style="background:#fffbeb;color:#92400e;" onclick="_closeCalStuModal();_calStuCancel(\'' + sid + '\',\'cancel\',\'' + dateStr + '\')">⚡ 直前キャンセル（レッスン料発生）</button>'
     + '<button class="td-modal-btn" style="background:#fef2f2;color:#b91c1c;" onclick="_closeCalStuModal();_calStuCancel(\'' + sid + '\',\'delete\',\'' + dateStr + '\')">🗑 削除（予約もクリア）</button>'
@@ -2574,7 +2574,7 @@ function _showSeqForm() {
   teacherSid = s.id;
   _showSeqFormOverlay();
   document.getElementById('seqProgress').textContent = (_seqIdx + 1) + ' / ' + _seqStudents.length + '人目';
-  document.getElementById('seqStudentName').textContent = s.name;
+  document.getElementById('seqStudentName').textContent = displayName(s);
   document.getElementById('hwIn').value = '';
   document.getElementById('songIn').value = '';
   const _pIn = document.getElementById('praiseIn');
@@ -2638,7 +2638,7 @@ async function loadStudents() {
     }
   } catch(e) {}
   // 最新データをフェッチしてキャッシュ更新
-  const {data, error} = await sb.from('students').select('id,name,total_exp,practice_streak,last_practice_date,line_user_id,next_lesson,next_lesson_at,next_lesson_end_at,tier,last_lesson_at,access_extended_until,parent_line_id,parent_student_id,songs,timeline,bonus_given,elder_mode').order('name');
+  const {data, error} = await sb.from('students').select('id,name,nickname,total_exp,practice_streak,last_practice_date,line_user_id,next_lesson,next_lesson_at,next_lesson_end_at,tier,last_lesson_at,access_extended_until,parent_line_id,parent_student_id,songs,timeline,bonus_given,elder_mode').order('name');
   if (error) { if (!students.length) toast('生徒データの読み込みに失敗しました'); return; }
   students = data || [];
   try { localStorage.setItem('_tc_stu_v2', JSON.stringify(students)); } catch(e) {}
@@ -2669,7 +2669,7 @@ function renderMonthSummary() {
   activeStu.forEach(s => {
     const tl = typeof s.timeline === 'string' ? JSON.parse(s.timeline || '[]') : (s.timeline || []);
     const cnt = tl.filter(e => e.type === 'lesson' && _lessonDateInMonth(e.date, thisMonth)).length;
-    if (cnt > 0) { lessonCount += cnt; cameNames.push({name: s.name, cnt}); }
+    if (cnt > 0) { lessonCount += cnt; cameNames.push({name: displayName(s), cnt}); }
   });
   const revenue = lessonCount * lessonFee;
   const content = document.getElementById('monthlySummaryContent');
@@ -2747,7 +2747,7 @@ function _getEventsForDate(dateStr) {
   students.forEach(s => {
     if (s.next_lesson_at && s.next_lesson_at.slice(0,10) === dateStr) {
       const t = new Date(s.next_lesson_at).toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit',hour12:false});
-      evs.push({id:'lesson_'+s.id, title:s.name, color:'#f97316', start_time:t, _isLesson:true, _studentId:s.id, _dateStr:dateStr});
+      evs.push({id:'lesson_'+s.id, title:displayName(s), color:'#f97316', start_time:t, _isLesson:true, _studentId:s.id, _dateStr:dateStr});
     }
   });
   evs.sort((a,b) => (a.start_time||'') > (b.start_time||'') ? 1 : -1);
@@ -2944,7 +2944,7 @@ function _calOpenLessonRecord(studentId) {
   teacherSid = s.id;
   _showSeqFormOverlay();
   document.getElementById('seqProgress').textContent = 'レッスン記録';
-  document.getElementById('seqStudentName').textContent = s.name;
+  document.getElementById('seqStudentName').textContent = displayName(s);
 
   _seqHwItems = [];
   document.getElementById('hwIn').value = '';
@@ -3009,7 +3009,7 @@ function _calOpenAddForm(dateStr, editStudentId) {
   h += `<input id="_calColorVal" type="hidden" value="${colors[defColorIdx]}">`;
   h += `<div id="_calTitleSection" style="display:none;"><div style="margin-bottom:12px;"><div style="font-size:11px;font-weight:700;color:rgba(0,0,0,.4);margin-bottom:4px;">タイトル</div><input type="text" id="_calTitleIn" placeholder="" style="width:100%;padding:10px 12px;border:1.5px solid #e2e8f0;border-radius:10px;font-size:15px;font-family:var(--hf);box-sizing:border-box;"></div></div>`;
   h += `<div id="_calStudentSection" style="margin-bottom:12px;">`;
-  h += `<button onclick="_calOpenStudentPicker()" id="_calPickBtn" style="width:100%;padding:12px;border:1.5px solid ${oc};border-radius:10px;font-size:14px;font-weight:700;color:${editStu?'var(--ocean-deep)':oc};background:white;cursor:pointer;font-family:var(--hf);">👤 ${editStu ? esc(editStu.name) + ' ▼' : '生徒を選ぶ'}</button>`;
+  h += `<button onclick="_calOpenStudentPicker()" id="_calPickBtn" style="width:100%;padding:12px;border:1.5px solid ${oc};border-radius:10px;font-size:14px;font-weight:700;color:${editStu?'var(--ocean-deep)':oc};background:white;cursor:pointer;font-family:var(--hf);">👤 ${editStu ? esc(displayName(editStu)) + ' ▼' : '生徒を選ぶ'}</button>`;
   h += `<div style="margin-top:10px;"><div style="font-size:11px;font-weight:700;color:rgba(0,0,0,.4);margin-bottom:4px;">🎵 チャレンジした曲（任意）</div><input type="text" id="_calSongIn" placeholder="例：チェリー" value="${editStu && editStu.songs && editStu.songs.length ? esc(editStu.songs[0]) : ''}" style="width:100%;padding:10px 12px;border:1.5px solid #e2e8f0;border-radius:10px;font-size:14px;font-family:var(--hf);box-sizing:border-box;"></div>`;
   h += `<div style="margin-top:10px;"><div style="font-size:11px;font-weight:700;color:rgba(0,0,0,.4);margin-bottom:4px;">📝 今回の宿題（任意）</div><input type="text" id="_calHwIn" placeholder="宿題を入力..." style="width:100%;padding:10px 12px;border:1.5px solid #e2e8f0;border-radius:10px;font-size:14px;font-family:var(--hf);box-sizing:border-box;"></div>`;
   if (!editStu) {
@@ -3109,7 +3109,7 @@ function _calOpenStudentPicker() {
   const oc = 'var(--ocean-mid)';
   const renderItem = s => {
     const lastD = s.last_lesson_at ? s.last_lesson_at.slice(5,10).replace('-','/') : '未来訪';
-    return `<div onclick="_calPickerSelectStudent('${s.id}','${escJs(s.name)}')" data-pname="${esc(s.name)}" style="padding:10px 12px;cursor:pointer;border-radius:10px;border:1.5px solid #e2e8f0;background:white;"><div style="font-size:14px;font-weight:700;color:#1e293b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(s.name)}</div><div style="font-size:10px;color:rgba(0,0,0,.35);margin-top:1px;">${lastD}</div></div>`;
+    return `<div onclick="_calPickerSelectStudent('${s.id}','${escJs(displayName(s))}')" data-pname="${esc(displayName(s) + ' ' + s.name)}" style="padding:10px 12px;cursor:pointer;border-radius:10px;border:1.5px solid #e2e8f0;background:white;"><div style="font-size:14px;font-weight:700;color:#1e293b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(displayName(s))}</div><div style="font-size:10px;color:rgba(0,0,0,.35);margin-top:1px;">${lastD}</div></div>`;
   };
   // その日にちょうど次回予約が入っている生徒をサジェストとして先頭に出す
   // （レッスン中にその場でカレンダーへ次回予約を入れるケースでは、その日時に元々予約が
@@ -3302,7 +3302,7 @@ async function _calAddException(eventId, dateStr) {
 function rebuildTeacherSel() {
   const sel = document.getElementById('teacherSel');
   const prev = sel.value;
-  sel.innerHTML = students.map(s => `<option value="${s.id}">${esc(s.name)}</option>`).join('');
+  sel.innerHTML = students.map(s => `<option value="${s.id}">${esc(displayName(s))}</option>`).join('');
   if (prev && students.find(s => s.id === prev)) sel.value = prev;
   teacherSid = sel.value || (students[0] && students[0].id) || null;
 }
@@ -3437,10 +3437,10 @@ function renderStudentList() {
   const q = _stuSearchQuery.toLowerCase();
   if (q) {
     topLevel = topLevel.filter(s => {
-      if (s.name.toLowerCase().includes(q)) return true;
+      if (displayName(s).toLowerCase().includes(q)) return true;
       if (s.parent_student_id) {
         const p = students.find(x => x.id === s.parent_student_id);
-        if (p && p.name.toLowerCase().includes(q)) return true;
+        if (p && displayName(p).toLowerCase().includes(q)) return true;
       }
       return false;
     });
@@ -3462,7 +3462,7 @@ function renderStudentList() {
     return `<div class="si2-row" onclick="showStudentDetail('${s.id}')">
       <div style="display:flex;align-items:center;gap:8px;min-width:0;flex:1;">
         ${tag}
-        <span class="si2-name">${esc(s.name)}</span>
+        <span class="si2-name">${esc(displayName(s))}</span>
         ${elderMark}
       </div>
       <button class="si2-enterbtn" ${enterColor} onclick="event.stopPropagation();_teacherEnterStudent('${s.id}')">入場</button>
@@ -3480,15 +3480,20 @@ function renderStudentList() {
   renderMonthSummary();
 }
 
-async function renameStudent(id, currentName) {
-  const newName = prompt('新しい名前を入力してください', currentName);
-  if (!newName || newName.trim() === currentName) return;
+// 先生画面での表示名（あだ名）を編集する。LINE登録時の自動紐付けに使う
+// students.nameそのものは変更しない（変えると次回LINE登録時の名前一致が壊れるため）。
+async function renameStudent(id) {
+  const s = students.find(x => x.id === id);
+  if (!s) return;
+  const newName = prompt('あだ名を入力してください（空にするとLINEの名前がそのまま表示されます）', s.nickname || '');
+  if (newName === null) return;
   const trimmed = newName.trim();
-  if (!trimmed) return;
-  const {error} = await sb.from('students').update({name: trimmed}).eq('id', id);
-  if (error) { toast('名前の変更に失敗しました'); return; }
-  toast(`✅ ${trimmed} に変更しました`);
+  if (trimmed === (s.nickname || '')) return;
+  const {error} = await sb.from('students').update({nickname: trimmed || null}).eq('id', id);
+  if (error) { toast('あだ名の変更に失敗しました'); return; }
+  toast(trimmed ? `✅ あだ名を「${trimmed}」にしました` : '✅ あだ名を解除しました');
   await loadStudents();
+  showStudentDetail(id);
 }
 
 // =====================================================================
@@ -3840,7 +3845,7 @@ function showStudentDetail(sid) {
   const s = students.find(x => x.id === sid);
   if (!s) return;
   _lessonHwItems = [];
-  document.getElementById('detailName').textContent = s.name;
+  document.getElementById('detailName').textContent = displayName(s);
   const songs = s.songs || [];
 
   const railEl = document.getElementById('detailRail');
@@ -3960,7 +3965,7 @@ function openParentLinkPicker(childId) {
     ? others.map(s => {
         return `<div onclick="selectParentStudent('${s.id}')" style="padding:13px 16px;border-bottom:1px solid #f5f5f5;cursor:pointer;display:flex;align-items:center;gap:10px;background:white;" onmouseover="this.style.background='#fef3c7'" onmouseout="this.style.background='white'">
           <span style="font-size:18px;flex-shrink:0;">👤</span>
-          <span style="font-size:14px;font-weight:700;color:#1a1a1a;flex:1;">${esc(s.name)}</span>
+          <span style="font-size:14px;font-weight:700;color:#1a1a1a;flex:1;">${esc(displayName(s))}</span>
         </div>`;
       }).join('')
     : '<div style="padding:20px;text-align:center;color:#bbb;font-size:13px;">他に生徒がいません</div>';
@@ -5970,6 +5975,10 @@ function toast(msg, type='') {
 }
 function dateStr() { const d=new Date(); return `${d.getFullYear()}/${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')}`; }
 function esc(s)   { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;'); }
+// 先生画面での生徒表示名。あだ名(nickname)が設定されていればそれを優先し、
+// 無ければLINEの名前(name)を使う。nameはLINE登録時の自動紐付けの照合キーとして
+// 使うため上書きしない。あだ名の編集はrenameStudent()から行う。
+function displayName(s) { return (s && (s.nickname || s.name)) || ''; }
 
 // ライフシステム
 const _LIFE_MAX = 5;
