@@ -1569,7 +1569,7 @@ body{background:#f0ebe0!important;}
       <div id="prtCharCard" style="display:none;margin:0 0 12px;border-radius:20px;overflow:hidden;background:linear-gradient(180deg,#bdeaf5 0%,#7dd3e8 60%,#5cc2dc 100%);box-shadow:0 4px 16px rgba(0,60,90,.2);padding:14px;">
         <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:4px;">
           <span style="font-size:9px;font-weight:900;color:#fff;text-shadow:0 1px 3px rgba(0,40,70,.4);letter-spacing:.03em;">🐠 今育てているいきもの</span>
-          <span style="font-size:10px;font-weight:900;color:#fff;background:rgba(0,60,90,.3);border-radius:10px;padding:2px 8px;white-space:nowrap;flex-shrink:0;"><span id="prtCharName">—</span>・<span id="prtCharCm">— cm</span></span>
+          <span style="font-size:10px;font-weight:900;color:#fff;background:rgba(0,60,90,.3);border-radius:10px;padding:2px 8px;white-space:nowrap;flex-shrink:0;"><span id="prtCharName">—</span><span id="prtCharCm"></span></span>
         </div>
         <img id="prtCharImgEl" src="" style="display:block;width:90px;height:90px;object-fit:contain;margin:6px auto 12px;filter:drop-shadow(0 4px 10px rgba(0,40,70,.3));">
         <button id="prtGiftBtn" onclick="doParentGiftSushi()" style="width:100%;border:none;border-radius:14px;background:linear-gradient(135deg,#FFD028,#FF9A1A);color:white;padding:11px;cursor:pointer;box-shadow:0 3px 10px rgba(255,150,30,.4);font-family:var(--hf);font-weight:900;font-size:12px;display:flex;align-items:center;justify-content:center;gap:6px;-webkit-tap-highlight-color:transparent;">🎁 ごはんをプレゼントする</button>
@@ -1698,9 +1698,9 @@ body{background:#f0ebe0!important;}
           </div>
         </div>
         <!-- ミッションカードエリア -->
-        <div style="flex:1;position:relative;z-index:1;display:flex;flex-direction:column;justify-content:center;padding:0 16px 92px;">
-          <div id="rmMissionCard" style="background:white;border-radius:24px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,.15);"></div>
-          <button id="rmRecordBtn" onclick="_missionRecord()" style="display:none;background:linear-gradient(135deg,#38bdf8,#0077b6);color:white;font-size:17px;font-weight:900;border:none;border-radius:20px;padding:16px 36px;box-shadow:0 5px 0 #005580;cursor:pointer;font-family:inherit;margin:10px auto 0;min-width:180px;"><span>記録する！</span><div id="rmPelletSpan" style="display:inline-flex;align-items:center;justify-content:center;gap:4px;margin-left:8px;font-size:22px;"></div></button>
+        <div style="flex:1;min-height:0;position:relative;z-index:1;display:flex;flex-direction:column;justify-content:flex-end;padding:14px 16px 92px;overflow:hidden;">
+          <div id="rmMissionCard" style="background:white;border-radius:24px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,.15);flex-shrink:1;min-height:0;display:flex;flex-direction:column;"></div>
+          <button id="rmRecordBtn" onclick="_missionRecord()" style="display:none;flex-shrink:0;background:linear-gradient(135deg,#38bdf8,#0077b6);color:white;font-size:17px;font-weight:900;border:none;border-radius:20px;padding:16px 36px;box-shadow:0 5px 0 #005580;cursor:pointer;font-family:inherit;margin:10px auto 0;min-width:180px;"><span>記録する！</span><div id="rmPelletSpan" style="display:inline-flex;align-items:center;justify-content:center;gap:4px;margin-left:8px;font-size:22px;"></div></button>
           <div id="rmRouteMap" style="display:none;flex-direction:column;align-items:center;gap:0;padding-bottom:16px;"></div>
         </div>
       </div>
@@ -3555,7 +3555,7 @@ async function enterParent(studentData, selfData) {
       const _cm = (_charObj.startCm || 3) + (s.current_char_cm || 0);
       if (_imgEl) { _imgEl.style.display = ''; _imgEl.src = _charObj.img; }
       if (_nameEl) _nameEl.textContent = _charObj.name;
-      if (_cmEl) _cmEl.textContent = _cm + ' cm';
+      if (_cmEl) _cmEl.textContent = '・' + _cm + ' cm';
       if (_giftBtn) {
         _giftBtn.disabled = false;
         _giftBtn.style.opacity = '1';
@@ -6370,25 +6370,23 @@ function renderMissionCard() {
   const hwTexts = _getAllLatestHomeworks();
   const allItems = hwTexts.map((t, i) => ({ id: '_hw' + i, label: t, isHw: true }));
   card.innerHTML = `
-    <div style="background:linear-gradient(135deg,#38bdf8 0%,#0077b6 100%);position:relative;padding:16px 18px 34px;">
+    <div style="background:linear-gradient(135deg,#38bdf8 0%,#0077b6 100%);position:relative;padding:14px 18px 30px;flex-shrink:0;">
       <div style="position:absolute;left:0;top:0;bottom:0;width:5px;background:rgba(255,255,255,.4);"></div>
       <div style="margin-left:8px;">
         <div style="font-size:11px;color:rgba(255,255,255,.8);font-weight:700;margin-bottom:5px;">練習中の曲</div>
-        <div style="font-size:30px;font-weight:900;color:white;line-height:1.1;">${esc(songName)}</div>
+        <div style="font-size:22px;font-weight:900;color:white;line-height:1.2;">${esc(songName)}</div>
       </div>
       <svg viewBox="0 0 300 20" xmlns="http://www.w3.org/2000/svg" style="position:absolute;bottom:-1px;left:0;width:100%;display:block;">
         <path d="M0,10 C50,20 100,0 150,10 C200,20 250,0 300,10 L300,20 L0,20 Z" fill="white"/>
       </svg>
     </div>
-    <div style="padding:10px 14px 6px;">
+    <div style="padding:10px 14px 14px;flex:1;min-height:0;overflow-y:auto;">
       <div style="font-size:11px;font-weight:800;color:#0096C7;letter-spacing:.8px;margin-bottom:6px;padding-left:2px;">宿題</div>
       ${allItems.map(it => `<div style="display:flex;align-items:center;gap:12px;padding:12px 14px;background:#f0fafb;border-radius:14px;margin-bottom:8px;">
         <span style="font-size:17px;font-weight:700;color:#0077a8;line-height:1.4;">${esc(it.label)}</span>
       </div>`).join('')}
+      ${allItems.length > 0 ? '' : '<div style="padding:10px 0 6px;text-align:center;font-size:12px;color:#aaa;font-weight:700;line-height:1.6;">レッスンを受けると<br>宿題が表示されるよ！</div>'}
     </div>
-    ${allItems.length > 0
-      ? '<div style="padding:10px 14px 14px;"></div>'
-      : '<div style="padding:10px 14px 18px;text-align:center;font-size:12px;color:#aaa;font-weight:700;line-height:1.6;">レッスンを受けると<br>宿題が表示されるよ！</div>'}
   `;
   if (allItems.length > 0) {
     const _recBtn = document.getElementById('rmRecordBtn');
