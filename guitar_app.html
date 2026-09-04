@@ -1564,34 +1564,26 @@ body{background:#f0ebe0!important;}
       <!-- 次のレッスン（チケット型） -->
       <div id="prtNextLesson"><div class="prt-new-ticket"><div class="prt-new-ticket-grad"><div class="prt-new-ticket-dots"></div><div class="prt-new-ticket-dots-r"></div><div class="prt-new-ticket-lbl">次回のレッスン日</div><div class="prt-new-ticket-date">—</div><div class="prt-new-ticket-sep"><div class="prt-new-ticket-sep-l"></div><div class="prt-new-ticket-sep-dash"></div><div class="prt-new-ticket-sep-r"></div></div></div><div class="prt-new-ticket-bot"><div class="prt-new-ticket-time">—</div></div></div></div>
       <div id="prtCancelNote" style="display:none;margin-bottom:10px;"></div>
-      <button id="prtCancelBtn" class="prt-cancel-btn" style="display:none;margin-bottom:10px;" onclick="_parentCancelLesson()">🗓 この日のレッスンを休む</button>
 
-      <!-- 曲 + チャレンジ 統合カード -->
-      <div id="prtSongChalCard" style="display:none;margin:0 0 12px;">
-        <div onclick="_prtOpenInfoSheet()" style="background:white;border-radius:20px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,.13);cursor:pointer;-webkit-tap-highlight-color:transparent;">
-          <div style="background:linear-gradient(135deg,#0284c7,#7dd3fc);padding:12px 14px 10px;">
-            <div style="font-size:9px;font-weight:900;color:rgba(255,255,255,.85);letter-spacing:.05em;margin-bottom:4px;">♫ 練習中の曲</div>
-            <div id="prtSongChipText" style="font-size:17px;font-weight:900;color:white;line-height:1;text-shadow:0 1px 4px rgba(0,0,0,.2);">—</div>
-          </div>
-          <div style="padding:9px 14px;background:#f0fafb;display:flex;align-items:center;justify-content:space-between;">
-            <div>
-              <div style="font-size:9px;font-weight:900;color:#0096C7;letter-spacing:.05em;margin-bottom:2px;">✅ 最近のチャレンジ</div>
-              <div id="prtChalChipText" style="font-size:11px;font-weight:700;color:#334155;line-height:1.3;">—</div>
-            </div>
-            <span style="font-size:18px;color:#94a3b8;">›</span>
-          </div>
+      <!-- 今育てているキャラ + サイズ + エサボタン（統合カード。ステージ背景は出さない） -->
+      <div id="prtCharCard" style="display:none;margin:0 0 12px;background:rgba(255,255,255,.96);border-radius:20px;box-shadow:0 4px 20px rgba(0,0,0,.13);padding:14px 16px;align-items:center;gap:14px;">
+        <img id="prtCharImgEl" src="" style="width:60px;height:60px;object-fit:contain;filter:drop-shadow(0 3px 8px rgba(0,80,160,.25));flex-shrink:0;">
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:9px;font-weight:800;color:#5b7684;letter-spacing:.04em;">🐠 今育てているいきもの</div>
+          <div id="prtCharName" style="font-size:14px;font-weight:900;color:#0f2733;margin:2px 0;">—</div>
+          <div id="prtCharCm" style="font-size:11px;font-weight:800;color:#0077a8;">— cm</div>
         </div>
+        <button id="prtGiftBtn" onclick="doParentGiftSushi()" style="flex-shrink:0;border:none;border-radius:14px;background:linear-gradient(135deg,#FFD028,#FF9A1A);color:white;padding:10px 12px;cursor:pointer;box-shadow:0 3px 10px rgba(255,150,30,.4);font-family:inherit;display:flex;flex-direction:column;align-items:center;gap:2px;-webkit-tap-highlight-color:transparent;">
+          <div style="font-size:20px;line-height:1;">🎁</div>
+          <div style="font-size:8px;font-weight:900;color:white;white-space:nowrap;">エサをあげる</div>
+        </button>
       </div>
 
-      <!-- いきもの表示（stage bg + char） -->
-      <div id="prtRowCharStage" class="prt-iki-view" style="display:none;">
-        <img id="prtStageBgEl2" src="" style="position:absolute;width:190px;height:190px;object-fit:contain;top:50%;left:50%;transform:translate(-50%,-50%);z-index:0;display:none;">
-        <img id="prtCharEl2" src="" style="position:absolute;width:100px;height:100px;object-fit:contain;bottom:30px;left:50%;transform:translateX(-50%);z-index:1;filter:drop-shadow(0 4px 16px rgba(0,80,160,.35));display:none;">
-        <div style="position:absolute;top:0;left:0;right:0;display:flex;align-items:flex-start;justify-content:space-between;padding:8px 10px;z-index:2;">
-          <div style="font-size:9px;font-weight:800;color:rgba(255,255,255,.9);text-shadow:0 1px 4px rgba(0,60,120,.5);background:rgba(0,60,120,.25);border-radius:6px;padding:3px 7px;letter-spacing:.03em;">今育てているいきもの</div>
-          <div id="prtIkiStageName" style="font-size:9px;font-weight:800;color:rgba(255,255,255,.9);text-shadow:0 1px 4px rgba(0,60,120,.5);background:rgba(0,60,120,.25);border-radius:6px;padding:3px 7px;letter-spacing:.03em;"></div>
-        </div>
-        <div id="prtIkiLevel" style="position:absolute;bottom:8px;left:50%;transform:translateX(-50%);font-size:11px;font-weight:900;color:rgba(255,255,255,.95);text-shadow:0 1px 4px rgba(0,60,120,.5);z-index:2;background:rgba(0,60,120,.25);border-radius:8px;padding:3px 10px;white-space:nowrap;"></div>
+      <!-- 獲得バッジ（DBに記録が残る宿題系のみ。エサ・お寿司・いきもの系は生徒本人の端末にしか
+           記録が無く保護者画面からは正しく判定できないため、ここには含めない） -->
+      <div id="prtBadgeCard" style="display:none;margin:0 0 12px;background:rgba(255,255,255,.96);border-radius:20px;box-shadow:0 4px 20px rgba(0,0,0,.13);padding:14px 16px;">
+        <div style="font-size:9px;font-weight:800;color:#5b7684;letter-spacing:.04em;margin-bottom:10px;">🏅 獲得バッジ <span id="prtBadgeCount"></span></div>
+        <div id="prtBadgeList" style="display:flex;gap:8px;flex-wrap:wrap;"></div>
       </div>
 
       <!-- 許可ロック -->
@@ -1599,16 +1591,15 @@ body{background:#f0ebe0!important;}
         <div style="font-size:13px;font-weight:700;color:rgba(255,255,255,.65);line-height:1.7;">🔒 お子様が許可すると<br>さらに詳しい情報が見られます</div>
       </div>
 
-      <!-- FES + エサプレゼント 2列グリッド -->
-      <div style="margin:0 0 12px;display:grid;grid-template-columns:1fr 1fr;gap:8px;">
-        <div class="fes-card" onclick="this.classList.toggle('flipped')">
+      <!-- FES -->
+      <div style="margin:0 0 12px;display:flex;justify-content:center;">
+        <div class="fes-card" onclick="this.classList.toggle('flipped')" style="width:160px;">
           <div class="fes-inner">
             <div class="fes-front" style="gap:2px;">
               <div class="fes-fname"><span class="hi">U</span>MINO<span class="hi">M</span>IERU<span class="hi">F</span>ES</div>
               <div class="fes-sep"></div>
               <div style="font-size:9px;font-weight:800;color:#fff;letter-spacing:.08em;margin-top:2px;text-shadow:0 1px 4px rgba(0,0,0,.7);">次は、</div>
-              <div class="fes-date" id="prtFesFrontDate">9/5</div>
-              <div class="fes-day" id="prtFesDay">SAT</div>
+              <div class="fes-date" id="prtFesFrontDate" style="font-size:38px;">9/5</div>
               <div style="position:absolute;bottom:7px;right:9px;font-size:8px;font-weight:900;color:#fff;letter-spacing:.12em;text-shadow:0 1px 3px rgba(0,0,0,.7);">TAP ▾</div>
             </div>
             <div class="fes-back" style="gap:4px;padding:10px;">
@@ -1620,10 +1611,6 @@ body{background:#f0ebe0!important;}
             </div>
           </div>
         </div>
-        <button id="prtGiftBtn" onclick="doParentGiftSushi()" style="border:none;border-radius:16px;background:linear-gradient(135deg,#FFD028,#FF9A1A);color:white;padding:12px 10px;cursor:pointer;box-shadow:0 4px 14px rgba(255,150,30,.45);font-family:inherit;-webkit-tap-highlight-color:transparent;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;">
-          <div style="font-size:28px;line-height:1;">🎁</div>
-          <div style="font-size:10px;font-weight:900;color:white;text-align:center;line-height:1.35;">エサをプレゼント<br>する！</div>
-        </button>
       </div>
 
       <!-- 自分のアカウントへ切り替え -->
@@ -2620,7 +2607,7 @@ async function loadStudents() {
     }
   } catch(e) {}
   // 最新データをフェッチしてキャッシュ更新
-  const {data, error} = await sb.from('students').select('id,name,nickname,total_exp,practice_streak,last_practice_date,line_user_id,next_lesson,next_lesson_at,next_lesson_end_at,tier,last_lesson_at,access_extended_until,parent_line_id,parent_student_id,songs,timeline,bonus_given,elder_mode').order('name');
+  const {data, error} = await sb.from('students').select('id,name,nickname,total_exp,practice_streak,last_practice_date,line_user_id,next_lesson,next_lesson_at,next_lesson_end_at,tier,last_lesson_at,access_extended_until,parent_line_id,parent_student_id,songs,timeline,bonus_given,elder_mode,current_char_id,current_char_cm').order('name');
   if (error) { if (!students.length) toast('生徒データの読み込みに失敗しました'); return; }
   students = data || [];
   try { localStorage.setItem('_tc_stu_v2', JSON.stringify(students)); } catch(e) {}
@@ -3502,9 +3489,8 @@ async function enterParent(studentData, selfData) {
   document.getElementById('prtLvBadge').textContent = '';
   document.getElementById('prtLvName').textContent = '';
 
-  // 次のレッスン詳細 + 欠席ボタン（チケット型）
+  // 次のレッスン詳細（チケット型）
   const nlEl = document.getElementById('prtNextLesson');
-  const cancelBtn = document.getElementById('prtCancelBtn');
   if (s.next_lesson_at) {
     const dt = new Date(s.next_lesson_at);
     const m = dt.getMonth()+1, d = dt.getDate();
@@ -3516,10 +3502,8 @@ async function enterParent(studentData, selfData) {
       prtTimeStr += `${edt.getHours()}:${String(edt.getMinutes()).padStart(2,'0')}`;
     }
     nlEl.innerHTML = `<div class="prt-new-ticket"><div class="prt-new-ticket-grad"><div class="prt-new-ticket-dots"></div><div class="prt-new-ticket-dots-r"></div><div class="prt-new-ticket-lbl">次回のレッスン日</div><div class="prt-new-ticket-date">${m}月${d}日（${dow}）</div><div class="prt-new-ticket-sep"><div class="prt-new-ticket-sep-l"></div><div class="prt-new-ticket-sep-dash"></div><div class="prt-new-ticket-sep-r"></div></div></div><div class="prt-new-ticket-bot"><div class="prt-new-ticket-time">${prtTimeStr}</div></div></div>`;
-    if (cancelBtn) cancelBtn.style.display = '';
   } else {
     nlEl.innerHTML = `<div class="prt-new-ticket"><div class="prt-new-ticket-grad"><div class="prt-new-ticket-dots"></div><div class="prt-new-ticket-dots-r"></div><div class="prt-new-ticket-lbl">次回のレッスン日</div><div class="prt-new-ticket-date" style="font-size:16px;opacity:.7;margin-top:8px;">まだ予定がありません</div><div class="prt-new-ticket-sep"><div class="prt-new-ticket-sep-l"></div><div class="prt-new-ticket-sep-dash"></div><div class="prt-new-ticket-sep-r"></div></div></div><div class="prt-new-ticket-bot"><div class="prt-new-ticket-time" style="font-size:14px;color:#aaa;">—</div></div></div>`;
-    if (cancelBtn) cancelBtn.style.display = 'none';
   }
 
   // 直前キャンセル通知
@@ -3554,29 +3538,44 @@ async function enterParent(studentData, selfData) {
 
   // 許可制セクション（常に詳細表示）
   const lockCard = document.getElementById('prtLockCard');
-  const ikiView  = document.getElementById('prtRowCharStage');
-  const songChalCard = document.getElementById('prtSongChalCard');
   if (lockCard) lockCard.style.display = 'none';
-  // 2列チップカード（曲 + 最新チャレンジ）
-  const _songs = s.songs || [];
-  const _hwItems = _prtTl.filter(e => e.type === 'hw');
-  if (songChalCard) songChalCard.style.display = '';
-  const _songChipText = document.getElementById('prtSongChipText');
-  const _chalChipText = document.getElementById('prtChalChipText');
-  const _songDisplay = _songs.length ? _songs[0].replace(/（[^）]*）/, '').replace(/\([^)]*\)/, '').trim() : '曲なし';
-  if (_songChipText) _songChipText.textContent = _songDisplay;
-  if (_chalChipText) _chalChipText.textContent = _hwItems.length ? (_hwItems[_hwItems.length - 1].text || '—') : 'チャレンジなし';
-  // 統合シート用リスト更新
-  const _infoSheetSongList = document.getElementById('prtInfoSheetSongList');
-  if (_infoSheetSongList) _infoSheetSongList.innerHTML = _songs.length
-    ? _songs.map(n => `<div style="font-size:14px;font-weight:700;color:#1a1a1a;padding:10px 0;border-bottom:1px solid rgba(0,0,0,.06);display:flex;align-items:center;gap:10px;"><span style="color:#38bdf8;font-size:11px;">●</span>${esc(n)}</div>`).join('')
-    : `<div class="prt-empty">まだ曲がありません</div>`;
-  const _infoSheetChalList = document.getElementById('prtInfoSheetChalList');
-  if (_infoSheetChalList) _infoSheetChalList.innerHTML = _hwItems.length
-    ? _hwItems.slice().reverse().map(e => `<div style="padding:10px 0;border-bottom:1px solid #f0f9ff;display:flex;align-items:flex-start;gap:8px;"><span style="font-size:14px;flex-shrink:0;">✅</span><div style="font-size:13px;font-weight:700;color:#334155;line-height:1.4;">${esc(e.text||'')}</div></div>`).join('')
-    : `<div class="prt-empty">まだチャレンジがありません</div>`;
-  // いきもの表示（解放状態は生徒本人の端末にのみ保存されており、保護者画面からは確認できないため非表示）
-  if (ikiView) ikiView.style.display = 'none';
+
+  // 今育てているキャラ + サイズ（current_char_id/current_char_cmはDBに同期された値。
+  // エサ・お寿司等のバッジ判定はlocalStorageのみで生徒本人の端末にしか無いので出さない）
+  const charCard = document.getElementById('prtCharCard');
+  if (charCard) {
+    const _charId = s.current_char_id;
+    const _charObj = _charId ? CHARS.find(c => c.id === _charId) : null;
+    if (_charObj) {
+      charCard.style.display = 'flex';
+      const _cm = (_charObj.startCm || 3) + (s.current_char_cm || 0);
+      const _imgEl = document.getElementById('prtCharImgEl');
+      if (_imgEl) _imgEl.src = _charObj.img;
+      const _nameEl = document.getElementById('prtCharName');
+      if (_nameEl) _nameEl.textContent = _charObj.name;
+      const _cmEl = document.getElementById('prtCharCm');
+      if (_cmEl) _cmEl.textContent = _cm + ' cm';
+    } else {
+      charCard.style.display = 'none';
+    }
+  }
+
+  // 獲得バッジ（DBの記録だけで判定できる宿題系のみ）
+  const badgeCard = document.getElementById('prtBadgeCard');
+  if (badgeCard) {
+    const _earned = BADGES_DEF.filter(b => b.check(s));
+    const _countEl = document.getElementById('prtBadgeCount');
+    if (_countEl) _countEl.textContent = `${_earned.length}/${BADGES_DEF.length}`;
+    const _listEl = document.getElementById('prtBadgeList');
+    if (_listEl) {
+      if (_earned.length) {
+        badgeCard.style.display = '';
+        _listEl.innerHTML = _earned.map(b => `<div title="${esc(b.label)}" style="width:44px;height:44px;border-radius:50%;background:radial-gradient(circle at 32% 28%,#fff6d8,#f4a435 70%);box-shadow:0 3px 8px rgba(244,164,53,.4);display:flex;align-items:center;justify-content:center;font-size:20px;">${b.icon}</div>`).join('');
+      } else {
+        badgeCard.style.display = 'none';
+      }
+    }
+  }
 
   // ギフトボタン初期化
   const giftBtn = document.getElementById('prtGiftBtn');
@@ -3664,25 +3663,6 @@ async function doParentGiftSushi() {
   localStorage.setItem(giftKey, today);
   _setParentGiftDone();
   _showParentGiftPopup();
-}
-async function _parentCancelLesson() {
-  if (!_prtChildId || !_prtChildNextAt) return;
-  const dt = new Date(_prtChildNextAt);
-  const m = dt.getMonth()+1, d = dt.getDate();
-  const dow = ['日','月','火','水','木','金','土'][dt.getDay()];
-  const label = `${m}月${d}日（${dow}）のレッスンをお休みします`;
-  if (!confirm(`${label}\n\n先生に欠席を伝えますか？`)) return;
-  await sb.rpc('rpc_student_self_update', {
-    p_student_id: _prtChildId, p_line_user_id: _prtParentLineId,
-    p_timeline_prepend: {type:'cancel', text:label, date: new Date().toISOString().slice(0,10)},
-    p_clear_next_lesson: true, p_timeline_limit: 150
-  });
-  _prtChildNextAt = null;
-  document.getElementById('prtNextLesson').innerHTML = `<div class="prt-empty">まだ予定が登録されていません</div>`;
-  document.getElementById('prtCancelBtn').style.display = 'none';
-  const _cnEl = document.getElementById('prtCancelNote');
-  if (_cnEl) { _cnEl.style.display = ''; _cnEl.innerHTML = `<div style="background:#fff7ed;border:1.5px solid #fde68a;border-radius:10px;padding:8px 12px;font-size:12px;font-weight:700;color:#92400e;">${esc(label)}（${new Date().toISOString().slice(0,10)}）</div>`; }
-  toast('🗓 先生に欠席を伝えました');
 }
 // 生徒詳細のサイドナビ項目。追加・削除はこの配列を編集するだけでよい。
 const DETAIL_SECTIONS = [
@@ -5127,6 +5107,18 @@ function _endFeedingMode(isMax) {
     charEl.style.animation = 'floatY 3s ease-in-out infinite';
   }
 }
+// 今育てているキャラとサイズ(cm)をDBにも同期する。保護者画面はこの2値だけで
+// 表示するため（保護者は別端末＝localStorageを共有できないので、これが無いと
+// 「今のキャラ・サイズ」を保護者側に一切見せられない）。
+function _syncCurrentChar() {
+  if (!currentStudentId || !currentStudentData) return;
+  const charId = _subSelectedChar || 'kumanomi';
+  const cm = parseInt(localStorage.getItem('sub_cm_' + charId) || '0');
+  sb.rpc('rpc_student_self_update', {
+    p_student_id: currentStudentId, p_line_user_id: currentStudentData.line_user_id,
+    p_current_char_id: charId, p_current_char_cm: cm
+  });
+}
 function feedCharSlot(idx) {
   const charId = _subSelectedChar || 'kumanomi';
   const foodKeys = ['sub_food_pellet_' + charId, 'sub_food_lesson_' + charId, 'sub_food_special_' + charId];
@@ -5157,6 +5149,7 @@ function feedCharSlot(idx) {
   const cmIncs = [10, 25, 15];
   const cmKey = 'sub_cm_' + _subSelectedChar;
   localStorage.setItem(cmKey, String(parseInt(localStorage.getItem(cmKey) || '0') + (cmIncs[idx] || 3)));
+  _syncCurrentChar();
   // 成長処理
   const growthKey = 'sub_growth_' + charId;
   const charStageDoneKey = 'sub_char_stage_done_' + charId;
@@ -5253,6 +5246,7 @@ function _chooseSubStarter(id) {
   localStorage.setItem('custom_char_' + sid, id);
   localStorage.setItem('starter_char_' + sid, id);
   _subSelectedChar = id;
+  _syncCurrentChar();
   const modal = document.getElementById('subStarterModal');
   if (modal) modal.style.display = 'none';
   _updateSubMissionUnlocks();
@@ -5345,6 +5339,7 @@ function selectSubChar(id) {
   if (!_getSubUnlockedChars().includes(id)) return;
   _subSelectedChar = id;
   localStorage.setItem('sub_selected_char', id);
+  _syncCurrentChar();
   _rmSelectedChar = id;
   // ホームタブのキャラ表示（custom_char_）もここで切り替えたキャラに合わせる。
   // 合わせないと、いきものタブで別のキャラに切り替えてもホームタブには古いキャラが表示され続ける。
