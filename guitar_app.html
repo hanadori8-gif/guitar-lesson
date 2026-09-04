@@ -4090,12 +4090,22 @@ async function goRegister() {
 // ★ 生徒モード
 // =====================================================================
 async function enterStudent(data, {fromTeacher=false}={}) {
-  // いきものデータが別の生徒のものなら全リセット（LocalStorage汚染防止）
-  const _prevSubOwner = localStorage.getItem('sub_owner');
-  if (_prevSubOwner && _prevSubOwner !== String(data.id)) {
-    Object.keys(localStorage).filter(k => k.startsWith('sub_')).forEach(k => localStorage.removeItem(k));
+  // いきものデータが別の生徒のものなら全リセット（LocalStorage汚染防止）。
+  // ただし先生が「生徒として入場」する場合は毎回別の生徒に切り替わりうるため、
+  // その都度リセットしてしまうと先生自身のテスト用いきものデータが消えてしまう。
+  // 先生経由の入場ではこのリセットを行わない。
+  if (!fromTeacher) {
+    const _prevSubOwner = localStorage.getItem('sub_owner');
+    if (_prevSubOwner && _prevSubOwner !== String(data.id)) {
+      Object.keys(localStorage).filter(k => k.startsWith('sub_')).forEach(k => localStorage.removeItem(k));
+    }
   }
   localStorage.setItem('sub_owner', String(data.id));
+
+  // ホーム画面のキャラアイコンより前に、DBに同期済みのいきものデータを復元しておく
+  // （ここを先にやらないと、下のスターターキャラ初期化ブロックがランダムなキャラで
+  // custom_char_を先に埋めてしまい、renderStudent直後は違うキャラが表示されてしまう）。
+  _restoreCharFromDb(data.id, data);
 
   // 体験さん: ログインごとに完全リセット（デモ用）
   if (data.name === '体験さん') {
@@ -4969,8 +4979,30 @@ function switchSTab(tab) {
   }
 }
 
+// localStorageが（ブラウザ側の自動クリアや別生徒への切り替え等で）消えていても、
+// DBに同期済みのcurrent_char_id/current_char_cmがあれば、それを元に最低限の状態を
+// 復元する。これが無いと「せっかく育てたキャラが消えてキャラ選択からやり直し」に
+// なってしまうため（育成ゲージ・食べ物の在庫まではDBに無いため復元できない）。
+// enterStudent（ホーム画面描画前）とinitSubTab（なかまタブを開いた時）の両方から
+// 呼ぶことで、ホーム画面のキャラアイコンにも復元結果を反映させる。
+function _restoreCharFromDb(sid, studentData) {
+  if (!sid || !studentData || !studentData.current_char_id) return;
+  if (localStorage.getItem('sub_starter_' + sid)) return;
+  const _dbCharId = studentData.current_char_id;
+  if (!CHARS.some(c => c.id === _dbCharId)) return;
+  localStorage.setItem('sub_starter_' + sid, _dbCharId);
+  localStorage.setItem('custom_char_' + sid, _dbCharId);
+  localStorage.setItem('sub_selected_char', _dbCharId);
+  let _unlocked = [];
+  try { _unlocked = JSON.parse(localStorage.getItem('sub_unlocked_chars') || '[]'); } catch(e) {}
+  if (!_unlocked.includes(_dbCharId)) { _unlocked.push(_dbCharId); localStorage.setItem('sub_unlocked_chars', JSON.stringify(_unlocked)); }
+  if (studentData.current_char_cm != null) {
+    localStorage.setItem('sub_cm_' + _dbCharId, String(studentData.current_char_cm));
+  }
+}
 function initSubTab() {
   const _subSid = currentStudentId;
+  _restoreCharFromDb(_subSid, currentStudentData);
   if (_subSid && currentStudentData && currentStudentData.name !== 'マスターあかね' && !localStorage.getItem('sub_starter_' + _subSid)) {
     _showSubStarterModal(); return;
   }
