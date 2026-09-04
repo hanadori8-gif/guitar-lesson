@@ -1565,25 +1565,14 @@ body{background:#f0ebe0!important;}
       <div id="prtNextLesson"><div class="prt-new-ticket"><div class="prt-new-ticket-grad"><div class="prt-new-ticket-dots"></div><div class="prt-new-ticket-dots-r"></div><div class="prt-new-ticket-lbl">次回のレッスン日</div><div class="prt-new-ticket-date">—</div><div class="prt-new-ticket-sep"><div class="prt-new-ticket-sep-l"></div><div class="prt-new-ticket-sep-dash"></div><div class="prt-new-ticket-sep-r"></div></div></div><div class="prt-new-ticket-bot"><div class="prt-new-ticket-time">—</div></div></div></div>
       <div id="prtCancelNote" style="display:none;margin-bottom:10px;"></div>
 
-      <!-- 今育てているキャラ + サイズ + エサボタン（統合カード。ステージ背景は出さない） -->
-      <div id="prtCharCard" style="display:none;margin:0 0 12px;background:rgba(255,255,255,.96);border-radius:20px;box-shadow:0 4px 20px rgba(0,0,0,.13);padding:14px 16px;align-items:center;gap:14px;">
-        <img id="prtCharImgEl" src="" style="width:60px;height:60px;object-fit:contain;filter:drop-shadow(0 3px 8px rgba(0,80,160,.25));flex-shrink:0;">
-        <div style="flex:1;min-width:0;">
-          <div style="font-size:9px;font-weight:800;color:#5b7684;letter-spacing:.04em;">🐠 今育てているいきもの</div>
-          <div id="prtCharName" style="font-size:14px;font-weight:900;color:#0f2733;margin:2px 0;">—</div>
-          <div id="prtCharCm" style="font-size:11px;font-weight:800;color:#0077a8;">— cm</div>
+      <!-- 今育てているキャラ（水槽カード）+ サイズ + ごはんプレゼントボタン。ステージ背景は出さない -->
+      <div id="prtCharCard" style="display:none;margin:0 0 12px;border-radius:20px;overflow:hidden;background:linear-gradient(180deg,#bdeaf5 0%,#7dd3e8 60%,#5cc2dc 100%);box-shadow:0 4px 16px rgba(0,60,90,.2);padding:14px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:4px;">
+          <span style="font-size:9px;font-weight:900;color:#fff;text-shadow:0 1px 3px rgba(0,40,70,.4);letter-spacing:.03em;">🐠 今育てているいきもの</span>
+          <span style="font-size:10px;font-weight:900;color:#fff;background:rgba(0,60,90,.3);border-radius:10px;padding:2px 8px;white-space:nowrap;flex-shrink:0;"><span id="prtCharName">—</span>・<span id="prtCharCm">— cm</span></span>
         </div>
-        <button id="prtGiftBtn" onclick="doParentGiftSushi()" style="flex-shrink:0;border:none;border-radius:14px;background:linear-gradient(135deg,#FFD028,#FF9A1A);color:white;padding:10px 12px;cursor:pointer;box-shadow:0 3px 10px rgba(255,150,30,.4);font-family:inherit;display:flex;flex-direction:column;align-items:center;gap:2px;-webkit-tap-highlight-color:transparent;">
-          <div style="font-size:20px;line-height:1;">🎁</div>
-          <div style="font-size:8px;font-weight:900;color:white;white-space:nowrap;">エサをあげる</div>
-        </button>
-      </div>
-
-      <!-- 獲得バッジ（DBに記録が残る宿題系のみ。エサ・お寿司・いきもの系は生徒本人の端末にしか
-           記録が無く保護者画面からは正しく判定できないため、ここには含めない） -->
-      <div id="prtBadgeCard" style="display:none;margin:0 0 12px;background:rgba(255,255,255,.96);border-radius:20px;box-shadow:0 4px 20px rgba(0,0,0,.13);padding:14px 16px;">
-        <div style="font-size:9px;font-weight:800;color:#5b7684;letter-spacing:.04em;margin-bottom:10px;">🏅 獲得バッジ <span id="prtBadgeCount"></span></div>
-        <div id="prtBadgeList" style="display:flex;gap:8px;flex-wrap:wrap;"></div>
+        <img id="prtCharImgEl" src="" style="display:block;width:90px;height:90px;object-fit:contain;margin:6px auto 12px;filter:drop-shadow(0 4px 10px rgba(0,40,70,.3));">
+        <button id="prtGiftBtn" onclick="doParentGiftSushi()" style="width:100%;border:none;border-radius:14px;background:linear-gradient(135deg,#FFD028,#FF9A1A);color:white;padding:11px;cursor:pointer;box-shadow:0 3px 10px rgba(255,150,30,.4);font-family:var(--hf);font-weight:900;font-size:12px;display:flex;align-items:center;justify-content:center;gap:6px;-webkit-tap-highlight-color:transparent;">🎁 ごはんをプレゼントする</button>
       </div>
 
       <!-- 許可ロック -->
@@ -1591,15 +1580,20 @@ body{background:#f0ebe0!important;}
         <div style="font-size:13px;font-weight:700;color:rgba(255,255,255,.65);line-height:1.7;">🔒 お子様が許可すると<br>さらに詳しい情報が見られます</div>
       </div>
 
-      <!-- FES -->
-      <div style="margin:0 0 12px;display:flex;justify-content:center;">
-        <div class="fes-card" onclick="this.classList.toggle('flipped')" style="width:160px;">
+      <!-- 獲得バッジ（DBに記録が残る宿題系のみ。エサ・お寿司・いきもの系は生徒本人の端末にしか
+           記録が無く保護者画面からは正しく判定できないため、ここには含めない） + FES 2列 -->
+      <div style="margin:0 0 12px;display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+        <div id="prtBadgeCard" style="display:none;background:rgba(255,255,255,.96);border-radius:16px;box-shadow:0 3px 12px rgba(0,40,70,.14);padding:12px 8px;text-align:center;">
+          <div style="font-size:9px;font-weight:800;color:#5b7684;">🏅 バッジ</div>
+          <div id="prtBadgeCount" style="font-size:16px;font-weight:900;color:#0f2733;margin-top:4px;"></div>
+        </div>
+        <div class="fes-card" onclick="this.classList.toggle('flipped')">
           <div class="fes-inner">
             <div class="fes-front" style="gap:2px;">
               <div class="fes-fname"><span class="hi">U</span>MINO<span class="hi">M</span>IERU<span class="hi">F</span>ES</div>
               <div class="fes-sep"></div>
               <div style="font-size:9px;font-weight:800;color:#fff;letter-spacing:.08em;margin-top:2px;text-shadow:0 1px 4px rgba(0,0,0,.7);">次は、</div>
-              <div class="fes-date" id="prtFesFrontDate" style="font-size:38px;">9/5</div>
+              <div class="fes-date" id="prtFesFrontDate" style="font-size:32px;">9/5</div>
               <div style="position:absolute;bottom:7px;right:9px;font-size:8px;font-weight:900;color:#fff;letter-spacing:.12em;text-shadow:0 1px 3px rgba(0,0,0,.7);">TAP ▾</div>
             </div>
             <div class="fes-back" style="gap:4px;padding:10px;">
@@ -4279,6 +4273,9 @@ function renderStudent(data) {
   setTimeout(updatePracPlayerCard, 0);
   renderNextLesson(data);
   _renderElderView(data);
+  // 保護者画面はDBのcurrent_char_id/current_char_cmだけを見るため、エサやり操作を
+  // 待たず、生徒がアプリを開くたびに現在のキャラ・サイズを同期しておく
+  _syncCurrentChar();
 }
 function _renderElderView(data) {
   const el = document.getElementById('elderView');
