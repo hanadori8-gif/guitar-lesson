@@ -2134,6 +2134,11 @@ const CHARS = [
   {id:'chinanagozu', name:'チンアナゴ', img:_chinanagozuImg, size:210},
 ];
 
+// いきものの大きさの基準（全キャラ共通）。0cmだと「生まれたて」感が変で違和感があるため
+// 5cmスタートにし、ゲージ100%でちょうど100cmになるよう按分する。
+const SUB_START_CM = 5;
+function _cmForGrowth(g) { return SUB_START_CM + Math.round((100 - SUB_START_CM) * g / 100); }
+
 // スターター候補（3択）とキャラ別ミッション定義
 const _STARTER_IDS = ['kumanomi','kani','fugu'];
 const _STARTER_SLOT_DEFS = {
@@ -3556,7 +3561,7 @@ async function enterParent(studentData, selfData) {
     const _giftBtn = document.getElementById('prtGiftBtn');
     const _emptyMsg = document.getElementById('prtCharEmptyMsg');
     if (_charObj) {
-      const _cm = s.current_char_cm || 0;
+      const _cm = s.current_char_cm != null ? s.current_char_cm : SUB_START_CM;
       if (_imgEl) { _imgEl.style.visibility = 'visible'; _imgEl.src = _charObj.img; }
       if (_nameEl) _nameEl.textContent = _charObj.name;
       if (_cmEl) _cmEl.textContent = '・' + _cm + ' cm';
@@ -5066,7 +5071,7 @@ function _updateSubGrowth() {
   const charObj = CHARS.find(c => c.id === _subSelectedChar) || CHARS[0];
   const nameLabel = document.getElementById('subCharNameLabel');
   if (nameLabel) nameLabel.textContent = charObj.name;
-  const dispCm = parseInt(localStorage.getItem('sub_cm_' + _subSelectedChar) || '0');
+  const dispCm = parseInt(localStorage.getItem('sub_cm_' + _subSelectedChar) || String(SUB_START_CM));
   const cmEl = document.getElementById('subSizeCm');
   if (cmEl) cmEl.textContent = dispCm >= 100 ? (dispCm / 100).toFixed(1) + 'm' : dispCm + 'cm';
   const charEl = document.getElementById('subCharImgEl');
@@ -5149,7 +5154,7 @@ function _endFeedingMode(isMax) {
 function _syncCurrentChar() {
   if (!currentStudentId || !currentStudentData) return;
   const charId = _subSelectedChar || 'kumanomi';
-  const cm = parseInt(localStorage.getItem('sub_cm_' + charId) || '0');
+  const cm = parseInt(localStorage.getItem('sub_cm_' + charId) || String(SUB_START_CM));
   sb.rpc('rpc_student_self_update', {
     p_student_id: currentStudentId, p_line_user_id: currentStudentData.line_user_id,
     p_current_char_id: charId, p_current_char_cm: cm
@@ -5186,22 +5191,22 @@ function feedCharSlot(idx) {
   const charStageDoneKey = 'sub_char_stage_done_' + charId;
   let g = parseInt(localStorage.getItem(growthKey) || '0');
   const wasMaxed = g >= 100;
-  // cm加算：ゲージMAX(100cm)に到達するまではゲージの増加率と同じペースで大きくなる
-  // （全キャラ0cmスタート・ゲージ100%=100cmで統一）。MAX到達後は今まで通りのペースで
-  // 上限なくどんどん大きくなり続ける。MAX直前でゲージが100にキャップされる時は、
-  // キャップ後の実際の増加分だけcmにも足す（そうしないとゲージ100%なのにcmが100を
-  // 超えて/下回って表示される不整合が起きるため）。
+  // cm加算：ゲージMAX(100cm)に到達するまでは、ゲージ%から逆算した目標cmに合わせる
+  // （SUB_START_CMスタート・ゲージ100%=100cmで統一）。毎回の増分を積み上げるのではなく
+  // 「今のゲージ%が本来何cmに相当するか」を都度計算し直すことで、端数の丸め誤差が
+  // 積み重なってMAX到達時にちょうど100cmにならない、という不整合を防いでいる。
+  // MAX到達後は今まで通りのペースで上限なくどんどん大きくなり続ける。
   const cmIncsAfterMax = [10, 25, 15];
-  const growthIncActual = Math.min(growths[idx] || 3, 100 - g);
-  const cmInc = wasMaxed ? (cmIncsAfterMax[idx] || 3) : growthIncActual;
   const cmKey = 'sub_cm_' + _subSelectedChar;
-  localStorage.setItem(cmKey, String(parseInt(localStorage.getItem(cmKey) || '0') + cmInc));
-  _syncCurrentChar();
-  // 成長処理
+  // 成長処理（ゲージを先に確定させ、cmはそこから逆算する）
   if (!wasMaxed) {
     g = Math.min(100, g + growths[idx]);
     localStorage.setItem(growthKey, String(g));
+    localStorage.setItem(cmKey, String(_cmForGrowth(g)));
+  } else {
+    localStorage.setItem(cmKey, String(parseInt(localStorage.getItem(cmKey) || String(SUB_START_CM)) + (cmIncsAfterMax[idx] || 3)));
   }
+  _syncCurrentChar();
   const nowMaxed = g >= 100;
   // 食べ終わりの演出
   setTimeout(() => {
@@ -5729,7 +5734,7 @@ async function _corePracticeCheckIn() {
   });
 
   const _cid0 = localStorage.getItem('custom_char_' + currentStudentId) || 'kumanomi';
-  const _cm0  = parseInt(localStorage.getItem('sub_cm_' + _cid0) || '0');
+  const _cm0  = parseInt(localStorage.getItem('sub_cm_' + _cid0) || String(SUB_START_CM));
   const _hw0  = _getAllLatestHomeworks();
   sb.rpc('rpc_post_shared_timeline', {
     p_student_id: currentStudentId, p_line_user_id: s.line_user_id,
