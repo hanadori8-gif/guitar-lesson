@@ -1667,7 +1667,7 @@ body{background:#f0ebe0!important;}
       <!-- ▲▲▲ 新ビーチヘッダーここまで ▲▲▲ -->
 
       <!-- ★★★ ルートマップ新ホーム ★★★ -->
-      <div id="rmHomeMain" class="time-bg-panel" style="position:absolute;inset:0;z-index:20;background:linear-gradient(180deg,#A5F3FC 0%,#22D3EE 50%,#0EA5E9 100%);display:flex;flex-direction:column;">
+      <div id="rmHomeMain" class="time-bg-panel" style="position:absolute;inset:0;z-index:20;background:linear-gradient(180deg,#A5F3FC 0%,#22D3EE 50%,#0EA5E9 100%);display:flex;flex-direction:column;overflow-y:auto;">
         <!-- 泡レイヤー -->
         <div id="rmBubblesLayer" style="position:absolute;inset:0;overflow:hidden;pointer-events:none;z-index:0;"></div>
         <!-- 固定カードエリア（スクロールしない） -->
@@ -1702,7 +1702,7 @@ body{background:#f0ebe0!important;}
         </div>
         <!-- ミッションカードエリア -->
         <div style="flex:1;min-height:0;position:relative;z-index:1;display:flex;flex-direction:column;justify-content:flex-end;padding:14px 16px 92px;overflow:hidden;">
-          <div id="rmMissionCard" style="background:white;border-radius:24px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,.15);flex-shrink:1;min-height:0;display:flex;flex-direction:column;"></div>
+          <div id="rmMissionCard" style="background:white;border-radius:24px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,.15);flex-shrink:0;min-height:180px;display:flex;flex-direction:column;"></div>
           <button id="rmRecordBtn" onclick="_missionRecord()" style="display:none;flex-shrink:0;background:linear-gradient(135deg,#38bdf8,#0077b6);color:white;font-size:17px;font-weight:900;border:none;border-radius:20px;padding:16px 36px;box-shadow:0 5px 0 #005580;cursor:pointer;font-family:inherit;margin:10px auto 0;min-width:180px;"><span>記録する！</span><div id="rmPelletSpan" style="display:inline-flex;align-items:center;justify-content:center;gap:4px;margin-left:8px;font-size:22px;"></div></button>
           <div id="rmRouteMap" style="display:none;flex-direction:column;align-items:center;gap:0;padding-bottom:16px;"></div>
         </div>
@@ -6426,7 +6426,7 @@ function renderMissionCard() {
         <path d="M0,10 C50,20 100,0 150,10 C200,20 250,0 300,10 L300,20 L0,20 Z" fill="white"/>
       </svg>
     </div>
-    <div style="padding:10px 14px 14px;flex:1;min-height:0;overflow-y:auto;">
+    <div style="padding:10px 14px 14px;flex:1;min-height:80px;overflow-y:auto;">
       <div style="font-size:11px;font-weight:800;color:#0096C7;letter-spacing:.8px;margin-bottom:6px;padding-left:2px;">宿題</div>
       ${allItems.map(it => `<div style="display:flex;align-items:center;gap:12px;padding:12px 14px;background:#f0fafb;border-radius:14px;margin-bottom:8px;">
         <span style="font-size:17px;font-weight:700;color:#0077a8;line-height:1.4;">${esc(it.label)}</span>
