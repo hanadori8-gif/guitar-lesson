@@ -92,6 +92,16 @@ body{font-family:'Zen Maru Gothic','Helvetica Neue','Hiragino Sans','Meiryo',san
 .spinner{width:36px;height:36px;border:3px solid rgba(255,255,255,.3);
   border-top-color:white;border-radius:50%;animation:spin .8s linear infinite;}
 @keyframes spin{to{transform:rotate(360deg);}}
+.loading-fish{font-size:32px;line-height:1;animation:fishJump 1.1s ease-in-out infinite;filter:drop-shadow(0 4px 6px rgba(0,0,0,.2));}
+@keyframes fishJump{
+  0%{transform:translateY(0) scaleX(1);}
+  15%{transform:translateY(-28px) scaleX(.92);}
+  30%{transform:translateY(-32px) scaleX(1);}
+  45%{transform:translateY(-10px) scaleX(1);}
+  55%{transform:translateY(0) scaleX(1.18);}
+  68%{transform:translateY(0) scaleX(1);}
+  100%{transform:translateY(0) scaleX(1);}
+}
 @keyframes floatY{0%,100%{transform:translateY(0);}50%{transform:translateY(-12px);}}
 
 /* ロール選択（生徒メイン） */
@@ -1357,7 +1367,7 @@ body{background:#f0ebe0!important;}
     <img class="load-logo" src="images/logo.webp" alt="ロゴ">
     <div class="load-title">海のみえるギター教室</div>
     <div style="font-size:10px;color:rgba(255,255,255,.4);margin-top:6px;letter-spacing:.5px;">© 2026 海のみえるギター教室</div>
-    <div class="spinner"></div>
+    <div class="loading-fish" style="margin-top:14px;">🐟</div>
   </div>
 </div>
 
