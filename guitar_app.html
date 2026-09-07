@@ -2648,7 +2648,9 @@ function renderMonthSummary() {
     const d = new Date(s.next_lesson_at);
     return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}` === thisMonth;
   }).length;
+  const bookedRevenue = bookedCount * lessonFee;
   const revenue = lessonCount * lessonFee;
+  const totalRevenue = revenue + bookedRevenue;
   const content = document.getElementById('monthlySummaryContent');
   if (!content) return;
   content.innerHTML = `
@@ -2660,11 +2662,13 @@ function renderMonthSummary() {
       <div style="text-align:center;background:#fff7ed;border-radius:12px;padding:14px 8px;">
         <div style="font-size:32px;font-weight:900;color:#c2620a;">${bookedCount}</div>
         <div style="font-size:11px;color:#64748b;font-weight:700;">今月の予約件数</div>
+        <div style="font-size:11px;color:#c2620a;font-weight:700;margin-top:4px;">見込み¥${bookedRevenue.toLocaleString()}</div>
       </div>
     </div>
     <div style="background:#f0fdf4;border-radius:12px;padding:14px;margin-bottom:16px;">
       <div style="font-size:11px;font-weight:700;color:#166534;margin-bottom:4px;">💰 今月の収益（概算）</div>
       <div style="font-size:32px;font-weight:900;color:#16a34a;">¥${revenue.toLocaleString()}</div>
+      <div style="font-size:11px;color:#64748b;margin-top:6px;padding-top:6px;border-top:1px dashed #bbf7d0;">予約分含めた合計見込み: <span style="font-weight:800;color:#166534;">¥${totalRevenue.toLocaleString()}</span></div>
       <div style="font-size:11px;color:#64748b;margin-top:4px;">${lessonCount}回 × ¥${lessonFee.toLocaleString()}</div>
       <button onclick="editLessonFee()" style="margin-top:10px;font-size:11px;color:#16a34a;background:none;border:1.5px solid #86efac;border-radius:8px;padding:4px 12px;cursor:pointer;font-family:var(--hf);">⚙️ 料金設定</button>
     </div>
