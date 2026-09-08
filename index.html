@@ -3117,8 +3117,12 @@ function _calSetMode(mode) {
   const anchor = document.getElementById(isTit ? '_calTimeAnchorTitle' : '_calTimeAnchorStudent');
   if (timeWrap && anchor) anchor.appendChild(timeWrap);
 }
-function _calOpenStudentPicker() {
+async function _calOpenStudentPicker() {
   document.getElementById('_calStudentPickerModal')?.remove();
+  // カレンダー画面に直接入った直後などはstudentsがまだ古いキャッシュのままの
+  // ことがあり、新しく登録した生徒が検索に出てこない不具合の原因になっていたため、
+  // ピッカーを開く直前に必ず最新化する
+  await loadStudents();
   // 誰かの保護者として登録されている生徒（親アカウント）は、間違って
   // レッスン予約の相手に選んでしまわないよう候補から除外する
   const _parentIds = new Set(students.map(s => s.parent_student_id).filter(Boolean));
