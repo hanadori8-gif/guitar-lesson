@@ -2636,7 +2636,10 @@ function switchTab(tab) {
   document.getElementById('tabStudents').classList.toggle('active',  tab === 'students');
   document.getElementById('tabCalendar').classList.toggle('active',  tab === 'calendar');
   if (tab === 'students') loadStudents();
-  if (tab === 'calendar') { _calMonthOffset = 0; _calSelectedDate = todayJST(); _loadTeacherEvents().then(() => _renderCalendar()); }
+  // カレンダータブは生徒タブを経由せず直接開かれることが多く、その場合studentsが
+  // 起動時のキャッシュ(古い可能性がある)のままになり、生徒ピッカーで一部の生徒が
+  // 検索できない不具合があったため、ここでも明示的に最新化する
+  if (tab === 'calendar') { _calMonthOffset = 0; _calSelectedDate = todayJST(); loadStudents(); _loadTeacherEvents().then(() => _renderCalendar()); }
 }
 
 function _lessonDateInMonth(dateStr, ym) {
