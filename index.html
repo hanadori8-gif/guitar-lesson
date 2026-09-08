@@ -3012,16 +3012,20 @@ function _calOpenAddForm(dateStr, editStudentId) {
   }
   h += `<input id="_calColorVal" type="hidden" value="${colors[defColorIdx]}">`;
   h += `<div id="_calTitleSection" style="display:none;"><div style="margin-bottom:12px;"><div style="font-size:11px;font-weight:700;color:rgba(0,0,0,.4);margin-bottom:4px;">タイトル</div><input type="text" id="_calTitleIn" placeholder="" style="width:100%;padding:10px 12px;border:1.5px solid #e2e8f0;border-radius:10px;font-size:15px;font-family:var(--hf);box-sizing:border-box;"></div></div>`;
+  // 時間入力（終日チェック＋開始/終了）は生徒モード・タイトルモード共通の1個の実体(_calTimeWrap)を
+  // _calSetMode()でモードに応じてDOM上移動させる方式にしている。生徒モードでは「生徒を選ぶ」ボタンの
+  // 直後（_calTimeAnchorStudent）、タイトルモードでは従来通りタイトル入力の下（_calTimeAnchorTitle）。
+  const timeWrapHtml = `<div id="_calTimeWrap"><div style="display:flex;gap:20px;margin-bottom:12px;"><label style="display:flex;align-items:center;gap:6px;cursor:pointer;"><input type="checkbox" id="_calAllDayChk" onchange="_calToggleAllDay(this.checked)"><span style="font-size:13px;font-weight:700;">終日</span></label></div><div id="_calTimeFields" style="display:flex;gap:8px;margin-bottom:14px;"><div style="flex:1;"><div style="font-size:11px;font-weight:700;color:rgba(0,0,0,.4);margin-bottom:4px;">開始</div><button type="button" id="_calStartBtn" onclick="_calOpenTimeKeypad('start')" style="width:100%;padding:11px 10px;border:1.5px solid #e2e8f0;border-radius:10px;font-size:17px;font-weight:800;font-family:var(--hf);background:white;color:#1e293b;cursor:pointer;text-align:center;">${startTimeVal}</button><input type="hidden" id="_calStartIn" value="${startTimeVal}"></div><div style="flex:1;"><div style="font-size:11px;font-weight:700;color:rgba(0,0,0,.4);margin-bottom:4px;">終了</div><button type="button" id="_calEndBtn" onclick="_calOpenTimeKeypad('end')" style="width:100%;padding:11px 10px;border:1.5px solid #e2e8f0;border-radius:10px;font-size:17px;font-weight:800;font-family:var(--hf);background:white;color:#1e293b;cursor:pointer;text-align:center;">${endTimeVal}</button><input type="hidden" id="_calEndIn" value="${endTimeVal}"></div></div></div>`;
   h += `<div id="_calStudentSection" style="margin-bottom:12px;">`;
   h += `<button onclick="_calOpenStudentPicker()" id="_calPickBtn" style="width:100%;padding:12px;border:1.5px solid ${oc};border-radius:10px;font-size:14px;font-weight:700;color:${editStu?'var(--ocean-deep)':oc};background:white;cursor:pointer;font-family:var(--hf);">👤 ${editStu ? esc(displayName(editStu)) + ' ▼' : '生徒を選ぶ'}</button>`;
+  h += `<div id="_calTimeAnchorStudent" style="margin-top:10px;">${timeWrapHtml}</div>`;
   h += `<div style="margin-top:10px;"><div style="font-size:11px;font-weight:700;color:rgba(0,0,0,.4);margin-bottom:4px;">🎵 チャレンジした曲（任意）</div><input type="text" id="_calSongIn" placeholder="例：チェリー" value="${editStu && editStu.songs && editStu.songs.length ? esc(editStu.songs[0]) : ''}" style="width:100%;padding:10px 12px;border:1.5px solid #e2e8f0;border-radius:10px;font-size:14px;font-family:var(--hf);box-sizing:border-box;"></div>`;
   h += `<div style="margin-top:10px;"><div style="font-size:11px;font-weight:700;color:rgba(0,0,0,.4);margin-bottom:4px;">📝 今回の宿題（任意）</div><input type="text" id="_calHwIn" placeholder="宿題を入力..." style="width:100%;padding:10px 12px;border:1.5px solid #e2e8f0;border-radius:10px;font-size:14px;font-family:var(--hf);box-sizing:border-box;"></div>`;
   if (!editStu) {
     h += `<div id="_calRecordPrevWrap" style="display:none;margin-top:10px;padding:10px 12px;background:#fff7ed;border-radius:10px;border:1.5px solid #fed7aa;"><label style="display:flex;align-items:center;gap:8px;cursor:pointer;"><input type="checkbox" id="_calRecordPrevChk" checked><span style="font-size:13px;font-weight:800;color:#9a3412;" id="_calRecordPrevLabel"></span></label></div>`;
   }
   h += `</div>`;
-  h += `<div style="display:flex;gap:20px;margin-bottom:12px;"><label style="display:flex;align-items:center;gap:6px;cursor:pointer;"><input type="checkbox" id="_calAllDayChk" onchange="_calToggleAllDay(this.checked)"><span style="font-size:13px;font-weight:700;">終日</span></label></div>`;
-  h += `<div id="_calTimeFields" style="display:flex;gap:8px;margin-bottom:14px;"><div style="flex:1;"><div style="font-size:11px;font-weight:700;color:rgba(0,0,0,.4);margin-bottom:4px;">開始</div><input type="time" id="_calStartIn" value="${startTimeVal}" onchange="_calAutoEndTime()" style="width:100%;padding:9px 10px;border:1.5px solid #e2e8f0;border-radius:10px;font-size:14px;font-family:var(--hf);"></div><div style="flex:1;"><div style="font-size:11px;font-weight:700;color:rgba(0,0,0,.4);margin-bottom:4px;">終了</div><input type="time" id="_calEndIn" value="${endTimeVal}" style="width:100%;padding:9px 10px;border:1.5px solid #e2e8f0;border-radius:10px;font-size:14px;font-family:var(--hf);"></div></div>`;
+  h += `<div id="_calTimeAnchorTitle"></div>`;
   h += `<div id="_calDateRecurSec" style="display:none;">`;
   h += `<div id="_calOnceFields" style="margin-bottom:10px;"><div style="font-size:11px;font-weight:700;color:rgba(0,0,0,.4);margin-bottom:4px;">日付</div><input type="date" id="_calDateIn" value="${dateStr}" style="padding:9px 10px;border:1.5px solid #e2e8f0;border-radius:10px;font-size:14px;font-family:var(--hf);"></div>`;
   h += `<div style="margin-bottom:8px;"><label style="display:flex;align-items:center;gap:8px;cursor:pointer;"><input type="checkbox" id="_calRecurChk" onchange="_calToggleRecur(this.checked)"><span style="font-size:13px;font-weight:700;">毎週繰り返す</span></label></div>`;
@@ -3056,7 +3060,7 @@ function _calOpenEditForm(evId, dateStr) {
   h += `<div style="margin-bottom:12px;"><div style="font-size:11px;font-weight:700;color:rgba(0,0,0,.4);margin-bottom:4px;">タイトル</div><input type="text" id="_calTitleIn" value="${esc(ev.title)}" style="width:100%;padding:10px 12px;border:1.5px solid #e2e8f0;border-radius:10px;font-size:15px;font-family:var(--hf);box-sizing:border-box;"></div>`;
   h += `<div style="margin-bottom:14px;"><div style="font-size:11px;font-weight:700;color:rgba(0,0,0,.4);margin-bottom:6px;">色</div><div style="display:flex;gap:8px;">${colorBtns}</div></div>`;
   h += `<div style="display:flex;gap:20px;margin-bottom:12px;"><label style="display:flex;align-items:center;gap:6px;cursor:pointer;"><input type="checkbox" id="_calAllDayChk" ${isAllDay?'checked':''} onchange="_calToggleAllDay(this.checked)"><span style="font-size:13px;font-weight:700;">終日</span></label></div>`;
-  h += `<div id="_calTimeFields" style="display:${isAllDay?'none':'flex'};gap:8px;margin-bottom:14px;"><div style="flex:1;"><div style="font-size:11px;font-weight:700;color:rgba(0,0,0,.4);margin-bottom:4px;">開始</div><input type="time" id="_calStartIn" value="${ev.start_time||'10:00'}" onchange="_calAutoEndTime()" style="width:100%;padding:9px 10px;border:1.5px solid #e2e8f0;border-radius:10px;font-size:14px;font-family:var(--hf);"></div><div style="flex:1;"><div style="font-size:11px;font-weight:700;color:rgba(0,0,0,.4);margin-bottom:4px;">終了</div><input type="time" id="_calEndIn" value="${ev.end_time||'11:00'}" style="width:100%;padding:9px 10px;border:1.5px solid #e2e8f0;border-radius:10px;font-size:14px;font-family:var(--hf);"></div></div>`;
+  h += `<div id="_calTimeFields" style="display:${isAllDay?'none':'flex'};gap:8px;margin-bottom:14px;"><div style="flex:1;"><div style="font-size:11px;font-weight:700;color:rgba(0,0,0,.4);margin-bottom:4px;">開始</div><button type="button" id="_calStartBtn" onclick="_calOpenTimeKeypad('start')" style="width:100%;padding:11px 10px;border:1.5px solid #e2e8f0;border-radius:10px;font-size:17px;font-weight:800;font-family:var(--hf);background:white;color:#1e293b;cursor:pointer;text-align:center;">${ev.start_time||'10:00'}</button><input type="hidden" id="_calStartIn" value="${ev.start_time||'10:00'}"></div><div style="flex:1;"><div style="font-size:11px;font-weight:700;color:rgba(0,0,0,.4);margin-bottom:4px;">終了</div><button type="button" id="_calEndBtn" onclick="_calOpenTimeKeypad('end')" style="width:100%;padding:11px 10px;border:1.5px solid #e2e8f0;border-radius:10px;font-size:17px;font-weight:800;font-family:var(--hf);background:white;color:#1e293b;cursor:pointer;text-align:center;">${ev.end_time||'11:00'}</button><input type="hidden" id="_calEndIn" value="${ev.end_time||'11:00'}"></div></div>`;
   h += `<div id="_calOnceFields" style="display:${ev.is_recurring?'none':''};margin-bottom:10px;"><div style="font-size:11px;font-weight:700;color:rgba(0,0,0,.4);margin-bottom:4px;">日付</div><input type="date" id="_calDateIn" value="${ev.event_date||''}" style="padding:9px 10px;border:1.5px solid #e2e8f0;border-radius:10px;font-size:14px;font-family:var(--hf);"></div>`;
   h += `<div style="margin-bottom:8px;"><label style="display:flex;align-items:center;gap:8px;cursor:pointer;"><input type="checkbox" id="_calRecurChk" ${ev.is_recurring?'checked':''} onchange="_calToggleRecur(this.checked)"><span style="font-size:13px;font-weight:700;">毎週繰り返す</span></label></div>`;
   h += `<div id="_calRecurFields" style="display:${ev.is_recurring?'':'none'};margin-bottom:10px;"><div style="font-size:11px;font-weight:700;color:rgba(0,0,0,.4);margin-bottom:6px;">曜日</div><div style="display:flex;gap:4px;">${dowBtns}</div><input type="hidden" id="_calRecurDayVal" value="${ev.recur_day??curDow}"></div>`;
@@ -3102,6 +3106,10 @@ function _calSetMode(mode) {
   const mT = document.getElementById('_calModeTitle'), mS = document.getElementById('_calModeStudent');
   mT.style.background = isTit ? oc : 'white'; mT.style.color = isTit ? 'white' : oc;
   mS.style.background = isTit ? 'white' : oc; mS.style.color = isTit ? oc : 'white';
+  // 時間入力欄(_calTimeWrap)の実体は1個だけで、モードに応じて表示位置を移動する
+  const timeWrap = document.getElementById('_calTimeWrap');
+  const anchor = document.getElementById(isTit ? '_calTimeAnchorTitle' : '_calTimeAnchorStudent');
+  if (timeWrap && anchor) anchor.appendChild(timeWrap);
 }
 function _calOpenStudentPicker() {
   document.getElementById('_calStudentPickerModal')?.remove();
@@ -3254,7 +3262,72 @@ function _calAutoEndTime() {
   if (!start) return;
   const [h, m] = start.split(':').map(Number);
   const endH = String(Math.min(h + 1, 23)).padStart(2,'0');
-  document.getElementById('_calEndIn').value = `${endH}:${String(m).padStart(2,'0')}`;
+  const endVal = `${endH}:${String(m).padStart(2,'0')}`;
+  document.getElementById('_calEndIn').value = endVal;
+  const endBtn = document.getElementById('_calEndBtn');
+  if (endBtn) endBtn.textContent = endVal;
+}
+
+// =====================================================================
+// ★ カレンダー時刻入力（TimeTree風のテンキー方式）
+// =====================================================================
+let _calKeypadTarget = null; // 'start' | 'end'
+let _calKeypadDigits = '';   // 入力中の数字（最大4桁、HHMM）
+function _calOpenTimeKeypad(target) {
+  document.getElementById('_calTimeKeypadModal')?.remove();
+  _calKeypadTarget = target;
+  const inputId = target === 'start' ? '_calStartIn' : '_calEndIn';
+  const curVal = document.getElementById(inputId).value || '10:00';
+  _calKeypadDigits = curVal.replace(':', '');
+  const oc = 'var(--ocean-mid)';
+  const label = target === 'start' ? '⏰ 開始時刻' : '⏰ 終了時刻';
+  const keys = ['1','2','3','4','5','6','7','8','9','C','0','⌫'];
+  const keyBtns = keys.map(k => {
+    if (k === 'C') return `<button type="button" onclick="_calKeypadClear()" style="padding:16px 0;border:none;background:#f1f5f9;border-radius:12px;font-size:14px;font-weight:800;cursor:pointer;font-family:var(--hf);color:#64748b;">クリア</button>`;
+    if (k === '⌫') return `<button type="button" onclick="_calKeypadBackspace()" style="padding:16px 0;border:none;background:#f1f5f9;border-radius:12px;font-size:18px;font-weight:700;cursor:pointer;font-family:var(--hf);color:#64748b;">⌫</button>`;
+    return `<button type="button" onclick="_calKeypadPress('${k}')" style="padding:16px 0;border:none;background:#f8fafc;border-radius:12px;font-size:22px;font-weight:800;cursor:pointer;font-family:var(--hf);color:#1e293b;">${k}</button>`;
+  }).join('');
+  let h = `<div id="_calTimeKeypadModal" style="position:fixed;inset:0;z-index:900;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;" onclick="if(event.target===this)this.remove();">`;
+  h += `<div style="width:calc(100% - 48px);max-width:320px;background:white;border-radius:22px;padding:22px;">`;
+  h += `<div style="font-size:13px;font-weight:800;color:${oc};text-align:center;margin-bottom:12px;">${label}</div>`;
+  h += `<div id="_calKeypadDisplay" style="font-size:46px;font-weight:900;text-align:center;color:#1e293b;letter-spacing:.06em;margin-bottom:18px;font-family:var(--hf);"></div>`;
+  h += `<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px;">${keyBtns}</div>`;
+  h += `<button type="button" onclick="_calKeypadConfirm()" style="width:100%;padding:13px;background:${oc};color:white;border:none;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;font-family:var(--hf);">決定</button>`;
+  h += `</div></div>`;
+  document.body.insertAdjacentHTML('beforeend', h);
+  _calRenderKeypadDisplay();
+}
+function _calRenderKeypadDisplay() {
+  const d = _calKeypadDigits.padEnd(4, '_').split('');
+  const el = document.getElementById('_calKeypadDisplay');
+  if (el) el.textContent = `${d[0]}${d[1]}:${d[2]}${d[3]}`;
+}
+function _calKeypadPress(digit) {
+  if (_calKeypadDigits.length >= 4) return;
+  _calKeypadDigits += digit;
+  _calRenderKeypadDisplay();
+}
+function _calKeypadBackspace() {
+  _calKeypadDigits = _calKeypadDigits.slice(0, -1);
+  _calRenderKeypadDisplay();
+}
+function _calKeypadClear() {
+  _calKeypadDigits = '';
+  _calRenderKeypadDisplay();
+}
+function _calKeypadConfirm() {
+  document.getElementById('_calTimeKeypadModal')?.remove();
+  if (!_calKeypadDigits) return;
+  const d = _calKeypadDigits.padStart(4, '0');
+  const hh = Math.min(parseInt(d.slice(0,2), 10) || 0, 23);
+  const mm = Math.min(parseInt(d.slice(2,4), 10) || 0, 59);
+  const value = `${String(hh).padStart(2,'0')}:${String(mm).padStart(2,'0')}`;
+  const inputId = _calKeypadTarget === 'start' ? '_calStartIn' : '_calEndIn';
+  const btnId = _calKeypadTarget === 'start' ? '_calStartBtn' : '_calEndBtn';
+  document.getElementById(inputId).value = value;
+  const btn = document.getElementById(btnId);
+  if (btn) btn.textContent = value;
+  if (_calKeypadTarget === 'start') _calAutoEndTime();
 }
 
 function _calToggleRecur(checked) {
