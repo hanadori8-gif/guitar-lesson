@@ -3276,9 +3276,7 @@ let _calKeypadDigits = '';   // 入力中の数字（最大4桁、HHMM）
 function _calOpenTimeKeypad(target) {
   document.getElementById('_calTimeKeypadModal')?.remove();
   _calKeypadTarget = target;
-  const inputId = target === 'start' ? '_calStartIn' : '_calEndIn';
-  const curVal = document.getElementById(inputId).value || '10:00';
-  _calKeypadDigits = curVal.replace(':', '');
+  _calKeypadDigits = '';
   const oc = 'var(--ocean-mid)';
   const label = target === 'start' ? '⏰ 開始時刻' : '⏰ 終了時刻';
   const keys = ['1','2','3','4','5','6','7','8','9','C','0','⌫'];
@@ -3316,9 +3314,9 @@ function _calKeypadClear() {
   _calRenderKeypadDisplay();
 }
 function _calKeypadConfirm() {
+  if (_calKeypadDigits.length < 4) return;
   document.getElementById('_calTimeKeypadModal')?.remove();
-  if (!_calKeypadDigits) return;
-  const d = _calKeypadDigits.padStart(4, '0');
+  const d = _calKeypadDigits;
   const hh = Math.min(parseInt(d.slice(0,2), 10) || 0, 23);
   const mm = Math.min(parseInt(d.slice(2,4), 10) || 0, 59);
   const value = `${String(hh).padStart(2,'0')}:${String(mm).padStart(2,'0')}`;
