@@ -2741,10 +2741,13 @@ function _getEventsForDate(dateStr) {
   const dow = d.getDay();
   const evs = [];
   _teacherEvents.forEach(ev => {
+    // student_id付きは、次回予約の上書きで消える前に退避された「過去の生徒予約」。
+    // 生徒レッスンと同じ見た目で出すため_isLesson扱いにする（削除は_calDeleteEventで行う）。
+    const extra = ev.student_id ? {_isLesson:true, _studentId: ev.student_id, _isArchivedLesson:true} : {};
     if (ev.is_recurring) {
-      if (ev.recur_day === dow && !(ev.exception_dates||[]).includes(dateStr)) evs.push({...ev, _dateStr: dateStr});
+      if (ev.recur_day === dow && !(ev.exception_dates||[]).includes(dateStr)) evs.push({...ev, ...extra, _dateStr: dateStr});
     } else {
-      if (ev.event_date === dateStr) evs.push({...ev, _dateStr: dateStr});
+      if (ev.event_date === dateStr) evs.push({...ev, ...extra, _dateStr: dateStr});
     }
   });
   students.forEach(s => {
@@ -2909,14 +2912,19 @@ function _renderSelectedDayTimeline(dateStr) {
       const c = ev.color || '#3b82f6';
       if (ev._isLesson) {
         // 生徒レッスン：時間バッジ＋名前
+        // _isArchivedLessonは、次回予約の上書きで消える前にteacher_eventsへ退避された
+        // 「過去の生徒予約」。students.next_lesson_atとは紐づかないので、タップ編集は
+        // 不可（削除のみteacher_events側で行う）にする。
         const timeStr = ev.start_time ? (ev.start_time + (ev.end_time ? `〜${ev.end_time}` : '')) : '';
+        const clickAttr = ev._isArchivedLesson ? '' : `onclick="_calOpenAddForm('${dateStr}','${ev._studentId}')"`;
+        const delAction = ev._isArchivedLesson ? `_calDeleteEvent('${ev.id}')` : `_calStuMenu('${ev._studentId}','${dateStr}')`;
         h += `<div style="display:flex;align-items:stretch;margin-bottom:7px;border-radius:10px;overflow:hidden;box-shadow:0 1px 5px rgba(249,115,22,.18);border:1.5px solid rgba(249,115,22,.18);">`;
-        h += `<div onclick="_calOpenAddForm('${dateStr}','${ev._studentId}')" style="display:flex;flex:1;cursor:pointer;-webkit-tap-highlight-color:transparent;">`;
+        h += `<div ${clickAttr} style="display:flex;flex:1;${ev._isArchivedLesson?'':'cursor:pointer;'}-webkit-tap-highlight-color:transparent;">`;
         h += `<div style="background:#f97316;color:white;font-size:11px;font-weight:800;padding:0 8px;min-width:46px;display:flex;align-items:center;justify-content:center;flex-shrink:0;letter-spacing:.2px;white-space:nowrap;">${esc(timeStr)}</div>`;
         h += `<div style="flex:1;padding:9px 10px;font-size:13px;font-weight:800;color:#1e293b;background:#fff8f4;">${esc(ev.title)}</div>`;
         h += `</div>`;
         h += `<button onclick="_calOpenLessonRecord('${ev._studentId}')" style="padding:0 11px;border:none;background:#fff8f4;color:#0077a8;cursor:pointer;flex-shrink:0;font-size:11px;font-weight:700;border-left:1px solid rgba(249,115,22,.12);font-family:var(--hf);">記録</button>`;
-        h += `<button onclick="_calStuMenu('${ev._studentId}','${dateStr}')" style="padding:0 10px;border:none;background:#fff8f4;color:rgba(220,38,38,.4);cursor:pointer;flex-shrink:0;font-size:12px;border-left:1px solid rgba(249,115,22,.12);">✕</button>`;
+        h += `<button onclick="${delAction}" style="padding:0 10px;border:none;background:#fff8f4;color:rgba(220,38,38,.4);cursor:pointer;flex-shrink:0;font-size:12px;border-left:1px solid rgba(249,115,22,.12);">✕</button>`;
         h += `</div>`;
       } else {
         // 通常イベント：左カラーバー＋タイトル
@@ -3239,6 +3247,19 @@ async function _calSaveForm(defaultDate) {
       const newSongs = [...(s?.songs || [])];
       if (!newSongs.includes(songVal)) newSongs.push(songVal);
       updateRow.songs = newSongs;
+    }
+    // 既存の次回予約を、新しい予約で上書きする前にteacher_eventsへ退避しておく。
+    // next_lesson_atは生徒1人につき1件しか保持できないため、以前は続けて別の
+    // 予約を追加すると前の予約が跡形もなく消えていた（実データロス）。
+    // 来訪記録として消化される予約(willRecord)は退避不要（timelineに記録済みのため）。
+    if (s?.next_lesson_at && !willRecord && s.next_lesson_at.slice(0,10) !== defaultDate) {
+      const oldD = new Date(s.next_lesson_at);
+      const oldStart = oldD.toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit',hour12:false});
+      const oldEnd = s.next_lesson_end_at ? new Date(s.next_lesson_end_at).toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit',hour12:false}) : null;
+      await sb.from('teacher_events').insert({
+        title: displayName(s), color: '#f97316', event_date: s.next_lesson_at.slice(0,10),
+        start_time: oldStart, end_time: oldEnd, is_recurring: false, student_id: s.id
+      });
     }
     const {error} = await sb.from('students').update(updateRow).eq('id', _calFormStudentId);
     if (error) { toast('保存に失敗しました'); return; }
@@ -6057,16 +6078,21 @@ function renderNextLesson(data) {
   if (areaEl) areaEl.style.display = 'flex';
   if (card) card.style.display = 'none';
   const rmTm = document.getElementById('rmNextLessonTime');
-  if (!data.next_lesson_at) {
-    if (dateEl) dateEl.textContent = '—';
-    if (rmTm) rmTm.textContent = '—';
+  const rmDt = document.getElementById('rmNextLessonDate');
+  // 次回予約が無い、または予約日がもう過ぎている（先生がまだ次を入れていない）
+  // 場合は「予約してね」的な表示にする。単に「—」のままだと、過ぎた予約日が
+  // そのまま表示され続けているのか、本当に未定なのか生徒側から区別できなかった。
+  const isPastOnly = data.next_lesson_at && data.next_lesson_at.slice(0,10) < todayJST();
+  if (!data.next_lesson_at || isPastOnly) {
+    if (dateEl) dateEl.textContent = '未定';
+    if (rmDt) rmDt.textContent = '未定';
+    if (rmTm) rmTm.textContent = '先生に予約してね📅';
     return;
   }
   const dt = new Date(data.next_lesson_at);
   const dow = ['日','月','火','水','木','金','土'][dt.getDay()];
   const dateStr2 = `${dt.getMonth()+1}月${dt.getDate()}日（${dow}）`;
   if (dateEl) dateEl.textContent = dateStr2;
-  const rmDt = document.getElementById('rmNextLessonDate');
   if (rmDt) rmDt.textContent = dateStr2;
   const hh = dt.getHours(), mm = String(dt.getMinutes()).padStart(2,'0');
   let timeStr2 = `${hh}:${mm}〜`;
