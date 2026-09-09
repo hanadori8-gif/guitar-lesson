@@ -5185,7 +5185,10 @@ function _updateSubGrowth() {
   const charEl = document.getElementById('subCharImgEl');
   if (charEl && charEl.style.display !== 'none') {
     const base = charObj.size || 175;
-    const sz = Math.round(base * (0.6 + 1.0 * g / 100));
+    // 表示エリア（幅min(400px,100vw)×高さ320px）に収まるよう上限を設ける。
+    // カメ・マンタ等の大きいキャラは上限なしだと成長ゲージMAX付近で360px超になり、
+    // 上部のゲージカードと画像が重なって表示が崩れていた。
+    const sz = Math.min(280, Math.round(base * (0.6 + 1.0 * g / 100)));
     charEl.style.width = sz + 'px';
     charEl.style.height = sz + 'px';
   }
