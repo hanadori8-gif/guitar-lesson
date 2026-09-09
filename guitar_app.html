@@ -2675,15 +2675,9 @@ function renderMonthSummary() {
   const content = document.getElementById('monthlySummaryContent');
   if (!content) return;
   content.innerHTML = `
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;">
-      <div style="text-align:center;background:#f0f9ff;border-radius:12px;padding:14px 8px;">
-        <div style="font-size:32px;font-weight:900;color:#0369a1;">${lessonCount}</div>
-        <div style="font-size:11px;color:#64748b;font-weight:700;">今月のレッスン数</div>
-      </div>
-      <div style="text-align:center;background:#fff7ed;border-radius:12px;padding:14px 8px;">
-        <div style="font-size:32px;font-weight:900;color:#c2620a;">${bookedCount}</div>
-        <div style="font-size:11px;color:#64748b;font-weight:700;">今月の予約件数</div>
-      </div>
+    <div style="text-align:center;background:#fff7ed;border-radius:12px;padding:14px 8px;margin-bottom:14px;">
+      <div style="font-size:15px;font-weight:700;color:#334155;">あと<span style="font-size:30px;font-weight:900;color:#c2620a;margin:0 3px;">${bookedCount}</span>レッスンで</div>
+      <div style="font-size:22px;font-weight:900;color:#c2620a;margin-top:2px;">¥${bookedRevenue.toLocaleString()}</div>
     </div>
     <div style="background:#f0fdf4;border-radius:12px;padding:14px;margin-bottom:16px;">
       <div style="font-size:11px;font-weight:700;color:#166534;margin-bottom:4px;">💰 今月の見込み合計</div>
@@ -5838,17 +5832,19 @@ async function _corePracticeCheckIn() {
   const newPracticeCount = (s.practice_count || 0) + 1;
   const newData = {...s, total_exp: newExp, practice_streak: newStreak, last_practice_date: today, practice_count: newPracticeCount};
 
-  // チュートリアル中も内部データだけは最新化しないと、直後のミッション判定が古いデータを見てしまう
-  if (_tutV2Active) currentStudentData = newData; else renderStudent(newData);
-  _updateSubMissionUnlocks();
-
-  sb.rpc('rpc_student_self_update', {
+  // DB書き込みが完了する前にアプリを閉じると、次回開いた時にlast_practice_dateが
+  // 古いままで、同じ日にもう一度チェックインできてしまっていた(fire-and-forgetの
+  // 競合状態)。UIを完了状態にする前に、必ずDB反映を待つ。
+  const {error: _pcErr} = await sb.rpc('rpc_student_self_update', {
     p_student_id: currentStudentId, p_line_user_id: s.line_user_id,
     p_total_exp: newExp, p_practice_streak: newStreak,
     p_last_practice_date: today, p_practice_count: newPracticeCount,
-  }).then(({error}) => {
-    if (error) toast('同期エラーが発生しました 😢');
   });
+  if (_pcErr) { toast('同期エラーが発生しました 😢'); return null; }
+
+  // チュートリアル中も内部データだけは最新化しないと、直後のミッション判定が古いデータを見てしまう
+  if (_tutV2Active) currentStudentData = newData; else renderStudent(newData);
+  _updateSubMissionUnlocks();
 
   const _cid0 = localStorage.getItem('custom_char_' + currentStudentId) || 'kumanomi';
   const _cm0  = parseInt(localStorage.getItem('sub_cm_' + _cid0) || String(SUB_START_CM));
