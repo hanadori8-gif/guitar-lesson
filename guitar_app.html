@@ -2657,13 +2657,18 @@ function renderMonthSummary() {
     const cnt = tl.filter(e => e.type === 'lesson' && _lessonDateInMonth(e.date, thisMonth)).length;
     if (cnt > 0) { lessonCount += cnt; cameNames.push({name: displayName(s), cnt}); }
   });
-  // 今月中に次回レッスン(予約)が入っている生徒数。まだ来訪記録がついていなくても
-  // 「予約が入った時点」でカウントに反映されるよう、実施済みレッスン数とは別に集計する
-  const bookedCount = activeStu.filter(s => {
+  // 今月中に次回レッスン(予約)が入っている件数。まだ来訪記録がついていなくても
+  // 「予約が入った時点」でカウントに反映されるよう、実施済みレッスン数とは別に集計する。
+  // students.next_lesson_atは生徒1人につき1件しか保持できないため、同じ生徒が
+  // 今月すでに2件以上予約している場合、上書きで消える前にteacher_eventsへ退避された
+  // 分もここで数えないと、実際より予約件数・見込み金額が少なく出てしまう。
+  let bookedCount = activeStu.filter(s => {
     if (!s.next_lesson_at) return false;
     const d = new Date(s.next_lesson_at);
     return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}` === thisMonth;
   }).length;
+  const activeStuIds = new Set(activeStu.map(s => s.id));
+  bookedCount += _teacherEvents.filter(ev => ev.student_id && activeStuIds.has(ev.student_id) && ev.event_date && ev.event_date.slice(0,7) === thisMonth).length;
   const bookedRevenue = bookedCount * lessonFee;
   const revenue = lessonCount * lessonFee;
   const totalRevenue = revenue + bookedRevenue;
