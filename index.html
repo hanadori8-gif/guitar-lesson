@@ -2683,14 +2683,12 @@ function renderMonthSummary() {
       <div style="text-align:center;background:#fff7ed;border-radius:12px;padding:14px 8px;">
         <div style="font-size:32px;font-weight:900;color:#c2620a;">${bookedCount}</div>
         <div style="font-size:11px;color:#64748b;font-weight:700;">今月の予約件数</div>
-        <div style="font-size:11px;color:#c2620a;font-weight:700;margin-top:4px;">見込み¥${bookedRevenue.toLocaleString()}</div>
       </div>
     </div>
     <div style="background:#f0fdf4;border-radius:12px;padding:14px;margin-bottom:16px;">
-      <div style="font-size:11px;font-weight:700;color:#166534;margin-bottom:4px;">💰 今月の収益（概算）</div>
-      <div style="font-size:32px;font-weight:900;color:#16a34a;">¥${revenue.toLocaleString()}</div>
-      <div style="font-size:11px;color:#64748b;margin-top:6px;padding-top:6px;border-top:1px dashed #bbf7d0;">予約分含めた合計見込み: <span style="font-weight:800;color:#166534;">¥${totalRevenue.toLocaleString()}</span></div>
-      <div style="font-size:11px;color:#64748b;margin-top:4px;">${lessonCount}回 × ¥${lessonFee.toLocaleString()}</div>
+      <div style="font-size:11px;font-weight:700;color:#166534;margin-bottom:4px;">💰 今月の見込み合計</div>
+      <div style="font-size:32px;font-weight:900;color:#16a34a;">¥${totalRevenue.toLocaleString()}</div>
+      <div style="font-size:11px;color:#64748b;margin-top:6px;padding-top:6px;border-top:1px dashed #bbf7d0;">レッスン${lessonCount}回＋予約${bookedCount}件 ＝ ${lessonCount + bookedCount}回 × ¥${lessonFee.toLocaleString()}</div>
       <button onclick="editLessonFee()" style="margin-top:10px;font-size:11px;color:#16a34a;background:none;border:1.5px solid #86efac;border-radius:8px;padding:4px 12px;cursor:pointer;font-family:var(--hf);">⚙️ 料金設定</button>
     </div>
     ${cameNames.length ? `<div style="font-size:11px;font-weight:700;color:#475569;margin-bottom:6px;">レッスンした生徒（${cameNames.length}名）</div>
