@@ -5135,7 +5135,10 @@ function initSubTab() {
   }
   if (bgEl) {
     bgEl.src = bgObj.img;
-    const bsz = Math.round((bgObj.size || 290) * 1.0);
+    // 表示エリア（幅min(400px,100vw)×高さ320px）に収まるよう上限を設ける。
+    // ステージ背景は全種330〜450pxで定義されており、上限なしだと常にエリアから
+    // はみ出して上部のゲージカードと重なって見えていた。
+    const bsz = Math.min(300, Math.round((bgObj.size || 290) * 1.0));
     bgEl.style.width = bsz + 'px';
     bgEl.style.height = bsz + 'px';
     bgEl.style.display = 'block';
