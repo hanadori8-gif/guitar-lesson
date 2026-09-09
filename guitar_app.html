@@ -3441,7 +3441,11 @@ async function saveLesson() {
       const _dt = new Date(`${_d}T${_t || '00:00'}:00+09:00`);
       const _wd = ['日','月','火','水','木','金','土'][_dt.getDay()];
       const _lbl = `${_dt.getMonth()+1}月${_dt.getDate()}日(${_wd})${_t ? ' '+_t : ''}`;
-      return { next_lesson: _lbl, next_lesson_at: _dt.toISOString() };
+      // 終了時刻は開始の1時間後を自動設定する。以前はnext_lesson_end_atを更新して
+      // いなかったため、前回予約の古い終了時刻が新しい開始時刻より前の日時のまま
+      // 残り、カレンダー表示が壊れる不具合があった。
+      const _endAt = _t ? new Date(_dt.getTime() + 60*60*1000).toISOString() : null;
+      return { next_lesson: _lbl, next_lesson_at: _dt.toISOString(), next_lesson_end_at: _endAt };
     })(),
   }).eq('id', teacherSid);
 
