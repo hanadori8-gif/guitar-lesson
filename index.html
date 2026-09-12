@@ -3251,13 +3251,18 @@ async function _calSaveForm(defaultDate) {
     // 来訪記録として消化される予約(willRecord)も、timelineに記録は残るが
     // カレンダー上の「その日の予定」としては消えてしまい、後から見返せなく
     // なるとの指摘があったため、実施済みかどうかに関わらず必ず退避する。
-    if (s?.next_lesson_at && s.next_lesson_at.slice(0,10) !== defaultDate) {
-      const oldD = new Date(s.next_lesson_at);
+    // ここで見るのはブラウザ側のキャッシュ(students配列)ではなく、必ずDBの
+    // 最新値を取り直す。キャッシュが古いままだと、実際にはDB側で既に更新
+    // されている次回予約(退避すべき値)を見落とし、上書きで消してしまう
+    // 不具合があったため。
+    const {data: _latestStu} = await sb.from('students').select('next_lesson_at,next_lesson_end_at').eq('id', _calFormStudentId).single();
+    if (_latestStu?.next_lesson_at && _latestStu.next_lesson_at.slice(0,10) !== defaultDate) {
+      const oldD = new Date(_latestStu.next_lesson_at);
       const oldStart = oldD.toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit',hour12:false});
-      const oldEnd = s.next_lesson_end_at ? new Date(s.next_lesson_end_at).toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit',hour12:false}) : null;
+      const oldEnd = _latestStu.next_lesson_end_at ? new Date(_latestStu.next_lesson_end_at).toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit',hour12:false}) : null;
       await sb.from('teacher_events').insert({
-        title: displayName(s), color: '#f97316', event_date: s.next_lesson_at.slice(0,10),
-        start_time: oldStart, end_time: oldEnd, is_recurring: false, student_id: s.id
+        title: displayName(s), color: '#f97316', event_date: _latestStu.next_lesson_at.slice(0,10),
+        start_time: oldStart, end_time: oldEnd, is_recurring: false, student_id: _calFormStudentId
       });
     }
     const {error} = await sb.from('students').update(updateRow).eq('id', _calFormStudentId);
@@ -3433,15 +3438,18 @@ async function saveLesson() {
 
   // 今回記録する対象の予定(next_lesson_at)を、students側を上書きする前に
   // teacher_eventsへ退避しておく。ここを素通りさせると、記録をつけると同時に
-  // その日の予定がカレンダーから消えてしまっていた。
+  // その日の予定がカレンダーから消えてしまっていた。ブラウザ側のキャッシュ(s)
+  // ではなく、必ずDBの最新値を取り直してから退避する（キャッシュが古いままだと
+  // 実際に退避すべき最新の次回予約を見落として上書きで消してしまうため）。
   const _newLessonDate = (document.getElementById('nextLessonDateIn') || {}).value || '';
-  if (s.next_lesson_at && s.next_lesson_at.slice(0,10) !== _newLessonDate) {
-    const _oldD = new Date(s.next_lesson_at);
+  const {data: _latestStu2} = await sb.from('students').select('next_lesson_at,next_lesson_end_at').eq('id', teacherSid).single();
+  if (_latestStu2?.next_lesson_at && _latestStu2.next_lesson_at.slice(0,10) !== _newLessonDate) {
+    const _oldD = new Date(_latestStu2.next_lesson_at);
     const _oldStart = _oldD.toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit',hour12:false});
-    const _oldEnd = s.next_lesson_end_at ? new Date(s.next_lesson_end_at).toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit',hour12:false}) : null;
+    const _oldEnd = _latestStu2.next_lesson_end_at ? new Date(_latestStu2.next_lesson_end_at).toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit',hour12:false}) : null;
     await sb.from('teacher_events').insert({
-      title: displayName(s), color: '#f97316', event_date: s.next_lesson_at.slice(0,10),
-      start_time: _oldStart, end_time: _oldEnd, is_recurring: false, student_id: s.id
+      title: displayName(s), color: '#f97316', event_date: _latestStu2.next_lesson_at.slice(0,10),
+      start_time: _oldStart, end_time: _oldEnd, is_recurring: false, student_id: teacherSid
     });
   }
 
