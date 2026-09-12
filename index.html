@@ -3248,8 +3248,10 @@ async function _calSaveForm(defaultDate) {
     // 既存の次回予約を、新しい予約で上書きする前にteacher_eventsへ退避しておく。
     // next_lesson_atは生徒1人につき1件しか保持できないため、以前は続けて別の
     // 予約を追加すると前の予約が跡形もなく消えていた（実データロス）。
-    // 来訪記録として消化される予約(willRecord)は退避不要（timelineに記録済みのため）。
-    if (s?.next_lesson_at && !willRecord && s.next_lesson_at.slice(0,10) !== defaultDate) {
+    // 来訪記録として消化される予約(willRecord)も、timelineに記録は残るが
+    // カレンダー上の「その日の予定」としては消えてしまい、後から見返せなく
+    // なるとの指摘があったため、実施済みかどうかに関わらず必ず退避する。
+    if (s?.next_lesson_at && s.next_lesson_at.slice(0,10) !== defaultDate) {
       const oldD = new Date(s.next_lesson_at);
       const oldStart = oldD.toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit',hour12:false});
       const oldEnd = s.next_lesson_end_at ? new Date(s.next_lesson_end_at).toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit',hour12:false}) : null;
@@ -3428,6 +3430,20 @@ async function saveLesson() {
   const _songInVal = (document.getElementById('songIn')?.value || '').trim();
   const newSongs = [...(s.songs || [])];
   if (_songInVal && !newSongs.includes(_songInVal)) newSongs.push(_songInVal);
+
+  // 今回記録する対象の予定(next_lesson_at)を、students側を上書きする前に
+  // teacher_eventsへ退避しておく。ここを素通りさせると、記録をつけると同時に
+  // その日の予定がカレンダーから消えてしまっていた。
+  const _newLessonDate = (document.getElementById('nextLessonDateIn') || {}).value || '';
+  if (s.next_lesson_at && s.next_lesson_at.slice(0,10) !== _newLessonDate) {
+    const _oldD = new Date(s.next_lesson_at);
+    const _oldStart = _oldD.toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit',hour12:false});
+    const _oldEnd = s.next_lesson_end_at ? new Date(s.next_lesson_end_at).toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit',hour12:false}) : null;
+    await sb.from('teacher_events').insert({
+      title: displayName(s), color: '#f97316', event_date: s.next_lesson_at.slice(0,10),
+      start_time: _oldStart, end_time: _oldEnd, is_recurring: false, student_id: s.id
+    });
+  }
 
   const {error} = await sb.from('students').update({
     total_exp: newExp,
