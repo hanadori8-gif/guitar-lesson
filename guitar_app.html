@@ -3210,6 +3210,45 @@ async function _calAddNewStudentInline() {
   _calPickerSelectStudent(data.id, data.name);
   toast('✅ ' + trimmed + ' を追加しました');
 }
+// 予定を保存する直前に、同じ日の他の生徒の予定と時間が重なっていないか
+// DBの最新値で確認する（2026-09-12、ふみこさんと細川さんの予定が同じ時間に
+// 重なって表示されるダブルブッキングが発生したことを受けて追加。原因は
+// ブラウザキャッシュの表示遅れだったが、実際にDB側で重複登録されてしまう
+// ケースそのものを未然に防ぐガードとして導入）。キャッシュではなく必ず
+// フェッチし直した最新データで判定する。
+async function _checkScheduleConflict(dateStr, startTime, endTime, excludeStudentId) {
+  if (!startTime) return null;
+  const toMin = t => { const [h,m] = String(t||'').split(':').map(Number); return h*60+m; };
+  const newStart = toMin(startTime);
+  const newEnd = endTime ? toMin(endTime) : newStart + 60;
+  const dow = new Date(dateStr + 'T00:00:00').getDay();
+  const dayStart = dateStr + 'T00:00:00+09:00';
+  const nd = new Date(dateStr + 'T00:00:00+09:00'); nd.setDate(nd.getDate() + 1);
+  const [{data: sameDay}, {data: evs}] = await Promise.all([
+    sb.from('students').select('id,name,nickname,next_lesson_at,next_lesson_end_at').gte('next_lesson_at', dayStart).lt('next_lesson_at', nd.toISOString()),
+    sb.from('teacher_events').select('title,event_date,start_time,end_time,student_id,is_recurring,recur_day,exception_dates')
+  ]);
+  const items = [];
+  (sameDay || []).forEach(st => {
+    if (st.id === excludeStudentId) return;
+    items.push({
+      title: displayName(st),
+      start_time: new Date(st.next_lesson_at).toLocaleTimeString('ja-JP', {hour:'2-digit', minute:'2-digit', hour12:false}),
+      end_time: st.next_lesson_end_at ? new Date(st.next_lesson_end_at).toLocaleTimeString('ja-JP', {hour:'2-digit', minute:'2-digit', hour12:false}) : null
+    });
+  });
+  (evs || []).forEach(ev => {
+    if (ev.student_id && ev.student_id === excludeStudentId) return;
+    const matches = ev.is_recurring ? (ev.recur_day === dow && !(ev.exception_dates || []).includes(dateStr)) : (ev.event_date === dateStr);
+    if (matches) items.push({title: ev.title, start_time: ev.start_time, end_time: ev.end_time});
+  });
+  return items.find(it => {
+    if (!it.start_time) return false;
+    const s2 = toMin(it.start_time);
+    const e2 = it.end_time ? toMin(it.end_time) : s2 + 60;
+    return newStart < e2 && s2 < newEnd;
+  }) || null;
+}
 async function _calSaveForm(defaultDate) {
   if (_calFormMode === 'student') {
     if (!_calFormStudentId) { toast('生徒を選択してください'); return; }
@@ -3218,6 +3257,10 @@ async function _calSaveForm(defaultDate) {
     const endTime = isAllDay ? null : (document.getElementById('_calEndIn')?.value || null);
     const nextAt = isAllDay ? null : (defaultDate + 'T' + startTime + ':00+09:00');
     const nextEndAt = (isAllDay || !endTime) ? null : (defaultDate + 'T' + endTime + ':00+09:00');
+    if (!isAllDay) {
+      const conflict = await _checkScheduleConflict(defaultDate, startTime, endTime, _calFormStudentId);
+      if (conflict && !confirm(`⚠️ ${conflict.title}さんの予定（${conflict.start_time}${conflict.end_time ? '〜' + conflict.end_time : ''}）と時間が重なっています。このまま登録しますか？`)) return;
+    }
     const d = new Date(defaultDate + 'T00:00:00');
     const dow = ['日','月','火','水','木','金','土'][d.getDay()];
     const label = isAllDay ? `${d.getMonth()+1}月${d.getDate()}日（${dow}）` : `${d.getMonth()+1}月${d.getDate()}日（${dow}）${startTime}`;
@@ -3419,6 +3462,17 @@ async function saveLesson() {
   if (!s) return;
   const _saveBtn = document.querySelector('#seqFormView .btn-primary');
   if (_saveBtn) { if (_saveBtn.disabled) return; _saveBtn.disabled = true; _saveBtn.textContent = '登録中...'; }
+  const _nlDate = (document.getElementById('nextLessonDateIn') || {}).value || '';
+  const _nlTime = (document.getElementById('nextLessonTimeIn') || {}).value || '';
+  if (_nlDate && _nlTime) {
+    const _nlEnd = new Date(`${_nlDate}T${_nlTime}:00+09:00`);
+    _nlEnd.setHours(_nlEnd.getHours() + 1);
+    const _conflict = await _checkScheduleConflict(_nlDate, _nlTime, _nlEnd.toTimeString().slice(0,5), teacherSid);
+    if (_conflict && !confirm(`⚠️ ${_conflict.title}さんの予定（${_conflict.start_time}${_conflict.end_time ? '〜' + _conflict.end_time : ''}）と時間が重なっています。このまま登録しますか？`)) {
+      if (_saveBtn) { _saveBtn.disabled = false; _saveBtn.textContent = '登録する'; }
+      return;
+    }
+  }
   const hw = document.getElementById('hwIn').value.trim();
 
   const exp = 50;
@@ -6193,6 +6247,14 @@ document.addEventListener('visibilitychange', () => {
   });
   if (!document.hidden && currentStudentId && !isGuest) {
     sb.rpc('rpc_get_own_student', {p_student_id: currentStudentId, p_line_user_id: currentStudentData?.line_user_id}).then(({data}) => { if (data && data[0]) renderStudent(data[0]); });
+  }
+  // 先生画面: タブを開きっぱなしにして長時間放置すると、他の端末で更新された
+  // 予定(next_lesson_at等)がキャッシュのまま古い表示になり続けてしまう
+  // (2026-09-12、ダブルブッキング表示の原因になった)。タブに戻ってきた
+  // タイミングで必ずDBから取り直すことで、リロードしなくても最新化される。
+  if (!document.hidden && teacherChannel) {
+    loadStudents();
+    _loadTeacherEvents();
   }
 });
 
