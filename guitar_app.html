@@ -3207,6 +3207,11 @@ async function _calAddNewStudentInline() {
   const {data, error} = await sb.from('students').insert({name: trimmed}).select().single();
   if (error) { toast('追加に失敗しました'); return; }
   students.push(data);
+  // ここでlocalStorageキャッシュ(_tc_stu_v2)も更新しておかないと、この後
+  // タブを閉じて開き直した時に、追加した生徒がキャッシュに載っていない状態で
+  // 一瞬古い一覧が表示され、フェッチが失敗した場合はそのまま古いままになって
+  // しまう（新しく追加した生徒が一覧・サジェストに出てこない不具合の原因）。
+  try { localStorage.setItem('_tc_stu_v2', JSON.stringify(students)); } catch(e) {}
   _calPickerSelectStudent(data.id, data.name);
   toast('✅ ' + trimmed + ' を追加しました');
 }
