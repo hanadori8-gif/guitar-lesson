@@ -2515,11 +2515,6 @@ async function teacherLogout() {
   students = []; teacherSid = null;
 }
 
-// =====================================================================
-// ★ レッスン記録フォーム（カレンダー日付ポップアップの「記録」から開く）
-// =====================================================================
-let _seqMode = false, _seqStudents = [], _seqIdx = 0;
-
 // カレンダー日付ポップアップの生徒行にある操作メニュー（直前キャンセル／予約削除）
 function _closeCalStuModal() { const m = document.getElementById('_calStuModal'); if (m) m.remove(); }
 function _calStuMenu(sid, dateStr) {
@@ -2555,52 +2550,6 @@ async function _calStuCancel(sid, type, dateStr) {
   toast(type === 'cancel' ? '⚡ 直前キャンセルしました' : '🗑 削除しました');
 }
 
-function _closeSeqForm() {
-  const ov = document.getElementById('seqFormViewOv');
-  if (ov) ov.style.display = 'none';
-}
-function _showSeqFormOverlay() {
-  const ov = document.getElementById('seqFormViewOv');
-  if (ov) ov.style.display = 'flex';
-}
-function _showSeqForm() {
-  const s = _seqStudents[_seqIdx];
-  if (!s) return;
-  teacherSid = s.id;
-  _showSeqFormOverlay();
-  document.getElementById('seqProgress').textContent = (_seqIdx + 1) + ' / ' + _seqStudents.length + '人目';
-  document.getElementById('seqStudentName').textContent = displayName(s);
-  document.getElementById('hwIn').value = '';
-  document.getElementById('songIn').value = '';
-  const _pIn = document.getElementById('praiseIn');
-  if (_pIn) _pIn.value = '';
-  const _dIn = document.getElementById('nextLessonDateIn');
-  const _tIn = document.getElementById('nextLessonTimeIn');
-  if (_dIn && _tIn) {
-    if (s.next_lesson_at) {
-      const _nd = new Date(s.next_lesson_at);
-      _dIn.value = _nd.toISOString().slice(0,10);
-      _tIn.value = _nd.toTimeString().slice(0,5);
-    } else { _dIn.value = ''; _tIn.value = new Date().toTimeString().slice(0,2) + ':00'; }
-  }
-  todayChecked[teacherSid] = todayChecked[teacherSid] || [];
-}
-
-function _seqNext() {
-  _seqIdx++;
-  if (_seqIdx >= _seqStudents.length) {
-    _exitSeqMode();
-    toast('🎉 全員の記録が完了しました！');
-  } else {
-    _showSeqForm();
-  }
-}
-
-function _exitSeqMode() {
-  _seqMode = false; _seqStudents = []; _seqIdx = 0;
-  _closeSeqForm();
-  loadStudents();
-}
 
 // =====================================================================
 // ★ 先生モード
@@ -2970,7 +2919,6 @@ function _renderSelectedDayTimeline(dateStr) {
         if (ev.notes) h += `<div style="font-size:11px;color:rgba(0,0,0,.5);margin-top:2px;white-space:pre-wrap;">📝 ${esc(ev.notes)}</div>`;
         h += `</div>`;
         h += `</div>`;
-        h += `<button onclick="_calOpenLessonRecord('${ev._studentId}')" style="padding:0 11px;border:none;background:#fff8f4;color:#0077a8;cursor:pointer;flex-shrink:0;font-size:11px;font-weight:700;border-left:1px solid rgba(249,115,22,.12);font-family:var(--hf);">記録</button>`;
         h += `<button onclick="${delAction}" style="padding:0 10px;border:none;background:#fff8f4;color:rgba(220,38,38,.4);cursor:pointer;flex-shrink:0;font-size:12px;border-left:1px solid rgba(249,115,22,.12);">✕</button>`;
         h += `</div>`;
       } else {
@@ -2993,48 +2941,6 @@ function _renderSelectedDayTimeline(dateStr) {
   }
   h += `</div>`;
   return h;
-}
-
-function _calOpenLessonRecord(studentId) {
-  const s = students.find(x => x.id === studentId);
-  if (!s) { toast('生徒が見つかりません'); return; }
-  document.getElementById('_calDayPopup')?.remove();
-  _seqMode = false;
-  teacherSid = s.id;
-  _showSeqFormOverlay();
-  document.getElementById('seqProgress').textContent = 'レッスン記録';
-  document.getElementById('seqStudentName').textContent = displayName(s);
-
-  _seqHwItems = [];
-  document.getElementById('hwIn').value = '';
-  _renderSeqHwList();
-  // 直近の宿題を情報として表示
-  const _allHwItems = (s.timeline || []).filter(e => e.type === 'hw');
-  const _prevHwEl = document.getElementById('prevHwInfo');
-  const _prevHwTxt = document.getElementById('prevHwText');
-  if (_prevHwEl) {
-    if (_allHwItems.length) {
-      _prevHwEl.style.display = '';
-      if (_prevHwTxt) _prevHwTxt.textContent = _allHwItems[0].text || '';
-    } else {
-      _prevHwEl.style.display = 'none';
-    }
-  }
-  // 最後にチャレンジした曲を自動入力
-  const _songs = s.songs || [];
-  document.getElementById('songIn').value = _songs.length ? _songs[0] : '';
-  const _psiEl = document.getElementById('prevSongsInfo');
-  const _pslEl = document.getElementById('prevSongsList');
-  if (_psiEl && _pslEl) {
-    const _tl = typeof s.timeline === 'string' ? JSON.parse(s.timeline || '[]') : (s.timeline || []);
-    const _allSongs = [...new Set([...(_songs), ..._tl.filter(e=>e.type==='lesson'&&e.song).map(e=>e.song)])].filter(Boolean);
-    if (_allSongs.length) {
-      _psiEl.style.display = '';
-      _pslEl.innerHTML = _allSongs.map(sg=>`<span style='font-size:12px;font-weight:700;color:#0077b6;background:#e0f2fe;border-radius:20px;padding:3px 10px;white-space:nowrap;'>${sg}</span>`).join('');
-    } else { _psiEl.style.display = 'none'; }
-  }
-
-  todayChecked[teacherSid] = todayChecked[teacherSid] || [];
 }
 
 function _calOpenAddForm(dateStr, editStudentId) {
@@ -3693,11 +3599,15 @@ function renderStudentList() {
 // LINEで開いたが既存の生徒の誰とも一致せず、自動的に新規アカウントとして
 // 登録されてしまったケースの受け皿。名前は予約時の呼び名(TimeTree・口頭・
 // インスタ等)とLINEの表示名が一致しない前提で、先生が候補から選んで手動で
-// 紐付ける。あだ名未設定・練習実績ゼロ・誰の保護者でもない、という条件で
-// 「まだ何も使っていない自動登録アカウント」を判定している。
+// 紐付ける。あだ名未設定・練習実績ゼロ・誰の保護者でもない・次回予約も
+// 入っていない、という条件で「まだ何も使っていない自動登録アカウント」を
+// 判定している。次回予約が入っている生徒は、あだ名を別途付けていなくても
+// 先生がすでに本人と特定して管理している＝解決済みなので対象から除く
+// （2026-09-17、りおんちゃん・いつきくんが解決済みなのに未接続タブに残り
+// 続けていた不具合の修正）。
 // =====================================================================
 function _isOrphanAccount(s) {
-  return !!s.line_user_id && !s.nickname && !s.parent_student_id && !(s.total_exp > 0);
+  return !!s.line_user_id && !s.nickname && !s.parent_student_id && !(s.total_exp > 0) && !s.next_lesson_at;
 }
 
 function renderUnlinkedTab() {
