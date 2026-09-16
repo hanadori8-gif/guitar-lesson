@@ -1460,46 +1460,8 @@ body{background:#f0ebe0!important;}
   </div>
 
   <div id="tabCalendarArea" class="main t-tab-area">
-    <select id="teacherSel" style="display:none;" onchange="onTeacherSelChange()"></select>
     <div class="cal-wrap" id="calWrap"></div>
     <button class="cal-fab" onclick="_calQuickAdd()">＋</button>
-  </div>
-
-  <!-- レッスン記録フォーム（カレンダー日付ポップアップの「記録」ボタンから開くオーバーレイ） -->
-  <div id="seqFormViewOv" style="display:none;position:fixed;inset:0;z-index:750;background:rgba(0,0,0,.45);align-items:flex-end;justify-content:center;">
-    <div style="width:100%;max-width:460px;max-height:88vh;overflow-y:auto;background:#eef6fa;padding:16px 14px calc(16px + env(safe-area-inset-bottom,0px));box-sizing:border-box;border-radius:20px 20px 0 0;">
-    <div id="seqFormView">
-      <div class="card" style="padding:14px 14px 12px;margin-bottom:4px;background:linear-gradient(135deg,rgba(0,100,200,.1),rgba(0,60,150,.06));border:1.5px solid rgba(0,100,200,.15);">
-        <div style="font-size:11px;color:rgba(0,80,160,.55);font-weight:700;margin-bottom:3px;" id="seqProgress">レッスン記録</div>
-        <div style="font-size:20px;font-weight:900;color:var(--ocean-deep);" id="seqStudentName">—</div>
-      </div>
-      <div class="card">
-        <div class="card-title">🎵 チャレンジした曲</div>
-        <input type="text" class="txt-in" id="songIn" placeholder="例：チェリー">
-      </div>
-      <div class="card">
-        <div class="card-title">📚 宿題・チャレンジ</div>
-        <div id="seqHwList" style="margin-bottom:8px;"></div>
-        <div style="display:flex;gap:8px;align-items:center;">
-          <input type="text" id="hwIn" placeholder="宿題を入力して決定..." class="txt-in" style="flex:1;margin-bottom:0;" onkeydown="if(event.key==='Enter'){_addSeqHwItem();event.preventDefault();}">
-          <button onclick="_addSeqHwItem()" style="flex-shrink:0;background:linear-gradient(135deg,#22c55e,#16a34a);border:none;border-radius:10px;padding:9px 14px;color:white;font-size:13px;font-weight:900;cursor:pointer;font-family:var(--hf);">決定</button>
-        </div>
-        <div id="prevHwInfo" style="display:none;margin-top:8px;padding:8px 10px;background:#f0f9ff;border-radius:10px;border-left:3px solid #7dd3fc;">
-          <span style="font-size:10px;font-weight:800;color:#0284c7;display:block;margin-bottom:2px;">📌 前回の宿題</span>
-          <span id="prevHwText" style="font-size:13px;font-weight:700;color:#334155;"></span>
-        </div>
-      </div>
-      <textarea id="praiseIn" style="display:none;"></textarea>
-      <div style="display:flex;gap:8px;margin-bottom:12px;">
-        <button class="btn" onclick="_exitSeqMode()" style="flex:1;background:rgba(0,0,0,.06);color:#555;font-size:13px;">戻る</button>
-        <button class="btn btn-primary" onclick="saveLesson()" style="flex:2;">登録する</button>
-      </div>
-      <div id="prevSongsInfo" style="display:none;margin-bottom:24px;padding:10px 12px;background:#f8faff;border-radius:12px;border:1px solid #e0eaff;">
-        <div style="font-size:10px;font-weight:800;color:#6b7280;letter-spacing:.06em;margin-bottom:6px;">&#127925; これまでチャレンジした曲</div>
-        <div id="prevSongsList" style="display:flex;flex-wrap:wrap;gap:5px;"></div>
-      </div>
-    </div>
-    </div>
   </div>
 
   <div id="tabStudentsArea" class="main t-tab-area hidden">
@@ -2576,7 +2538,6 @@ async function loadStudents() {
     const _c = localStorage.getItem('_tc_stu_v2');
     if (_c) {
       students = JSON.parse(_c);
-      rebuildTeacherSel();
       renderStudentList();
       if (_isCalendarVisible()) _renderCalendar();
     }
@@ -2586,7 +2547,6 @@ async function loadStudents() {
   if (error) { if (!students.length) toast('生徒データの読み込みに失敗しました'); return; }
   students = data || [];
   try { localStorage.setItem('_tc_stu_v2', JSON.stringify(students)); } catch(e) {}
-  rebuildTeacherSel();
   renderStudentList();
   if (_isCalendarVisible()) _renderCalendar();
 }
@@ -3381,126 +3341,6 @@ async function _calAddException(eventId, dateStr) {
   toast('この週をスキップしました');
 }
 
-function rebuildTeacherSel() {
-  const sel = document.getElementById('teacherSel');
-  const prev = sel.value;
-  sel.innerHTML = students.map(s => `<option value="${s.id}">${esc(displayName(s))}</option>`).join('');
-  if (prev && students.find(s => s.id === prev)) sel.value = prev;
-  teacherSid = sel.value || (students[0] && students[0].id) || null;
-}
-
-function onTeacherSelChange() {
-  teacherSid = document.getElementById('teacherSel').value;
-  document.getElementById('hwIn').value = '';
-  document.getElementById('songIn').value = '';
-  // 次回レッスン日時をセット
-  const _s = students.find(x => x.id === teacherSid);
-  const _dIn = document.getElementById('nextLessonDateIn');
-  const _tIn = document.getElementById('nextLessonTimeIn');
-  if (_dIn && _tIn) {
-    if (_s && _s.next_lesson_at) {
-      const _nd = new Date(_s.next_lesson_at);
-      _dIn.value = _nd.toISOString().slice(0,10);
-      _tIn.value = _nd.toTimeString().slice(0,5);
-    } else {
-      _dIn.value = ''; _tIn.value = new Date().toTimeString().slice(0,2) + ':00';
-    }
-  }
-  todayChecked[teacherSid] = todayChecked[teacherSid] || [];
-}
-
-
-// ===== 保存 =====
-async function saveLesson() {
-  if (!teacherSid) { toast('生徒を選んでください'); return; }
-  const s = students.find(x => x.id === teacherSid);
-  if (!s) return;
-  const _saveBtn = document.querySelector('#seqFormView .btn-primary');
-  if (_saveBtn) { if (_saveBtn.disabled) return; _saveBtn.disabled = true; _saveBtn.textContent = '登録中...'; }
-  const _nlDate = (document.getElementById('nextLessonDateIn') || {}).value || '';
-  const _nlTime = (document.getElementById('nextLessonTimeIn') || {}).value || '';
-  if (_nlDate && _nlTime) {
-    const _nlEnd = new Date(`${_nlDate}T${_nlTime}:00+09:00`);
-    _nlEnd.setHours(_nlEnd.getHours() + 1);
-    const _conflict = await _checkScheduleConflict(_nlDate, _nlTime, _nlEnd.toTimeString().slice(0,5), teacherSid);
-    if (_conflict && !confirm(`⚠️ ${_conflict.title}さんの予定（${_conflict.start_time}${_conflict.end_time ? '〜' + _conflict.end_time : ''}）と時間が重なっています。このまま登録しますか？`)) {
-      if (_saveBtn) { _saveBtn.disabled = false; _saveBtn.textContent = '登録する'; }
-      return;
-    }
-  }
-  const hw = document.getElementById('hwIn').value.trim();
-
-  const exp = 50;
-  const entries = [{type:'lesson', text:'レッスン来訪', exp:50}];
-
-  const today = dateStr();
-
-  if (hw && !_seqHwItems.includes(hw)) _seqHwItems.push(hw);
-  const hwEntries = _seqHwItems.map(t => ({type:'hw', text:t, exp:0, date:today}));
-
-  const newTimeline = [...hwEntries, ...entries.map(e=>({date:today,...e})), ...(s.timeline||[])].slice(0,150);
-  const newExp = (s.total_exp || 0) + exp;
-
-  const _songInVal = (document.getElementById('songIn')?.value || '').trim();
-  const newSongs = [...(s.songs || [])];
-  if (_songInVal && !newSongs.includes(_songInVal)) newSongs.push(_songInVal);
-
-  // 今回記録する対象の予定(next_lesson_at)を、students側を上書きする前に
-  // teacher_eventsへ退避しておく。ここを素通りさせると、記録をつけると同時に
-  // その日の予定がカレンダーから消えてしまっていた。ブラウザ側のキャッシュ(s)
-  // ではなく、必ずDBの最新値を取り直してから退避する（キャッシュが古いままだと
-  // 実際に退避すべき最新の次回予約を見落として上書きで消してしまうため）。
-  const _newLessonDate = (document.getElementById('nextLessonDateIn') || {}).value || '';
-  const {data: _latestStu2} = await sb.from('students').select('next_lesson_at,next_lesson_end_at').eq('id', teacherSid).single();
-  if (_latestStu2?.next_lesson_at && _latestStu2.next_lesson_at.slice(0,10) !== _newLessonDate) {
-    const _oldD = new Date(_latestStu2.next_lesson_at);
-    const _oldStart = _oldD.toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit',hour12:false});
-    const _oldEnd = _latestStu2.next_lesson_end_at ? new Date(_latestStu2.next_lesson_end_at).toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit',hour12:false}) : null;
-    await sb.from('teacher_events').insert({
-      title: displayName(s), color: '#f97316', event_date: _latestStu2.next_lesson_at.slice(0,10),
-      start_time: _oldStart, end_time: _oldEnd, is_recurring: false, student_id: teacherSid
-    });
-  }
-
-  const {error} = await sb.from('students').update({
-    total_exp: newExp,
-    timeline:  newTimeline,
-    songs: newSongs,
-    last_lesson_at: new Date().toISOString(),
-    ...(() => {
-      const _d = (document.getElementById('nextLessonDateIn') || {}).value || '';
-      const _t = (document.getElementById('nextLessonTimeIn') || {}).value || '';
-      if (!_d) return {};
-      const _dt = new Date(`${_d}T${_t || '00:00'}:00+09:00`);
-      const _wd = ['日','月','火','水','木','金','土'][_dt.getDay()];
-      const _lbl = `${_dt.getMonth()+1}月${_dt.getDate()}日(${_wd})${_t ? ' '+_t : ''}`;
-      // 終了時刻は開始の1時間後を自動設定する。以前はnext_lesson_end_atを更新して
-      // いなかったため、前回予約の古い終了時刻が新しい開始時刻より前の日時のまま
-      // 残り、カレンダー表示が壊れる不具合があった。
-      const _endAt = _t ? new Date(_dt.getTime() + 60*60*1000).toISOString() : null;
-      return { next_lesson: _lbl, next_lesson_at: _dt.toISOString(), next_lesson_end_at: _endAt };
-    })(),
-  }).eq('id', teacherSid);
-
-  if (error) {
-    toast('保存に失敗しました。ネットを確認してください。');
-    if (_saveBtn) { _saveBtn.disabled = false; _saveBtn.textContent = '登録する'; }
-    return;
-  }
-
-  document.getElementById('hwIn').value = '';
-  document.getElementById('songIn').value = '';
-  _seqHwItems = [];
-  _renderSeqHwList();
-  await loadStudents();
-  if (currentStudentData && currentStudentData.id === teacherSid) {
-    currentStudentData = {...currentStudentData, total_exp: newExp, timeline: newTimeline};
-  }
-  toast(`💾 保存しました！ +${exp} EXP`);
-  if (_saveBtn) { _saveBtn.disabled = false; _saveBtn.textContent = '登録する'; }
-  if (_seqMode) { _seqNext(); }
-  else { _closeSeqForm(); _renderCalendar(); }
-}
 
 // ===== 生徒管理 =====
 let _stuSort = 'recent';
@@ -4195,32 +4035,6 @@ async function unlinkParentStudent(childId) {
   showStudentDetail(childId);
 }
 
-
-let _seqHwItems = [];
-function _addSeqHwItem() {
-  const input = document.getElementById('hwIn');
-  if (!input) return;
-  const text = input.value.trim();
-  if (!text) return;
-  _seqHwItems.push(text);
-  input.value = '';
-  _renderSeqHwList();
-  input.focus();
-}
-function _removeSeqHwItem(i) {
-  _seqHwItems.splice(i, 1);
-  _renderSeqHwList();
-}
-function _renderSeqHwList() {
-  const el = document.getElementById('seqHwList');
-  if (!el) return;
-  el.innerHTML = _seqHwItems.map((t, i) =>
-    `<div style="display:flex;align-items:center;gap:8px;padding:7px 10px;background:#f0fdf4;border-radius:10px;margin-bottom:6px;border-left:3px solid #86efac;">
-      <span style="flex:1;font-size:13px;font-weight:700;color:#1a1a1a;">📚 ${esc(t)}</span>
-      <button onclick="_removeSeqHwItem(${i})" style="border:none;background:none;font-size:17px;cursor:pointer;color:#94a3b8;padding:2px;line-height:1;">🗑</button>
-    </div>`
-  ).join('');
-}
 
 let _lessonHwItems = [];
 function _addLessonHwItem() {
