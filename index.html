@@ -2533,7 +2533,7 @@ async function _calStuCancel(sid, type, dateStr) {
     const s = students.find(x => x.id === sid);
     if (s) {
       const newTl = [{type:'cancel', text:'直前キャンセル', date: todayJST()}, ...(s.timeline || [])].slice(0, 150);
-      await sb.from('students').update({timeline: newTl}).eq('id', sid);
+      await sb.from('students').update({timeline: newTl, next_lesson_cancelled: true}).eq('id', sid);
     }
   }
   await loadStudents();
@@ -2621,7 +2621,7 @@ async function loadStudents() {
     }
   } catch(e) {}
   // 最新データをフェッチしてキャッシュ更新
-  const {data, error} = await sb.from('students').select('id,name,nickname,furigana,total_exp,practice_streak,last_practice_date,line_user_id,next_lesson,next_lesson_at,next_lesson_end_at,tier,last_lesson_at,access_extended_until,parent_line_id,parent_student_id,songs,timeline,bonus_given,elder_mode,current_char_id,current_char_cm').order('name');
+  const {data, error} = await sb.from('students').select('id,name,nickname,furigana,total_exp,practice_streak,last_practice_date,line_user_id,next_lesson,next_lesson_at,next_lesson_end_at,next_lesson_cancelled,next_lesson_notes,tier,last_lesson_at,access_extended_until,parent_line_id,parent_student_id,songs,timeline,bonus_given,elder_mode,current_char_id,current_char_cm').order('name');
   if (error) { if (!students.length) toast('生徒データの読み込みに失敗しました'); return; }
   students = data || [];
   try { localStorage.setItem('_tc_stu_v2', JSON.stringify(students)); } catch(e) {}
@@ -2756,7 +2756,7 @@ function _getEventsForDate(dateStr) {
     if (s.next_lesson_at && s.next_lesson_at.slice(0,10) === dateStr) {
       const t = new Date(s.next_lesson_at).toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit',hour12:false});
       const et = s.next_lesson_end_at ? new Date(s.next_lesson_end_at).toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit',hour12:false}) : '';
-      evs.push({id:'lesson_'+s.id, title:displayName(s), color:'#f97316', start_time:t, end_time:et, _isLesson:true, _studentId:s.id, _dateStr:dateStr});
+      evs.push({id:'lesson_'+s.id, title:displayName(s), color:'#f97316', start_time:t, end_time:et, notes:s.next_lesson_notes||'', _cancelled:!!s.next_lesson_cancelled, _isLesson:true, _studentId:s.id, _dateStr:dateStr});
     }
   });
   evs.sort((a,b) => (a.start_time||'') > (b.start_time||'') ? 1 : -1);
@@ -2895,6 +2895,13 @@ function _renderSelectedDayTimeline(dateStr) {
   const m = d.getMonth()+1, dy = d.getDate();
   const evs = _getEventsForDate(dateStr).sort((a,b) => (a.start_time||'').localeCompare(b.start_time||''));
   const lessonCount = evs.filter(e => e._isLesson).length;
+  // 時間表記: 所要時間が既定の1時間なら開始時刻だけ、それ以外（2時間など）だけ「開始〜終了」を出す
+  const _toMin = t => { const [hh,mm] = String(t||'').split(':').map(Number); return hh*60+mm; };
+  const _lessonTimeStr = ev => {
+    if (!ev.start_time) return '';
+    const durMin = ev.end_time ? (_toMin(ev.end_time) - _toMin(ev.start_time)) : null;
+    return (durMin !== null && durMin !== 60) ? `${ev.start_time}〜${ev.end_time}` : ev.start_time;
+  };
 
   let h = `<div id="_calTlSection" style="background:white;border-radius:16px;box-shadow:0 2px 14px rgba(0,100,200,.1);padding:14px 14px 16px;">`;
   // 日付ヘッダー
@@ -2917,13 +2924,20 @@ function _renderSelectedDayTimeline(dateStr) {
         // _isArchivedLessonは、次回予約の上書きで消える前にteacher_eventsへ退避された
         // 「過去の生徒予約」。students.next_lesson_atとは紐づかないので、タップ編集は
         // 不可（削除のみteacher_events側で行う）にする。
-        const timeStr = ev.start_time ? (ev.start_time + (ev.end_time ? `〜${ev.end_time}` : '')) : '';
+        // _cancelledは先生が「直前キャンセル（レッスン料発生）」を選んだ予約。予定自体は
+        // 消さず、幽霊のように薄く表示するだけにする（同じ枠に別の生徒を入れ直せるように、
+        // 重複チェック対象からも除外している）。
+        const timeStr = _lessonTimeStr(ev);
         const clickAttr = ev._isArchivedLesson ? '' : `onclick="_calOpenAddForm('${dateStr}','${ev._studentId}')"`;
         const delAction = ev._isArchivedLesson ? `_calDeleteEvent('${ev.id}')` : `_calStuMenu('${ev._studentId}','${dateStr}')`;
-        h += `<div style="display:flex;align-items:stretch;margin-bottom:7px;border-radius:10px;overflow:hidden;box-shadow:0 1px 5px rgba(249,115,22,.18);border:1.5px solid rgba(249,115,22,.18);">`;
+        const ghostStyle = ev._cancelled ? 'opacity:.45;filter:grayscale(.6);' : '';
+        h += `<div style="display:flex;align-items:stretch;margin-bottom:7px;border-radius:10px;overflow:hidden;box-shadow:0 1px 5px rgba(249,115,22,.18);border:1.5px solid rgba(249,115,22,.18);${ghostStyle}">`;
         h += `<div ${clickAttr} style="display:flex;flex:1;${ev._isArchivedLesson?'':'cursor:pointer;'}-webkit-tap-highlight-color:transparent;">`;
         h += `<div style="background:#f97316;color:white;font-size:11px;font-weight:800;padding:0 8px;min-width:46px;display:flex;align-items:center;justify-content:center;flex-shrink:0;letter-spacing:.2px;white-space:nowrap;">${esc(timeStr)}</div>`;
-        h += `<div style="flex:1;padding:9px 10px;font-size:13px;font-weight:800;color:#1e293b;background:#fff8f4;">${esc(ev.title)}</div>`;
+        h += `<div style="flex:1;padding:9px 10px;background:#fff8f4;min-width:0;">`;
+        h += `<div style="font-size:13px;font-weight:800;color:#1e293b;${ev._cancelled?'text-decoration:line-through;':''}">${esc(ev.title)}${ev._cancelled?' <span style="font-size:10px;font-weight:700;color:#b45309;text-decoration:none;">（直前キャンセル）</span>':''}</div>`;
+        if (ev.notes) h += `<div style="font-size:11px;color:rgba(0,0,0,.5);margin-top:2px;white-space:pre-wrap;">📝 ${esc(ev.notes)}</div>`;
+        h += `</div>`;
         h += `</div>`;
         h += `<button onclick="_calOpenLessonRecord('${ev._studentId}')" style="padding:0 11px;border:none;background:#fff8f4;color:#0077a8;cursor:pointer;flex-shrink:0;font-size:11px;font-weight:700;border-left:1px solid rgba(249,115,22,.12);font-family:var(--hf);">記録</button>`;
         h += `<button onclick="${delAction}" style="padding:0 10px;border:none;background:#fff8f4;color:rgba(220,38,38,.4);cursor:pointer;flex-shrink:0;font-size:12px;border-left:1px solid rgba(249,115,22,.12);">✕</button>`;
@@ -3044,11 +3058,12 @@ function _calOpenAddForm(dateStr, editStudentId) {
   h += `<button type="button" onclick="_calToggleExtra()" id="_calExtraToggleBtn" style="width:100%;padding:9px;border:1.5px dashed #cbd5e1;border-radius:10px;background:transparent;color:rgba(0,0,0,.45);font-size:12px;font-weight:700;cursor:pointer;font-family:var(--hf);margin-bottom:14px;">🎨 色・メモを設定する ▾</button>`;
   h += `<div id="_calExtraSec" style="display:none;">`;
   h += `<div style="margin-bottom:14px;"><div style="font-size:11px;font-weight:700;color:rgba(0,0,0,.4);margin-bottom:6px;">色</div><div style="display:flex;gap:8px;">${colorBtns}</div></div>`;
-  h += `<div style="margin-bottom:14px;"><div style="font-size:11px;font-weight:700;color:rgba(0,0,0,.4);margin-bottom:4px;">📝 メモ（任意）</div><textarea id="_calMemoIn" placeholder="メモを入力..." style="width:100%;padding:10px 12px;border:1.5px solid #e2e8f0;border-radius:10px;font-size:14px;font-family:var(--hf);box-sizing:border-box;resize:none;min-height:70px;"></textarea></div>`;
+  h += `<div style="margin-bottom:14px;"><div style="font-size:11px;font-weight:700;color:rgba(0,0,0,.4);margin-bottom:4px;">📝 メモ（任意・カフェ開催など）</div><textarea id="_calMemoIn" placeholder="メモを入力..." style="width:100%;padding:10px 12px;border:1.5px solid #e2e8f0;border-radius:10px;font-size:14px;font-family:var(--hf);box-sizing:border-box;resize:none;min-height:70px;">${esc((editStu && editStu.next_lesson_notes) || '')}</textarea></div>`;
   h += `</div>`;
   h += `<button onclick="_calSaveForm('${dateStr}')" style="width:100%;padding:13px;background:${oc};color:white;border:none;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;font-family:var(--hf);margin-top:4px;">💾 保存</button>`;
   h += `</div></div>`;
   document.body.insertAdjacentHTML('beforeend', h);
+  if (editStu && editStu.next_lesson_notes) _calToggleExtra();
 }
 
 function _calOpenEditForm(evId, dateStr) {
@@ -3235,12 +3250,12 @@ async function _checkScheduleConflict(dateStr, startTime, endTime, excludeStuden
   const dayStart = dateStr + 'T00:00:00+09:00';
   const nd = new Date(dateStr + 'T00:00:00+09:00'); nd.setDate(nd.getDate() + 1);
   const [{data: sameDay}, {data: evs}] = await Promise.all([
-    sb.from('students').select('id,name,nickname,next_lesson_at,next_lesson_end_at').gte('next_lesson_at', dayStart).lt('next_lesson_at', nd.toISOString()),
+    sb.from('students').select('id,name,nickname,next_lesson_at,next_lesson_end_at,next_lesson_cancelled').gte('next_lesson_at', dayStart).lt('next_lesson_at', nd.toISOString()),
     sb.from('teacher_events').select('title,event_date,start_time,end_time,student_id,is_recurring,recur_day,exception_dates')
   ]);
   const items = [];
   (sameDay || []).forEach(st => {
-    if (st.id === excludeStudentId) return;
+    if (st.id === excludeStudentId || st.next_lesson_cancelled) return;
     items.push({
       title: displayName(st),
       start_time: new Date(st.next_lesson_at).toLocaleTimeString('ja-JP', {hour:'2-digit', minute:'2-digit', hour12:false}),
@@ -3274,7 +3289,8 @@ async function _calSaveForm(defaultDate) {
     const d = new Date(defaultDate + 'T00:00:00');
     const dow = ['日','月','火','水','木','金','土'][d.getDay()];
     const label = isAllDay ? `${d.getMonth()+1}月${d.getDate()}日（${dow}）` : `${d.getMonth()+1}月${d.getDate()}日（${dow}）${startTime}`;
-    const updateRow = {next_lesson_at: nextAt, next_lesson_end_at: nextEndAt, next_lesson: label};
+    const notesVal = (document.getElementById('_calMemoIn')?.value || '').trim() || null;
+    const updateRow = {next_lesson_at: nextAt, next_lesson_end_at: nextEndAt, next_lesson: label, next_lesson_notes: notesVal, next_lesson_cancelled: false};
     const s = students.find(x => x.id === _calFormStudentId);
     const hwVal = (document.getElementById('_calHwIn')?.value || '').trim();
     const recChk = document.getElementById('_calRecordPrevChk');
@@ -3699,10 +3715,14 @@ async function enterParent(studentData, selfData) {
     const m = dt.getMonth()+1, d = dt.getDate();
     const dow = ['日','月','火','水','木','金','土'][dt.getDay()];
     const hh = dt.getHours(), mm = String(dt.getMinutes()).padStart(2,'0');
-    let prtTimeStr = `${hh}:${mm}〜`;
+    // 所要時間が既定の1時間なら開始時刻だけ、それ以外（2時間など）だけ「開始〜終了」を出す
+    let prtTimeStr = `${hh}:${mm}`;
     if (s.next_lesson_end_at) {
-      const edt = new Date(s.next_lesson_end_at);
-      prtTimeStr += `${edt.getHours()}:${String(edt.getMinutes()).padStart(2,'0')}`;
+      const durMin = (new Date(s.next_lesson_end_at) - dt) / 60000;
+      if (durMin !== 60) {
+        const edt = new Date(s.next_lesson_end_at);
+        prtTimeStr += `〜${edt.getHours()}:${String(edt.getMinutes()).padStart(2,'0')}`;
+      }
     }
     nlEl.innerHTML = `<div class="prt-new-ticket"><div class="prt-new-ticket-grad"><div class="prt-new-ticket-dots"></div><div class="prt-new-ticket-dots-r"></div><div class="prt-new-ticket-lbl">次回のレッスン日</div><div class="prt-new-ticket-date">${m}月${d}日（${dow}）</div><div class="prt-new-ticket-sep"><div class="prt-new-ticket-sep-l"></div><div class="prt-new-ticket-sep-dash"></div><div class="prt-new-ticket-sep-r"></div></div></div><div class="prt-new-ticket-bot"><div class="prt-new-ticket-time">${prtTimeStr}</div></div></div>`;
   } else {
@@ -6192,10 +6212,14 @@ function renderNextLesson(data) {
   if (dateEl) dateEl.textContent = dateStr2;
   if (rmDt) rmDt.textContent = dateStr2;
   const hh = dt.getHours(), mm = String(dt.getMinutes()).padStart(2,'0');
-  let timeStr2 = `${hh}:${mm}〜`;
+  // 所要時間が既定の1時間なら開始時刻だけ、それ以外（2時間など）だけ「開始〜終了」を出す
+  let timeStr2 = `${hh}:${mm}`;
   if (data.next_lesson_end_at) {
-    const edt = new Date(data.next_lesson_end_at);
-    timeStr2 += `${edt.getHours()}:${String(edt.getMinutes()).padStart(2,'0')}`;
+    const durMin = (new Date(data.next_lesson_end_at) - dt) / 60000;
+    if (durMin !== 60) {
+      const edt = new Date(data.next_lesson_end_at);
+      timeStr2 += `〜${edt.getHours()}:${String(edt.getMinutes()).padStart(2,'0')}`;
+    }
   }
   if (rmTm) rmTm.textContent = timeStr2;
 }
