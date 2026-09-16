@@ -1521,10 +1521,23 @@ body{background:#f0ebe0!important;}
     </div>
   </div>
 
+  <!-- 未接続タブ: LINEでログインしたが既存の生徒と一致せず新規登録されてしまった
+       アカウントを一覧表示し、本来の生徒と手動で紐付けるための画面（2026-09-17〜） -->
+  <div id="tabUnlinkedArea" class="main t-tab-area hidden">
+    <div class="card" style="background:#fff;box-shadow:0 6px 24px rgba(0,40,70,.14);border:none;border-radius:20px;padding:16px 12px 8px;">
+      <div style="padding:0 8px 6px;">
+        <div class="card-title" style="padding:0;font-size:19px;">未接続のLINEアカウント</div>
+        <div style="font-size:11px;color:rgba(0,0,0,.45);margin-top:2px;">LINEで開いたけど、まだどの生徒か紐付いてない人たち</div>
+      </div>
+      <div id="unlinkedListArea" style="padding:8px;"><div class="loading-inline">読み込み中... 🌊</div></div>
+    </div>
+  </div>
+
   <!-- 下タブバー -->
   <div class="t-tab-bar">
     <button class="t-tab-btn active" id="tabCalendar" onclick="switchTab('calendar')"><span class="t-tab-ico">📅</span>カレンダー</button>
     <button class="t-tab-btn" id="tabStudents" onclick="switchTab('students')"><span class="t-tab-ico">👥</span>生徒</button>
+    <button class="t-tab-btn" id="tabUnlinked" onclick="switchTab('unlinked')"><span class="t-tab-ico">🔗</span>未接続</button>
   </div>
 
   <!-- FESテンプレートシート -->
@@ -1664,7 +1677,6 @@ body{background:#f0ebe0!important;}
 
       <!-- glassmorphicステータスカード -->
       <div class="h-glass-cards">
-        <div class="h-glass-card"><div class="h-glass-card-ttl">🔥 連続練習</div><div class="h-glass-card-val" id="homeStreakCard">0日</div></div>
         <div class="h-glass-card"><div class="h-glass-card-ttl">👥 今日の練習</div><div class="h-glass-card-val" id="homeTodayCard">---</div></div>
       </div>
       <!-- ▼▼▼ 新ビーチヘッダー（名前・Lv・EXPゲージ） ▼▼▼ -->
@@ -2621,7 +2633,7 @@ async function loadStudents() {
     }
   } catch(e) {}
   // 最新データをフェッチしてキャッシュ更新
-  const {data, error} = await sb.from('students').select('id,name,nickname,furigana,total_exp,practice_streak,last_practice_date,line_user_id,next_lesson,next_lesson_at,next_lesson_end_at,next_lesson_cancelled,next_lesson_notes,tier,last_lesson_at,access_extended_until,parent_line_id,parent_student_id,songs,timeline,bonus_given,elder_mode,current_char_id,current_char_cm').order('name');
+  const {data, error} = await sb.from('students').select('id,name,nickname,furigana,total_exp,practice_streak,last_practice_date,line_user_id,next_lesson,next_lesson_at,next_lesson_end_at,next_lesson_cancelled,next_lesson_notes,tier,last_lesson_at,access_extended_until,parent_line_id,parent_student_id,songs,timeline,bonus_given,elder_mode,current_char_id,current_char_cm,created_at').order('name');
   if (error) { if (!students.length) toast('生徒データの読み込みに失敗しました'); return; }
   students = data || [];
   try { localStorage.setItem('_tc_stu_v2', JSON.stringify(students)); } catch(e) {}
@@ -2633,13 +2645,16 @@ async function loadStudents() {
 function switchTab(tab) {
   document.getElementById('tabStudentsArea').classList.toggle('hidden',  tab !== 'students');
   document.getElementById('tabCalendarArea').classList.toggle('hidden',  tab !== 'calendar');
+  document.getElementById('tabUnlinkedArea').classList.toggle('hidden',  tab !== 'unlinked');
   document.getElementById('tabStudents').classList.toggle('active',  tab === 'students');
   document.getElementById('tabCalendar').classList.toggle('active',  tab === 'calendar');
+  document.getElementById('tabUnlinked').classList.toggle('active',  tab === 'unlinked');
   if (tab === 'students') loadStudents();
   // カレンダータブは生徒タブを経由せず直接開かれることが多く、その場合studentsが
   // 起動時のキャッシュ(古い可能性がある)のままになり、生徒ピッカーで一部の生徒が
   // 検索できない不具合があったため、ここでも明示的に最新化する
   if (tab === 'calendar') { _calMonthOffset = 0; _calSelectedDate = todayJST(); loadStudents(); _loadTeacherEvents().then(() => _renderCalendar()); }
+  if (tab === 'unlinked') loadStudents().then(renderUnlinkedTab);
 }
 
 function _lessonDateInMonth(dateStr, ym) {
@@ -2884,7 +2899,12 @@ function _renderCalMonth(year, month) {
       h += '<div class="cal-chips">';
       evs.forEach(ev => {
         const c = ev.color || '#3b82f6';
-        const label = ev.start_time ? `${ev.start_time.split(':')[0]} ${ev.title}` : ev.title;
+        // メモが付いている予定は、月グリッドの狭いチップにも名前の横に先頭数文字だけ
+        // プレビューする（例:「星出さん　ビートカフェで…」）。全文はその日をタップした
+        // 詳細画面で見える
+        const notesSnip = ev.notes ? '　' + ev.notes.slice(0, 8) + (ev.notes.length > 8 ? '…' : '') : '';
+        const titlePart = ev.title + notesSnip;
+        const label = ev.start_time ? `${ev.start_time.split(':')[0]} ${titlePart}` : titlePart;
         if (ev.start_time) {
           h += `<div class="cal-chip" style="background:rgba(255,255,255,.82);border:1.5px solid ${c};color:#222;padding:1px 2px;">${esc(label)}</div>`;
         } else {
@@ -3172,19 +3192,11 @@ async function _calOpenStudentPicker() {
     const lastD = s.last_lesson_at ? s.last_lesson_at.slice(5,10).replace('-','/') : '未来訪';
     return `<div onclick="_calPickerSelectStudent('${s.id}','${escJs(displayName(s))}')" data-pname="${esc(_stuSearchText(s))}" style="padding:10px 12px;cursor:pointer;border-radius:10px;border:1.5px solid #e2e8f0;background:white;"><div style="font-size:14px;font-weight:700;color:#1e293b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(displayName(s))}</div><div style="font-size:10px;color:rgba(0,0,0,.35);margin-top:1px;">${lastD}</div></div>`;
   };
-  // その日にちょうど次回予約が入っている生徒をサジェストとして先頭に出す
-  // （レッスン中にその場でカレンダーへ次回予約を入れるケースでは、その日時に元々予約が
-  // 入っている＝目の前にいる生徒である可能性が高いため）
-  const suggested = _calFormDate ? students.filter(s => !_parentIds.has(s.id) && s.next_lesson_at && s.next_lesson_at.slice(0,10) === _calFormDate) : [];
-  const suggestedIds = new Set(suggested.map(s => s.id));
-  const rest = all.filter(s => !suggestedIds.has(s.id));
-  let items = '';
-  if (suggested.length) {
-    items += `<div style="grid-column:1/-1;font-size:11px;font-weight:800;color:#f97316;margin:2px 0 2px;">📅 この日の予約</div>`;
-    items += suggested.map(renderItem).join('');
-    items += `<div style="grid-column:1/-1;font-size:11px;font-weight:700;color:rgba(0,0,0,.35);margin:10px 0 2px;">その他の生徒</div>`;
-  }
-  items += rest.map(renderItem).join('');
+  // 以前は「この日の予約」として次回予約が同日の生徒を先頭に出していたが、
+  // 検索して入力し始めるとこの見出しごとサジェストが埋もれて見えなくなり、
+  // かえって使いにくいとの指摘があったため撤去（2026-09-17）。素直に全生徒を
+  // 直近来訪順で出し、検索窓での絞り込みに任せる。
+  const items = all.map(renderItem).join('');
   let h = `<div id="_calStudentPickerModal" style="position:fixed;inset:0;z-index:800;background:rgba(0,0,0,.5);display:flex;flex-direction:column;" onclick="if(event.target===this)this.remove();">`;
   h += `<div style="flex:1;min-height:0;display:flex;flex-direction:column;background:white;margin-top:80px;border-radius:20px 20px 0 0;padding:16px 16px 0;">`;
   h += `<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-shrink:0;"><div style="font-size:15px;font-weight:900;color:${oc};">生徒を選ぶ</div><button onclick="document.getElementById('_calStudentPickerModal').remove()" style="width:28px;height:28px;border:none;background:rgba(0,0,0,.08);border-radius:50%;font-size:13px;cursor:pointer;font-family:var(--hf);">✕</button></div>`;
@@ -3674,6 +3686,81 @@ function renderStudentList() {
     return html;
   }).join('');
   renderMonthSummary();
+}
+
+// =====================================================================
+// ★ 未接続LINEアカウントの紐付け（2026-09-17〜）
+// LINEで開いたが既存の生徒の誰とも一致せず、自動的に新規アカウントとして
+// 登録されてしまったケースの受け皿。名前は予約時の呼び名(TimeTree・口頭・
+// インスタ等)とLINEの表示名が一致しない前提で、先生が候補から選んで手動で
+// 紐付ける。あだ名未設定・練習実績ゼロ・誰の保護者でもない、という条件で
+// 「まだ何も使っていない自動登録アカウント」を判定している。
+// =====================================================================
+function _isOrphanAccount(s) {
+  return !!s.line_user_id && !s.nickname && !s.parent_student_id && !(s.total_exp > 0);
+}
+
+function renderUnlinkedTab() {
+  const area = document.getElementById('unlinkedListArea');
+  if (!area) return;
+  const orphans = students.filter(_isOrphanAccount).sort((a,b) => (b.created_at||'').localeCompare(a.created_at||''));
+  if (!orphans.length) { area.innerHTML = `<div class="si2-empty">未接続のアカウントはありません 🌊</div>`; return; }
+  area.innerHTML = orphans.map(o => {
+    const d = o.created_at ? new Date(o.created_at) : null;
+    const dLabel = d ? `${d.getMonth()+1}/${d.getDate()} 初回ログイン` : '';
+    return `<div class="si2-row" onclick="_openUnlinkedMatch('${o.id}')">
+      <div style="display:flex;align-items:center;gap:8px;min-width:0;flex:1;">
+        <span class="si2-name">${esc(o.name)}</span>
+      </div>
+      <span style="font-size:11px;color:rgba(0,0,0,.4);flex-shrink:0;">${dLabel}</span>
+    </div>`;
+  }).join('');
+}
+
+let _unlinkedTargetId = null;
+function _openUnlinkedMatch(orphanId) {
+  document.getElementById('_unlinkedMatchModal')?.remove();
+  _unlinkedTargetId = orphanId;
+  const orphan = students.find(s => s.id === orphanId);
+  if (!orphan) return;
+  const orphanTime = orphan.created_at ? new Date(orphan.created_at).getTime() : null;
+  const candidates = students.filter(s => !s.line_user_id && !s.parent_student_id && s.id !== orphanId)
+    .slice()
+    .sort((a, b) => {
+      const at = (orphanTime && a.next_lesson_at) ? Math.abs(new Date(a.next_lesson_at).getTime() - orphanTime) : Infinity;
+      const bt = (orphanTime && b.next_lesson_at) ? Math.abs(new Date(b.next_lesson_at).getTime() - orphanTime) : Infinity;
+      return at - bt;
+    });
+  const oc = 'var(--ocean-mid)';
+  const itemsHtml = candidates.length ? candidates.map(c => {
+    const nl = c.next_lesson_at ? new Date(c.next_lesson_at).toLocaleString('ja-JP', {month:'numeric', day:'numeric', hour:'2-digit', minute:'2-digit'}) : '予約なし';
+    return `<div onclick="_confirmUnlinkedMatch('${c.id}')" style="padding:12px;margin-bottom:8px;border-radius:10px;border:1.5px solid #e2e8f0;background:white;cursor:pointer;">
+      <div style="font-size:14px;font-weight:700;color:#1e293b;">${esc(displayName(c))}</div>
+      <div style="font-size:11px;color:rgba(0,0,0,.4);margin-top:2px;">次回予約: ${esc(nl)}</div>
+    </div>`;
+  }).join('') : `<div class="si2-empty">紐付け候補の生徒がいません</div>`;
+  let h = `<div id="_unlinkedMatchModal" style="position:fixed;inset:0;z-index:900;background:rgba(0,0,0,.5);display:flex;flex-direction:column;" onclick="if(event.target===this)this.remove();">`;
+  h += `<div style="flex:1;min-height:0;display:flex;flex-direction:column;background:white;margin-top:80px;border-radius:20px 20px 0 0;padding:16px 16px 0;">`;
+  h += `<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;flex-shrink:0;"><div style="font-size:15px;font-weight:900;color:${oc};">「${esc(orphan.name)}」は誰？</div><button onclick="document.getElementById('_unlinkedMatchModal').remove()" style="width:28px;height:28px;border:none;background:rgba(0,0,0,.08);border-radius:50%;font-size:13px;cursor:pointer;font-family:var(--hf);">✕</button></div>`;
+  h += `<div style="font-size:11px;color:rgba(0,0,0,.45);margin-bottom:12px;flex-shrink:0;">次回予約がログイン時刻に近い順に出してます</div>`;
+  h += `<div style="flex:1;overflow-y:auto;padding-bottom:40px;">${itemsHtml}</div>`;
+  h += `</div></div>`;
+  document.body.insertAdjacentHTML('beforeend', h);
+}
+
+async function _confirmUnlinkedMatch(candidateId) {
+  const orphan = students.find(s => s.id === _unlinkedTargetId);
+  const cand = students.find(s => s.id === candidateId);
+  if (!orphan || !cand) return;
+  if (!confirm(`「${orphan.name}」は本当に${displayName(cand)}さんですか？\n\nこの操作は元に戻せません。`)) return;
+  const {error: e1} = await sb.from('students').update({line_user_id: orphan.line_user_id}).eq('id', cand.id);
+  if (e1) { toast('紐付けに失敗しました'); return; }
+  const {error: e2} = await sb.from('students').delete().eq('id', orphan.id);
+  if (e2) toast('本体は紐付きましたが、重複アカウントの削除に失敗しました');
+  document.getElementById('_unlinkedMatchModal')?.remove();
+  toast(`✅ ${displayName(cand)}さんと紐付けました`);
+  await loadStudents();
+  renderUnlinkedTab();
 }
 
 // 先生画面での表示名（あだ名）を編集する。LINE登録時の自動紐付けに使う
@@ -5763,9 +5850,6 @@ function updatePracticeBtn(streak, lastDate) {
   // ゲスト向けLINE誘導
   const ctaEl = document.getElementById('guestLineCta');
   if (ctaEl) ctaEl.style.display = isGuest ? '' : 'none';
-  // glassmorphicカード更新（連続練習）
-  const streakCardEl = document.getElementById('homeStreakCard');
-  if (streakCardEl) streakCardEl.textContent = streak > 0 ? `${streak}日連続` : 'まだ0日';
 }
 
 
