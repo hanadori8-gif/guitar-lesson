@@ -5595,9 +5595,14 @@ function updatePracticeBtn(streak, lastDate) {
   const hint  = document.getElementById('streakHint');
   const xpBadge = document.getElementById('practiceXpBadge');
   if (btn && !_tutV2Active) {
-    btn.disabled = false;
+    // doneの時はdisabledにもする。以前は見た目だけ薄くしてクリック自体は
+    // 常に通っていたため、ログインし直した直後などに「また押せるボタン」に
+    // 見えてしまっていた（実際の二重加算はサーバー側の対策で防止済みだが、
+    // 押せているように見えること自体が紛らわしいとの指摘）。
+    btn.disabled = done;
     btn.style.opacity = done ? '0.22' : '';
     btn.style.filter  = done ? 'saturate(0.4)' : '';
+    btn.style.cursor  = done ? 'default' : '';
   }
   if (label && !_tutV2Active) {
     label.textContent = done ? '明日も頑張ろう！' : '練習する！';
