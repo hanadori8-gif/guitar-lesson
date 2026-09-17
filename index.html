@@ -1475,7 +1475,7 @@ body{background:#f0ebe0!important;}
         <input type="text" id="stuSearchInput" placeholder="生徒名で検索" oninput="_onStuSearch(this.value)">
       </div>
       <div class="si2-sortrow" style="margin:0 8px;">
-        <button class="si2-sorttab" onclick="_setStuSort('reg')" id="ssReg">登録順</button>
+        <button class="si2-sorttab" onclick="_setStuSort('reg')" id="ssReg">あいうえお順</button>
         <button class="si2-sorttab active" onclick="_setStuSort('recent')" id="ssRecent">直近来た順</button>
         <button class="si2-sorttab" onclick="_setStuSort('old')" id="ssOld">来ていない順</button>
       </div>
@@ -2477,6 +2477,11 @@ async function teacherLogout() {
   students = []; teacherSid = null;
 }
 
+// =====================================================================
+// ★ レッスン記録フォーム（カレンダー日付ポップアップの「記録」から開く）
+// =====================================================================
+let _seqMode = false, _seqStudents = [], _seqIdx = 0;
+
 // カレンダー日付ポップアップの生徒行にある操作メニュー（直前キャンセル／予約削除）
 function _closeCalStuModal() { const m = document.getElementById('_calStuModal'); if (m) m.remove(); }
 function _calStuMenu(sid, dateStr) {
@@ -2512,6 +2517,52 @@ async function _calStuCancel(sid, type, dateStr) {
   toast(type === 'cancel' ? '⚡ 直前キャンセルしました' : '🗑 削除しました');
 }
 
+function _closeSeqForm() {
+  const ov = document.getElementById('seqFormViewOv');
+  if (ov) ov.style.display = 'none';
+}
+function _showSeqFormOverlay() {
+  const ov = document.getElementById('seqFormViewOv');
+  if (ov) ov.style.display = 'flex';
+}
+function _showSeqForm() {
+  const s = _seqStudents[_seqIdx];
+  if (!s) return;
+  teacherSid = s.id;
+  _showSeqFormOverlay();
+  document.getElementById('seqProgress').textContent = (_seqIdx + 1) + ' / ' + _seqStudents.length + '人目';
+  document.getElementById('seqStudentName').textContent = displayName(s);
+  document.getElementById('hwIn').value = '';
+  document.getElementById('songIn').value = '';
+  const _pIn = document.getElementById('praiseIn');
+  if (_pIn) _pIn.value = '';
+  const _dIn = document.getElementById('nextLessonDateIn');
+  const _tIn = document.getElementById('nextLessonTimeIn');
+  if (_dIn && _tIn) {
+    if (s.next_lesson_at) {
+      const _nd = new Date(s.next_lesson_at);
+      _dIn.value = _nd.toISOString().slice(0,10);
+      _tIn.value = _nd.toTimeString().slice(0,5);
+    } else { _dIn.value = ''; _tIn.value = new Date().toTimeString().slice(0,2) + ':00'; }
+  }
+  todayChecked[teacherSid] = todayChecked[teacherSid] || [];
+}
+
+function _seqNext() {
+  _seqIdx++;
+  if (_seqIdx >= _seqStudents.length) {
+    _exitSeqMode();
+    toast('🎉 全員の記録が完了しました！');
+  } else {
+    _showSeqForm();
+  }
+}
+
+function _exitSeqMode() {
+  _seqMode = false; _seqStudents = []; _seqIdx = 0;
+  _closeSeqForm();
+  loadStudents();
+}
 
 // =====================================================================
 // ★ 先生モード
@@ -3380,7 +3431,10 @@ function renderStudentList() {
       return a.last_lesson_at > b.last_lesson_at ? 1 : -1;
     });
   } else {
-    sorted = [...students];
+    // あいうえお順: ふりがな登録済みならそれを使い、未登録の漢字名は正確な読みを
+    // 推定できないため、localeCompare('ja')によるおおまかな並び（Intlの日本語照合
+    // 規則まかせ）で代用する（2026-09-17〜）
+    sorted = [...students].sort((a, b) => (a.furigana || displayName(a) || '').localeCompare(b.furigana || displayName(b) || '', 'ja'));
   }
 
   // 子として参照されている親アカウントIDセット（全生徒から取得）

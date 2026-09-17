@@ -1475,7 +1475,7 @@ body{background:#f0ebe0!important;}
         <input type="text" id="stuSearchInput" placeholder="生徒名で検索" oninput="_onStuSearch(this.value)">
       </div>
       <div class="si2-sortrow" style="margin:0 8px;">
-        <button class="si2-sorttab" onclick="_setStuSort('reg')" id="ssReg">登録順</button>
+        <button class="si2-sorttab" onclick="_setStuSort('reg')" id="ssReg">あいうえお順</button>
         <button class="si2-sorttab active" onclick="_setStuSort('recent')" id="ssRecent">直近来た順</button>
         <button class="si2-sorttab" onclick="_setStuSort('old')" id="ssOld">来ていない順</button>
       </div>
@@ -3431,7 +3431,10 @@ function renderStudentList() {
       return a.last_lesson_at > b.last_lesson_at ? 1 : -1;
     });
   } else {
-    sorted = [...students];
+    // あいうえお順: ふりがな登録済みならそれを使い、未登録の漢字名は正確な読みを
+    // 推定できないため、localeCompare('ja')によるおおまかな並び（Intlの日本語照合
+    // 規則まかせ）で代用する（2026-09-17〜）
+    sorted = [...students].sort((a, b) => (a.furigana || displayName(a) || '').localeCompare(b.furigana || displayName(b) || '', 'ja'));
   }
 
   // 子として参照されている親アカウントIDセット（全生徒から取得）
