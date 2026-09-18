@@ -5085,7 +5085,12 @@ function switchSTab(tab) {
 // 呼ぶことで、ホーム画面のキャラアイコンにも復元結果を反映させる。
 function _restoreCharFromDb(sid, studentData) {
   if (!sid || !studentData || !studentData.current_char_id) return;
-  if (localStorage.getItem('sub_starter_' + sid)) return;
+  // 以前は「このsidを一度でも復元済みなら以後はスキップ」というガードがあったが、
+  // 先生が複数の生徒を続けて「入場」する運用ではsub_selected_char等が生徒ID別に
+  // 分かれておらず、Aさんを見た後にBさんを見て、また同じセッション内でAさんに
+  // 戻ると、DBのAさんの値ではなくBさんの選択がまだ残って表示されてしまっていた
+  // （2026-09-19発見）。DBの値は`_syncCurrentChar()`で常に最新化されている前提の
+  // ため、毎回DBの値で上書きしてよい。
   const _dbCharId = studentData.current_char_id;
   if (!CHARS.some(c => c.id === _dbCharId)) return;
   localStorage.setItem('sub_starter_' + sid, _dbCharId);
