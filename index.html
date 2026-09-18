@@ -2399,6 +2399,7 @@ window.addEventListener('load', () => {
     return;
   }
   sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  _loadFesInfoFromDb();
 
   // ① 即座にログイン画面を表示（LIFFを待たない）
   goScreen('sRole');
@@ -7392,12 +7393,38 @@ function _prtMusicBtnTap() {
   });
 }
 
-function saveFesInfo() {
+// FES情報(発表会の名前・日時・会場・テンプレート)の正はDBのteacher_settings。
+// 以前は先生の端末のlocalStorageにしか保存されておらず、生徒・保護者の画面には
+// 一切届かず、いつまでもデフォルト値のままになっていた（2026-09-19発見）。
+// teacher_settingsは読み取りが匿名でも可（発表会の日時・会場のみの公開情報）、
+// 書き込みは先生(ログイン済み)だけ。localStorageはオフライン時用のキャッシュ。
+const _FES_KEYS = ['fes_name','fes_date','fes_time','fes_venue','fes_template'];
+
+async function _loadFesInfoFromDb() {
+  try {
+    const {data, error} = await sb.from('teacher_settings').select('key,value').in('key', _FES_KEYS);
+    if (error || !data || !data.length) return;
+    data.forEach(r => { if (r.value) localStorage.setItem(r.key, r.value); });
+    _applyFesTemplate();
+    _renderFesCard();
+    _renderParentFesCard();
+  } catch(e) {}
+}
+
+async function _saveFesSetting(key, value) {
+  localStorage.setItem(key, value);
+  const {error} = await sb.from('teacher_settings').upsert({key, value, updated_at: new Date().toISOString()});
+  if (error) toast('生徒さんの画面への反映に失敗しました。ネットを確認してください');
+}
+
+async function saveFesInfo() {
   const val = id => (document.getElementById(id).value.trim());
-  localStorage.setItem('fes_name',  val('fesEditName')  || '夏フェス');
-  localStorage.setItem('fes_date',  val('fesEditDate')  || '9/5');
-  localStorage.setItem('fes_time',  val('fesEditTime')  || '17:30');
-  localStorage.setItem('fes_venue', val('fesEditVenue') || '福村眼科');
+  await Promise.all([
+    _saveFesSetting('fes_name',  val('fesEditName')  || '夏フェス'),
+    _saveFesSetting('fes_date',  val('fesEditDate')  || '9/5'),
+    _saveFesSetting('fes_time',  val('fesEditTime')  || '17:30'),
+    _saveFesSetting('fes_venue', val('fesEditVenue') || '福村眼科'),
+  ]);
   _renderFesCard();
   closeFesTemplateSheet();
   toast('FES情報を保存しました ✅');
@@ -7428,7 +7455,7 @@ function closeFesTemplateSheet() {
 }
 
 function selectFesTemplate(id) {
-  localStorage.setItem('fes_template', id);
+  _saveFesSetting('fes_template', id);
   _applyFesTemplate();
   openFesTemplateSheet();
 }
