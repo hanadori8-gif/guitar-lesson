@@ -2571,12 +2571,43 @@ async function enterTeacher() {
   goScreen('sTeacher');
   switchTab('calendar');
   await loadStudents();
+  await _autoRecordOverdueLessons();
   // リアルタイム更新（先生画面も）。認証状態の変化でenterTeacherが複数回呼ばれても
   // 購読が重複して溜まらないよう、既存の購読があれば先に解除する。
   if (teacherChannel) { sb.removeChannel(teacherChannel); teacherChannel = null; }
   teacherChannel = sb.channel('students-teacher')
     .on('postgres_changes', {event:'*', schema:'public', table:'students'}, () => loadStudents())
     .subscribe();
+}
+
+// 次回予約(next_lesson_at)の日付を過ぎても、次の予約を入れる操作をしないと
+// 「来訪記録」としてtimelineに残らず、収益サマリー・いきもの解放の回数判定
+// （どちらもtimelineのlesson件数を見ている）に反映されないという指摘のため、
+// 予約日を過ぎたレッスンは次回予約が未定でも自動で「実施済み」扱いにする。
+// 直前キャンセル済み(next_lesson_cancelled)のものは実施されていないので対象外。
+// next_lesson_atはnullに戻す(=次回未定の状態)が、カレンダーからその日の予定が
+// 消えないよう、他の保存処理と同じくteacher_eventsへ退避してから処理する。
+async function _autoRecordOverdueLessons() {
+  const today = todayJST();
+  const activeStu = students.filter(s => !s.parent_student_id);
+  const overdue = activeStu.filter(s => s.next_lesson_at && s.next_lesson_at.slice(0,10) < today && !s.next_lesson_cancelled);
+  if (!overdue.length) return;
+  for (const s of overdue) {
+    const oldD = new Date(s.next_lesson_at);
+    const oldStart = oldD.toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit',hour12:false});
+    const oldEnd = s.next_lesson_end_at ? new Date(s.next_lesson_end_at).toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit',hour12:false}) : null;
+    await sb.from('teacher_events').insert({
+      title: displayName(s), color: '#f97316', event_date: s.next_lesson_at.slice(0,10),
+      start_time: oldStart, end_time: oldEnd, is_recurring: false, student_id: s.id
+    });
+    const prevDateStr = s.next_lesson_at.slice(0,10).replace(/-/g,'/');
+    const newTimeline = [{type:'lesson', text:'レッスン来訪', exp:50, date: prevDateStr}, ...(s.timeline || [])].slice(0, 150);
+    await sb.from('students').update({
+      timeline: newTimeline, total_exp: (s.total_exp || 0) + 50, last_lesson_at: s.next_lesson_at,
+      next_lesson_at: null, next_lesson_end_at: null, next_lesson: null, next_lesson_notes: null,
+    }).eq('id', s.id);
+  }
+  await loadStudents();
 }
 
 function _isCalendarVisible() {
