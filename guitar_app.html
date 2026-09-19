@@ -2819,6 +2819,61 @@ function _calShowDayPopup(dateStr) {
   document.body.appendChild(ov);
 }
 
+function _calOpenSearch() {
+  document.getElementById('_calSearchModal')?.remove();
+  const h = `<div id="_calSearchModal" style="position:fixed;inset:0;z-index:800;background:rgba(0,0,0,.5);display:flex;flex-direction:column;" onclick="if(event.target===this)this.remove();">
+    <div style="flex:1;min-height:0;display:flex;flex-direction:column;background:white;margin-top:80px;border-radius:20px 20px 0 0;padding:16px 16px 0;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-shrink:0;"><div style="font-size:15px;font-weight:900;color:var(--ocean-mid);">🔍 生徒の予約を探す</div><button onclick="document.getElementById('_calSearchModal').remove()" style="width:28px;height:28px;border:none;background:rgba(0,0,0,.08);border-radius:50%;font-size:13px;cursor:pointer;font-family:var(--hf);">✕</button></div>
+      <input id="_calSearchIn" type="text" placeholder="名前・あだ名・ふりがな" oninput="_calSearchRender(this.value)" style="width:100%;padding:10px 12px;border:1.5px solid #e2e8f0;border-radius:10px;font-size:14px;font-family:var(--hf);box-sizing:border-box;margin-bottom:10px;flex-shrink:0;">
+      <div id="_calSearchList" style="flex:1;overflow-y:auto;padding-bottom:40px;"><div style="text-align:center;color:rgba(0,0,0,.35);font-size:13px;padding:24px 0;">名前を入れるとその生徒の予約日が出るで</div></div>
+    </div></div>`;
+  document.body.insertAdjacentHTML('beforeend', h);
+  setTimeout(() => document.getElementById('_calSearchIn')?.focus(), 50);
+}
+function _calSearchRender(q) {
+  const list = document.getElementById('_calSearchList');
+  if (!list) return;
+  const ql = (q || '').trim().toLowerCase();
+  if (!ql) { list.innerHTML = '<div style="text-align:center;color:rgba(0,0,0,.35);font-size:13px;padding:24px 0;">名前を入れるとその生徒の予約日が出るで</div>'; return; }
+  const matched = students.filter(s => _stuSearchText(s).toLowerCase().includes(ql));
+  const rows = [];
+  matched.forEach(s => {
+    if (s.next_lesson_at) {
+      const t = new Date(s.next_lesson_at).toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit',hour12:false});
+      rows.push({date: s.next_lesson_at.slice(0,10), time: t, name: displayName(s), cancelled: !!s.next_lesson_cancelled});
+    }
+    _teacherEvents.filter(ev => ev.student_id === s.id && !ev.is_recurring && ev.event_date).forEach(ev => {
+      rows.push({date: ev.event_date, time: ev.start_time || '', name: displayName(s), cancelled: false});
+    });
+  });
+  _teacherEvents.filter(ev => !ev.student_id && !ev.is_recurring && ev.event_date && (ev.title || '').toLowerCase().includes(ql)).forEach(ev => {
+    rows.push({date: ev.event_date, time: ev.start_time || '', name: ev.title, cancelled: false});
+  });
+  if (!rows.length) { list.innerHTML = '<div style="text-align:center;color:rgba(0,0,0,.35);font-size:13px;padding:24px 0;">見つからへんかった</div>'; return; }
+  const today = todayJST();
+  const dow = ['日','月','火','水','木','金','土'];
+  const item = r => {
+    const d = new Date(r.date + 'T00:00:00');
+    return `<div onclick="_calJumpToDate('${r.date}')" style="display:flex;align-items:center;gap:10px;padding:11px 12px;margin-bottom:6px;border:1.5px solid #e2e8f0;border-radius:10px;cursor:pointer;${r.cancelled?'opacity:.45;':''}"><div style="font-size:14px;font-weight:800;color:#1e293b;min-width:104px;">${d.getFullYear()}/${d.getMonth()+1}/${d.getDate()}（${dow[d.getDay()]}）</div><div style="font-size:13px;color:var(--ocean-deep);font-weight:700;">${esc(r.time)}</div><div style="flex:1;font-size:13px;color:rgba(0,0,0,.55);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${esc(r.name)}${r.cancelled?'（キャンセル）':''}</div></div>`;
+  };
+  const key = r => r.date + ' ' + r.time;
+  const upcoming = rows.filter(r => r.date >= today).sort((a,b) => key(a).localeCompare(key(b)));
+  const past = rows.filter(r => r.date < today).sort((a,b) => key(b).localeCompare(key(a)));
+  let h = '';
+  if (upcoming.length) h += `<div style="font-size:11px;font-weight:800;color:rgba(0,0,0,.4);margin:2px 0 6px;">これから（${upcoming.length}件）</div>` + upcoming.map(item).join('');
+  if (past.length) h += `<div style="font-size:11px;font-weight:800;color:rgba(0,0,0,.4);margin:12px 0 6px;">過去（${past.length}件）</div>` + past.map(item).join('');
+  list.innerHTML = h;
+}
+function _calJumpToDate(dateStr) {
+  document.getElementById('_calSearchModal')?.remove();
+  const now = new Date();
+  const y = parseInt(dateStr.slice(0,4), 10), m = parseInt(dateStr.slice(5,7), 10) - 1;
+  _calMonthOffset = (y - now.getFullYear()) * 12 + (m - now.getMonth());
+  _calSelectedDate = dateStr;
+  _renderCalendar();
+  _calShowDayPopup(dateStr);
+}
+
 function _renderCalendar() {
   const wrap = document.getElementById('calWrap');
   if (!wrap) return;
@@ -2832,6 +2887,7 @@ function _renderCalendar() {
   html += `<div><div class="cal-nav-title">${yr}年 ${mNames[mo]}</div>`;
   if (!isThisMonth) html += `<button class="cal-today-btn" onclick="_calMonthOffset=0;_calSelectedDate=todayJST();_renderCalendar()">今月に戻る</button>`;
   html += `</div>`;
+  html += `<button onclick="_calOpenSearch()" style="font-size:11px;font-weight:700;padding:5px 10px;border-radius:20px;border:1.5px solid var(--ocean-mid);background:rgba(0,110,170,.07);color:var(--ocean-deep);cursor:pointer;font-family:var(--hf);">🔍</button>`;
   html += `<button onclick="openMonthlySummary()" style="font-size:11px;font-weight:700;padding:5px 14px;border-radius:20px;border:1.5px solid var(--ocean-mid);background:rgba(0,110,170,.07);color:var(--ocean-deep);cursor:pointer;font-family:var(--hf);">📊 サマリー</button>`;
   html += `<div class="cal-nav-arrows"><button class="cal-nav-btn" onclick="_calChangeMonth(-1)">‹</button><button class="cal-nav-btn" onclick="_calChangeMonth(1)">›</button></div>`;
   html += `</div>`;
