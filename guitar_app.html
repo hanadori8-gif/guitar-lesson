@@ -3301,11 +3301,18 @@ async function _calSaveForm(defaultDate) {
       const oldD = new Date(_latestStu.next_lesson_at);
       const oldStart = oldD.toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit',hour12:false});
       const oldEnd = _latestStu.next_lesson_end_at ? new Date(_latestStu.next_lesson_end_at).toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit',hour12:false}) : null;
-      await sb.from('teacher_events').insert({
-        title: displayName(s), color: '#f97316', event_date: _latestStu.next_lesson_at.slice(0,10),
-        start_time: oldStart, end_time: oldEnd, is_recurring: false, student_id: _calFormStudentId
-      });
+      // 既に同じ日・同じ開始時刻で退避済みなら二重に入れない（2件目以降の予約入力時の重複表示の原因）
+      const oldDateStr = _latestStu.next_lesson_at.slice(0,10);
+      const {data: _dupArch} = await sb.from('teacher_events').select('id').eq('student_id', _calFormStudentId).eq('event_date', oldDateStr).eq('start_time', oldStart).limit(1);
+      if (!_dupArch || !_dupArch.length) {
+        await sb.from('teacher_events').insert({
+          title: displayName(s), color: '#f97316', event_date: oldDateStr,
+          start_time: oldStart, end_time: oldEnd, is_recurring: false, student_id: _calFormStudentId
+        });
+      }
     }
+    // 今回登録する日付が過去に退避済みの同日予約と重なる場合は、退避側を消して本体予約に一本化する
+    await sb.from('teacher_events').delete().eq('student_id', _calFormStudentId).eq('event_date', defaultDate);
     const {error} = await sb.from('students').update(updateRow).eq('id', _calFormStudentId);
     if (error) { toast('保存に失敗しました'); return; }
     document.getElementById('_calModal')?.remove();
