@@ -2654,7 +2654,13 @@ function _lessonDateInMonth(dateStr, ym) {
   return dateStr.replace(/\//g, '-').slice(0, 7) === ym;
 }
 function renderMonthSummary() {
-  const thisMonth = new Date(Date.now() + 9*3600*1000).toISOString().slice(0,7);
+  // カレンダーで表示中の月（_calMonthOffset）に連動させる。以前は常に実際の今月で
+  // 固定されていて、カレンダーの月を送ってもサマリーの数字が変わらない不具合があった。
+  const base = new Date();
+  const _sy = base.getFullYear() + Math.floor((base.getMonth() + _calMonthOffset) / 12);
+  const _sm = ((base.getMonth() + _calMonthOffset) % 12 + 12) % 12;
+  const thisMonth = `${_sy}-${String(_sm+1).padStart(2,'0')}`;
+  const isCurrentMonth = _calMonthOffset === 0;
   const activeStu = students.filter(s => !s.parent_student_id);
   const lessonFee = parseInt(localStorage.getItem('lesson_fee_regular') || '4000', 10);
   let lessonCount = 0;
@@ -2696,14 +2702,15 @@ function renderMonthSummary() {
   const remainingLessons = Math.max(0, Math.ceil((GOAL_REVENUE - totalRevenue) / lessonFee));
   const content = document.getElementById('monthlySummaryContent');
   if (!content) return;
+  const monthLabel = `${_sy}年${_sm+1}月`;
   content.innerHTML = `
-    <div style="text-align:center;background:#fff7ed;border-radius:12px;padding:14px 8px;margin-bottom:14px;">
+    ${isCurrentMonth ? `<div style="text-align:center;background:#fff7ed;border-radius:12px;padding:14px 8px;margin-bottom:14px;">
       ${remainingLessons > 0
         ? `<div style="font-size:15px;font-weight:700;color:#334155;">40万まであと<span style="font-size:30px;font-weight:900;color:#c2620a;margin:0 3px;">${remainingLessons}</span>レッスン</div>`
         : `<div style="font-size:20px;font-weight:900;color:#c2620a;">🎉 今月40万円達成！</div>`}
-    </div>
+    </div>` : ''}
     <div style="background:#f0fdf4;border-radius:12px;padding:14px;margin-bottom:16px;">
-      <div style="font-size:11px;font-weight:700;color:#166534;margin-bottom:4px;">💰 今月の見込み合計</div>
+      <div style="font-size:11px;font-weight:700;color:#166534;margin-bottom:4px;">💰 ${monthLabel}の見込み合計</div>
       <div style="font-size:32px;font-weight:900;color:#16a34a;">¥${totalRevenue.toLocaleString()}</div>
       <div style="font-size:11px;color:#64748b;margin-top:6px;padding-top:6px;border-top:1px dashed #bbf7d0;">レッスン${lessonCount}回＋予約${bookedCount}件 ＝ ${lessonCount + bookedCount}回 × ¥${lessonFee.toLocaleString()}</div>
       <button onclick="editLessonFee()" style="margin-top:10px;font-size:11px;color:#16a34a;background:none;border:1.5px solid #86efac;border-radius:8px;padding:4px 12px;cursor:pointer;font-family:var(--hf);">⚙️ 料金設定</button>
