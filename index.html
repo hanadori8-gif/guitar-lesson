@@ -2590,8 +2590,9 @@ async function enterTeacher() {
 // 消えないよう、他の保存処理と同じくteacher_eventsへ退避してから処理する。
 async function _autoRecordOverdueLessons() {
   const today = todayJST();
-  const activeStu = students.filter(s => !s.parent_student_id);
-  const overdue = activeStu.filter(s => s.next_lesson_at && s.next_lesson_at.slice(0,10) < today && !s.next_lesson_cancelled);
+  // 予約は親子ペアの「子」の行に入るので、parent_student_idを持つ行も除外しない
+  // （以前は子を除外していて、うみかちゃんの過ぎた予約が記録されないままだった）
+  const overdue = students.filter(s => s.next_lesson_at && s.next_lesson_at.slice(0,10) < today && !s.next_lesson_cancelled);
   if (!overdue.length) return;
   for (const s of overdue) {
     const oldD = new Date(s.next_lesson_at);
@@ -2661,38 +2662,45 @@ function renderMonthSummary() {
   const _sm = ((base.getMonth() + _calMonthOffset) % 12 + 12) % 12;
   const thisMonth = `${_sy}-${String(_sm+1).padStart(2,'0')}`;
   const isCurrentMonth = _calMonthOffset === 0;
-  const activeStu = students.filter(s => !s.parent_student_id);
   const lessonFee = parseInt(localStorage.getItem('lesson_fee_regular') || '4000', 10);
-  let lessonCount = 0;
-  const cameCountByName = new Map();
-  const addCame = (name, cnt) => cameCountByName.set(name, (cameCountByName.get(name) || 0) + cnt);
-  activeStu.forEach(s => {
+  const today = todayJST();
+  // 親子ペアは1家族として数える（予約・記録は子の行に入るが、過去には親の行に入った分もある）。
+  // 同じレッスンがtimelineの来訪記録とteacher_eventsの退避予約の両方に残る仕様なので、
+  // 「家族×日付」で重複を除いて数える（以前は単純に足していて実際の約2倍に膨らんでいた）。
+  const famOf = s => s.parent_student_id || s.id;
+  const famName = new Map();
+  students.forEach(s => { if (!famName.has(famOf(s)) || s.parent_student_id) famName.set(famOf(s), displayName(s)); });
+  const famById = new Map(students.map(s => [s.id, famOf(s)]));
+  const doneDates = new Map();
+  const bookedKeys = new Set();
+  const addDone = (fam, d) => { if (!doneDates.has(fam)) doneDates.set(fam, new Set()); doneDates.get(fam).add(d); };
+  students.forEach(s => {
     const tl = typeof s.timeline === 'string' ? JSON.parse(s.timeline || '[]') : (s.timeline || []);
-    const cnt = tl.filter(e => e.type === 'lesson' && _lessonDateInMonth(e.date, thisMonth)).length;
-    if (cnt > 0) { lessonCount += cnt; addCame(displayName(s), cnt); }
+    tl.filter(e => e.type === 'lesson' && _lessonDateInMonth(e.date, thisMonth)).forEach(e => addDone(famOf(s), e.date.replace(/\//g, '-').slice(0,10)));
   });
-  // teacher_eventsに退避された「消化済みの予約」も実施レッスンとして数える。
-  // 次回予約を新しい予約で上書きする前にteacher_eventsへ退避する仕組み上、
-  // 来訪記録として生徒のtimelineには残らないケースがあるため、そちらだけを見ていると
-  // 「レッスンした生徒」の一覧・回数が実際より少なく出てしまう（2026-09-17、
-  // 杉原さんが一覧から丸ごと抜けていた不具合の原因）。
-  const activeStuIds = new Set(activeStu.map(s => s.id));
-  const nameById = new Map(activeStu.map(s => [s.id, displayName(s)]));
+  // teacher_eventsに退避された予約。日付が今日以前なら実施済み、未来日ならまだ予約扱い。
+  const futureArchived = [];
   _teacherEvents.forEach(ev => {
-    if (!ev.student_id || !activeStuIds.has(ev.student_id)) return;
+    if (!ev.student_id || !famById.has(ev.student_id) || ev.is_recurring) return;
     if (!ev.event_date || ev.event_date.slice(0,7) !== thisMonth) return;
-    lessonCount += 1;
-    addCame(nameById.get(ev.student_id) || ev.title, 1);
+    const fam = famById.get(ev.student_id);
+    if (ev.event_date <= today) addDone(fam, ev.event_date); else futureArchived.push([fam, ev.event_date]);
   });
-  const cameNames = [...cameCountByName.entries()].map(([name, cnt]) => ({name, cnt})).sort((a,b) => b.cnt - a.cnt);
-  // 今月中に次回レッスン(予約)がまだ入っている件数。上のteacher_events退避分は
-  // 「消化済み」としてすでに実施レッスン扱いで数えているため、ここには含めない
-  // （含めると同じレッスンが実施分・予約分の両方で二重に集計されてしまう）。
-  let bookedCount = activeStu.filter(s => {
-    if (!s.next_lesson_at) return false;
-    const d = new Date(s.next_lesson_at);
-    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}` === thisMonth;
-  }).length;
+  // 現在の次回予約。キャンセル分は数えない。日付を過ぎていれば実施済み扱い
+  // （自動記録が走る前でも数字が合うようにする）。
+  const futureBooked = [...futureArchived];
+  students.forEach(s => {
+    if (!s.next_lesson_at || s.next_lesson_cancelled) return;
+    const d = new Date(new Date(s.next_lesson_at).getTime() + 9*3600*1000).toISOString().slice(0,10);
+    if (d.slice(0,7) !== thisMonth) return;
+    if (d < today) addDone(famOf(s), d); else futureBooked.push([famOf(s), d]);
+  });
+  futureBooked.forEach(([fam, d]) => { if (!(doneDates.get(fam) || new Set()).has(d)) bookedKeys.add(fam + '|' + d); });
+  let lessonCount = 0;
+  const cameNames = [];
+  doneDates.forEach((set, fam) => { lessonCount += set.size; cameNames.push({name: famName.get(fam) || '？', cnt: set.size}); });
+  cameNames.sort((a,b) => b.cnt - a.cnt);
+  let bookedCount = bookedKeys.size;
   const bookedRevenue = bookedCount * lessonFee;
   const revenue = lessonCount * lessonFee;
   const totalRevenue = revenue + bookedRevenue;
