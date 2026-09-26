@@ -5388,6 +5388,26 @@ function _syncCurrentChar() {
     p_current_char_id: charId, p_current_char_cm: cm
   });
 }
+// エサやりでサイズが変わったら、自分の最新の練習投稿(タイムライン/なかまフィード)の
+// cmも書き換える。投稿にはチェックイン時点のcmが焼き付けられているだけなので、
+// これをしないと他の人から見えるサイズがエサやり前のまま止まる。
+async function _syncPostCm() {
+  if (isGuest || !currentStudentId || !currentStudentData) return;
+  const charId = _subSelectedChar || 'kumanomi';
+  const cm = parseInt(localStorage.getItem('sub_cm_' + charId) || String(SUB_START_CM));
+  if (_tlCache && _tlCache.posts) {
+    const mine = _tlCache.posts.find(p => p.student_id === currentStudentId && (p.char_id || 'kumanomi') === charId && (p.phrase || '').startsWith('{'));
+    if (mine) {
+      try { const m = JSON.parse(mine.phrase); m.cm = cm; mine.phrase = JSON.stringify(m); renderNakamaFeed(_tlCache.posts); } catch(e) {}
+    }
+  }
+  try {
+    await sb.rpc('rpc_update_post_cm', {
+      p_student_id: currentStudentId, p_line_user_id: currentStudentData.line_user_id || currentStudentData.parent_line_id || null,
+      p_char_id: charId, p_cm: cm
+    });
+  } catch(e) {}
+}
 function feedCharSlot(idx) {
   const charId = _subSelectedChar || 'kumanomi';
   const foodKeys = ['sub_food_pellet_' + charId, 'sub_food_lesson_' + charId, 'sub_food_special_' + charId];
@@ -5435,6 +5455,7 @@ function feedCharSlot(idx) {
     localStorage.setItem(cmKey, String(parseInt(localStorage.getItem(cmKey) || String(SUB_START_CM)) + (cmIncsAfterMax[idx] || 3)));
   }
   _syncCurrentChar();
+  _syncPostCm();
   const nowMaxed = g >= 100;
   // 食べ終わりの演出
   setTimeout(() => {
