@@ -2595,13 +2595,32 @@ async function enterTeacher() {
 // 直前キャンセル済み(next_lesson_cancelled)のものは実施されていないので対象外。
 // next_lesson_atはnullに戻す(=次回未定の状態)が、カレンダーからその日の予定が
 // 消えないよう、他の保存処理と同じくteacher_eventsへ退避してから処理する。
+// 認証状態の変化（SIGNED_IN/TOKEN_REFRESHED等）でenterTeacherが短時間に複数回
+// 呼ばれることがあり、前回の呼び出しがDB書き込み中（studentsの再取得が終わる前）に
+// 次の呼び出しが始まると、同じ生徒の同じ予約を二重に処理してしまい、カレンダーに
+// 同じレッスンが2件ずつ入る不具合があった（2026-09-29発覚）。実行中は多重に
+// 走らせないようにする。
+let _autoRecordRunning = false;
 async function _autoRecordOverdueLessons() {
+  if (_autoRecordRunning) return;
+  _autoRecordRunning = true;
+  try {
+    await _autoRecordOverdueLessonsInner();
+  } finally {
+    _autoRecordRunning = false;
+  }
+}
+async function _autoRecordOverdueLessonsInner() {
   const today = todayJST();
   // 予約は親子ペアの「子」の行に入るので、parent_student_idを持つ行も除外しない
   // （以前は子を除外していて、うみかちゃんの過ぎた予約が記録されないままだった）
   const overdue = students.filter(s => s.next_lesson_at && s.next_lesson_at.slice(0,10) < today && !s.next_lesson_cancelled);
   if (!overdue.length) return;
   for (const s of overdue) {
+    // 別タブや直前の呼び出しで既に処理済みでないか、DBの最新値で確認してから処理する
+    // （画面内の多重実行はロックで防げるが、別タブでの同時操作までは防げないため）
+    const {data: _latestStu} = await sb.from('students').select('next_lesson_at').eq('id', s.id).single();
+    if (!_latestStu || _latestStu.next_lesson_at !== s.next_lesson_at) continue;
     const oldD = new Date(s.next_lesson_at);
     const oldStart = oldD.toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit',hour12:false});
     const oldEnd = s.next_lesson_end_at ? new Date(s.next_lesson_end_at).toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit',hour12:false}) : null;
