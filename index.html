@@ -2699,6 +2699,7 @@ function renderMonthSummary() {
   const famById = new Map(students.map(s => [s.id, famOf(s)]));
   const doneDates = new Map();
   const bookedKeys = new Set();
+  const bookedDates = [];
   const addDone = (fam, d) => { if (!doneDates.has(fam)) doneDates.set(fam, new Set()); doneDates.get(fam).add(d); };
   students.forEach(s => {
     const tl = typeof s.timeline === 'string' ? JSON.parse(s.timeline || '[]') : (s.timeline || []);
@@ -2721,7 +2722,7 @@ function renderMonthSummary() {
     if (d.slice(0,7) !== thisMonth) return;
     if (d < today) addDone(famOf(s), d); else futureBooked.push([famOf(s), d]);
   });
-  futureBooked.forEach(([fam, d]) => { if (!(doneDates.get(fam) || new Set()).has(d)) bookedKeys.add(fam + '|' + d); });
+  futureBooked.forEach(([fam, d]) => { if (!(doneDates.get(fam) || new Set()).has(d)) { bookedKeys.add(fam + '|' + d); bookedDates.push(d); } });
   let lessonCount = 0;
   const cameNames = [];
   doneDates.forEach((set, fam) => { lessonCount += set.size; cameNames.push({name: famName.get(fam) || '？', cnt: set.size}); });
@@ -2730,6 +2731,26 @@ function renderMonthSummary() {
   const bookedRevenue = bookedCount * lessonFee;
   const revenue = lessonCount * lessonFee;
   const totalRevenue = revenue + bookedRevenue;
+  // 週ごとの金額（カレンダーの週区切り＝日曜始まりに合わせて集計）
+  const weekFirstDow = new Date(_sy, _sm, 1).getDay();
+  const weekOf = day => Math.floor((weekFirstDow + day - 1) / 7);
+  const weekStats = new Map(); // weekIdx -> {count, minDay, maxDay}
+  const addToWeek = dateStr => {
+    const day = parseInt(dateStr.slice(8, 10), 10);
+    const w = weekOf(day);
+    if (!weekStats.has(w)) weekStats.set(w, {count: 0, minDay: day, maxDay: day});
+    const ws = weekStats.get(w);
+    ws.count++;
+    ws.minDay = Math.min(ws.minDay, day);
+    ws.maxDay = Math.max(ws.maxDay, day);
+  };
+  doneDates.forEach(set => set.forEach(addToWeek));
+  bookedDates.forEach(addToWeek);
+  const weekRows = [...weekStats.keys()].sort((a,b) => a-b).map(w => {
+    const ws = weekStats.get(w);
+    const range = ws.minDay === ws.maxDay ? `${_sm+1}/${ws.minDay}` : `${_sm+1}/${ws.minDay}〜${_sm+1}/${ws.maxDay}`;
+    return {label: range, count: ws.count, revenue: ws.count * lessonFee};
+  });
   // 「あと何レッスンで今月の予約分がいくらになるか」は実際の使い道がなく分かりにくい
   // という指摘があったため、代わりに「月40万円という目標まであと何レッスン必要か」を表示する。
   const GOAL_REVENUE = 400000;
@@ -2749,6 +2770,14 @@ function renderMonthSummary() {
       <div style="font-size:11px;color:#64748b;margin-top:6px;padding-top:6px;border-top:1px dashed #bbf7d0;">レッスン${lessonCount}回＋予約${bookedCount}件 ＝ ${lessonCount + bookedCount}回 × ¥${lessonFee.toLocaleString()}</div>
       <button onclick="editLessonFee()" style="margin-top:10px;font-size:11px;color:#16a34a;background:none;border:1.5px solid #86efac;border-radius:8px;padding:4px 12px;cursor:pointer;font-family:var(--hf);">⚙️ 料金設定</button>
     </div>
+    ${weekRows.length ? `<div style="background:#eff6ff;border-radius:12px;padding:12px 14px;margin-bottom:16px;">
+      <div style="font-size:11px;font-weight:700;color:#1e3a5f;margin-bottom:8px;">📅 週ごとの金額</div>
+      ${weekRows.map(w => `<div style="display:flex;align-items:center;gap:8px;padding:6px 2px;border-bottom:1px solid #dbeafe;">
+        <span style="font-size:12px;font-weight:700;color:#334155;flex:1;">${w.label}</span>
+        <span style="font-size:11px;color:#64748b;">${w.count}回</span>
+        <span style="font-size:13px;font-weight:900;color:#2563eb;">¥${w.revenue.toLocaleString()}</span>
+      </div>`).join('')}
+    </div>` : ''}
     ${cameNames.length ? `<div style="font-size:11px;font-weight:700;color:#475569;margin-bottom:6px;">レッスンした生徒（${cameNames.length}名）</div>
     ${cameNames.map(s => `<div style="display:flex;align-items:center;gap:8px;padding:7px 2px;border-bottom:1px solid #f1f5f9;">
       <span style="font-size:13px;font-weight:700;flex:1;color:#1e293b;">${esc(s.name)}</span>
