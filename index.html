@@ -2731,26 +2731,31 @@ function renderMonthSummary() {
   const bookedRevenue = bookedCount * lessonFee;
   const revenue = lessonCount * lessonFee;
   const totalRevenue = revenue + bookedRevenue;
-  // 週ごとの金額（カレンダーの週区切り＝日曜始まりに合わせて集計）
+  // 週ごとの金額（カレンダーの週区切り＝日曜始まりに合わせて、月内の全週を切れ目なく集計）
   const weekFirstDow = new Date(_sy, _sm, 1).getDay();
+  const daysInMonthForWeek = new Date(_sy, _sm + 1, 0).getDate();
   const weekOf = day => Math.floor((weekFirstDow + day - 1) / 7);
-  const weekStats = new Map(); // weekIdx -> {count, minDay, maxDay}
+  const weekCount = new Map(); // weekIdx -> count
   const addToWeek = dateStr => {
     const day = parseInt(dateStr.slice(8, 10), 10);
     const w = weekOf(day);
-    if (!weekStats.has(w)) weekStats.set(w, {count: 0, minDay: day, maxDay: day});
-    const ws = weekStats.get(w);
-    ws.count++;
-    ws.minDay = Math.min(ws.minDay, day);
-    ws.maxDay = Math.max(ws.maxDay, day);
+    weekCount.set(w, (weekCount.get(w) || 0) + 1);
   };
   doneDates.forEach(set => set.forEach(addToWeek));
   bookedDates.forEach(addToWeek);
-  const weekRows = [...weekStats.keys()].sort((a,b) => a-b).map(w => {
-    const ws = weekStats.get(w);
-    const range = ws.minDay === ws.maxDay ? `${_sm+1}/${ws.minDay}` : `${_sm+1}/${ws.minDay}〜${_sm+1}/${ws.maxDay}`;
-    return {label: range, count: ws.count, revenue: ws.count * lessonFee};
-  });
+  const totalWeeksInMonth = weekOf(daysInMonthForWeek) + 1;
+  const weekRows = [];
+  for (let w = 0; w < totalWeeksInMonth; w++) {
+    let minDay = null, maxDay = null;
+    for (let d = 1; d <= daysInMonthForWeek; d++) {
+      if (weekOf(d) !== w) continue;
+      if (minDay === null) minDay = d;
+      maxDay = d;
+    }
+    const label = minDay === maxDay ? `${_sm+1}/${minDay}` : `${_sm+1}/${minDay}〜${_sm+1}/${maxDay}`;
+    const count = weekCount.get(w) || 0;
+    weekRows.push({label, count, revenue: count * lessonFee});
+  }
   // 「あと何レッスンで今月の予約分がいくらになるか」は実際の使い道がなく分かりにくい
   // という指摘があったため、代わりに「月40万円という目標まであと何レッスン必要か」を表示する。
   const GOAL_REVENUE = 400000;
