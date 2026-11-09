@@ -2636,6 +2636,10 @@ async function _autoRecordOverdueLessonsInner() {
     }).eq('id', s.id);
   }
   await loadStudents();
+  // 移した過去の予約(teacher_events)も読み直す。生徒だけ読み直すと、次回予約は空なのに
+  // 過去の予約の一覧が古いままで、記録した直後はそのレッスンがカレンダーから消えて見える
+  await _loadTeacherEvents();
+  if (_isCalendarVisible()) _renderCalendar();
 }
 
 function _isCalendarVisible() {
