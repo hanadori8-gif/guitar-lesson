@@ -3159,7 +3159,7 @@ function _calOpenAddForm(dateStr, editStudentId) {
   const dowNames = ['日','月','火','水','木','金','土'];
   const dowColors = ['#ef4444','#374151','#374151','#374151','#374151','#374151','#3b82f6'];
   const colors = ['#3b82f6','#10b981','#8b5cf6','#ef4444','#f59e0b','#ec4899','#6b7280'];
-  const defColorIdx = 4;
+  const defColorIdx = 0; // 通常予約の初期色は青。黄(旧初期値)は生徒レッスンの橙と見分けにくかった
   const colorBtns = colors.map((c,i) =>
     `<div onclick="this.parentElement.querySelectorAll('[data-cc]').forEach(x=>x.style.outline='none');this.style.outline='3px solid #333';document.getElementById('_calColorVal').value='${c}';" data-cc="${c}" style="width:28px;height:28px;border-radius:50%;background:${c};cursor:pointer;outline:${i===defColorIdx?'3px solid #333':'none'};"></div>`
   ).join('');
