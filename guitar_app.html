@@ -2615,7 +2615,6 @@ async function _autoRecordOverdueLessonsInner() {
   // 予約は親子ペアの「子」の行に入るので、parent_student_idを持つ行も除外しない
   // （以前は子を除外していて、うみかちゃんの過ぎた予約が記録されないままだった）
   const overdue = students.filter(s => s.next_lesson_at && s.next_lesson_at.slice(0,10) < today && !s.next_lesson_cancelled);
-  if (!overdue.length) return;
   for (const s of overdue) {
     // 別タブや直前の呼び出しで既に処理済みでないか、DBの最新値で確認してから処理する
     // （画面内の多重実行はロックで防げるが、別タブでの同時操作までは防げないため）
@@ -2635,11 +2634,63 @@ async function _autoRecordOverdueLessonsInner() {
       next_lesson_at: null, next_lesson_end_at: null, next_lesson: null, next_lesson_notes: null,
     }).eq('id', s.id);
   }
-  await loadStudents();
+  if (overdue.length) await loadStudents();
+  const recordedFromEvents = await _autoRecordPastEvents(today);
+  if (!overdue.length && !recordedFromEvents) return;
+  if (recordedFromEvents) await loadStudents();
   // 移した過去の予約(teacher_events)も読み直す。生徒だけ読み直すと、次回予約は空なのに
   // 過去の予約の一覧が古いままで、記録した直後はそのレッスンがカレンダーから消えて見える
   await _loadTeacherEvents();
   if (_isCalendarVisible()) _renderCalendar();
+}
+
+// 次回予約は1人1件しか持てないので、2件目以降の予約はカレンダー(teacher_events)に直接入る。
+// それらは上の自動記録(next_lesson_atだけを見る)の対象外で、レッスンが終わっても来訪記録が
+// 付かず、いきもの解放のレッスン回数に入らなかった(2026-11-18、杉原さん等で発覚)。
+// 日付が過ぎた生徒つきの予定で、同じ家族(親子ペア)にその日の来訪記録が無いものに記録を付ける。
+// 休んだ日の予定は先生がカレンダーから消す運用(teacher_eventsにはキャンセルの印が無い)。
+// それより前の古い予定まで一気に記録すると全員の回数が急に増えるので、対象はこの日付以降。
+const AUTO_RECORD_EVENTS_FROM = '2026-11-01';
+async function _autoRecordPastEvents(today) {
+  const {data: evs, error} = await sb.from('teacher_events')
+    .select('event_date,student_id,is_recurring')
+    .not('student_id', 'is', null).eq('is_recurring', false)
+    .gte('event_date', AUTO_RECORD_EVENTS_FROM).lt('event_date', today);
+  if (error || !evs || !evs.length) return 0;
+  const byId = new Map(students.map(s => [s.id, s]));
+  const famOf = s => s.parent_student_id || s.id;
+  const norm = d => String(d || '').replace(/\//g, '-').slice(0, 10);
+  const tlOf = s => typeof s.timeline === 'string' ? JSON.parse(s.timeline || '[]') : (s.timeline || []);
+  const famHas = new Set();
+  students.forEach(s => tlOf(s).forEach(e => { if (e.type === 'lesson') famHas.add(famOf(s) + '|' + norm(e.date)); }));
+  const todo = new Map(); // student_id -> Set(日付)
+  evs.forEach(ev => {
+    const s = byId.get(ev.student_id);
+    if (!s) return;
+    const k = famOf(s) + '|' + ev.event_date;
+    if (famHas.has(k)) return;
+    famHas.add(k);
+    if (!todo.has(s.id)) todo.set(s.id, new Set());
+    todo.get(s.id).add(ev.event_date);
+  });
+  let added = 0;
+  for (const [sid, dates] of todo) {
+    // 別タブで同時に処理されていないか、DBの最新のtimelineで確認してから書く
+    const {data: latest} = await sb.from('students').select('timeline,total_exp').eq('id', sid).single();
+    if (!latest) continue;
+    const tl = tlOf(latest);
+    const have = new Set(tl.filter(e => e.type === 'lesson').map(e => norm(e.date)));
+    const newDates = [...dates].filter(d => !have.has(d));
+    if (!newDates.length) continue;
+    const adds = newDates.map(d => ({type:'lesson', text:'レッスン来訪', exp:50, date: d.replace(/-/g, '/')}));
+    // 新しい順に並べる(後から古い日付を足しても順番が崩れないように)
+    const merged = [...adds, ...tl].map((e, i) => [e, i])
+      .sort((a, b) => norm(b[0].date).localeCompare(norm(a[0].date)) || a[1] - b[1])
+      .map(([e]) => e).slice(0, 150);
+    await sb.from('students').update({ timeline: merged, total_exp: (latest.total_exp || 0) + 50 * adds.length }).eq('id', sid);
+    added += adds.length;
+  }
+  return added;
 }
 
 function _isCalendarVisible() {
