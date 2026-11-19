@@ -2649,8 +2649,8 @@ async function _autoRecordOverdueLessonsInner() {
 // 付かず、いきもの解放のレッスン回数に入らなかった(2026-11-18、杉原さん等で発覚)。
 // 日付が過ぎた生徒つきの予定で、同じ家族(親子ペア)にその日の来訪記録が無いものに記録を付ける。
 // 休んだ日の予定は先生がカレンダーから消す運用(teacher_eventsにはキャンセルの印が無い)。
-// それより前の古い予定まで一気に記録すると全員の回数が急に増えるので、対象はこの日付以降。
-const AUTO_RECORD_EVENTS_FROM = '2026-11-01';
+// 最初は11/1以降だけを対象にしたが、2026-11-19に先生の判断で過去分(7月〜10月の79件)も全部記録することにした。
+const AUTO_RECORD_EVENTS_FROM = '2026-01-01';
 async function _autoRecordPastEvents(today) {
   const {data: evs, error} = await sb.from('teacher_events')
     .select('event_date,student_id,is_recurring')
@@ -2662,7 +2662,8 @@ async function _autoRecordPastEvents(today) {
   const norm = d => String(d || '').replace(/\//g, '-').slice(0, 10);
   const tlOf = s => typeof s.timeline === 'string' ? JSON.parse(s.timeline || '[]') : (s.timeline || []);
   const famHas = new Set();
-  students.forEach(s => tlOf(s).forEach(e => { if (e.type === 'lesson') famHas.add(famOf(s) + '|' + norm(e.date)); }));
+  // 来訪記録がある日と、キャンセル記録がある日(休んだ日)は対象外
+  students.forEach(s => tlOf(s).forEach(e => { if (e.type === 'lesson' || e.type === 'cancel') famHas.add(famOf(s) + '|' + norm(e.date)); }));
   const todo = new Map(); // student_id -> Set(日付)
   evs.forEach(ev => {
     const s = byId.get(ev.student_id);
