@@ -1685,6 +1685,8 @@ body{background:#f0ebe0!important;}
               <span id="rmSongName" style="display:none;"></span>
               <span id="rmRecordMark" style="display:none;"></span>
             </div>
+            <!-- このあとの予定（2件目以降の予約） -->
+            <div id="rmUpcoming" style="display:none;"></div>
           </div>
         </div>
         <!-- ミッションカードエリア -->
@@ -3885,6 +3887,9 @@ async function enterParent(studentData, selfData) {
   } else {
     nlEl.innerHTML = `<div class="prt-new-ticket"><div class="prt-new-ticket-grad"><div class="prt-new-ticket-dots"></div><div class="prt-new-ticket-dots-r"></div><div class="prt-new-ticket-lbl">次回のレッスン日</div><div class="prt-new-ticket-date" style="font-size:16px;opacity:.7;margin-top:8px;">まだ予定がありません</div><div class="prt-new-ticket-sep"><div class="prt-new-ticket-sep-l"></div><div class="prt-new-ticket-sep-dash"></div><div class="prt-new-ticket-sep-r"></div></div></div><div class="prt-new-ticket-bot"><div class="prt-new-ticket-time" style="font-size:14px;color:#aaa;">—</div></div></div>`;
   }
+  // このあとの予定（2件目以降の予約）
+  nlEl.insertAdjacentHTML('beforeend', '<div id="prtUpcoming" style="display:none;border-radius:0 0 14px 14px;overflow:hidden;margin-top:-4px;"></div>');
+  _loadUpcomingLessons(s.id, _prtParentLineId, s.next_lesson_at, 'prtUpcoming');
 
   // 直前キャンセル通知
   const cancelNoteEl = document.getElementById('prtCancelNote');
@@ -6363,6 +6368,7 @@ function renderNextLesson(data) {
     if (dateEl) dateEl.textContent = '未定';
     if (rmDt) rmDt.textContent = '未定';
     if (rmTm) rmTm.textContent = '先生に予約してね📅';
+    _loadUpcomingLessons(data.id, data.line_user_id || data.parent_line_id, null, 'rmUpcoming');
     return;
   }
   const dt = new Date(data.next_lesson_at);
@@ -6381,6 +6387,43 @@ function renderNextLesson(data) {
     }
   }
   if (rmTm) rmTm.textContent = timeStr2;
+  _loadUpcomingLessons(data.id, data.line_user_id || data.parent_line_id, data.next_lesson_at, 'rmUpcoming');
+}
+
+// ★ このあとの予定（2件目以降の予約）
+// 生徒・保護者は teacher_events を直接読めないので、本人確認つきRPCで自分（家族）の今後の予約だけ取得する
+function _fmtUpcomingRow(r) {
+  const [y, mo, d] = r.lesson_date.split('-').map(Number);
+  const dow = ['日','月','火','水','木','金','土'][new Date(y, mo-1, d).getDay()];
+  const toMin = t => { const [h, m] = t.split(':').map(Number); return h*60 + m; };
+  const hm = t => { const [h, m] = t.split(':'); return `${Number(h)}:${m}`; };
+  let time = r.start_time ? hm(r.start_time) : '';
+  // 所要時間が既定の1時間なら開始時刻だけ、それ以外だけ「開始〜終了」
+  if (r.start_time && r.end_time && toMin(r.end_time) - toMin(r.start_time) !== 60) time += `〜${hm(r.end_time)}`;
+  return `${mo}月${d}日（${dow}）${time ? ' ' + time : ''}`;
+}
+async function _loadUpcomingLessons(studentId, lineId, mainAt, elId) {
+  const el = document.getElementById(elId);
+  if (!el) return;
+  el.style.display = 'none';
+  if (!studentId || !lineId) return;
+  try {
+    const {data: rows, error} = await sb.rpc('rpc_get_own_upcoming_lessons', {p_student_id: studentId, p_line_user_id: lineId});
+    if (error || !rows || !rows.length) return;
+    // メインのチケットに出している次回予約は除く
+    let mainKey = null;
+    if (mainAt) {
+      const dt = new Date(mainAt);
+      mainKey = `${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,'0')}-${String(dt.getDate()).padStart(2,'0')} ${String(dt.getHours()).padStart(2,'0')}:${String(dt.getMinutes()).padStart(2,'0')}`;
+    }
+    const rest = rows.filter(r => `${r.lesson_date} ${r.start_time}` !== mainKey).slice(0, 6);
+    if (!rest.length) return;
+    el.innerHTML = `<div style="padding:10px 18px 14px;background:#faf6ef;border-top:1px dashed #e5dccb;">
+      <div style="font-size:11px;font-weight:800;color:#8a7a5c;letter-spacing:.6px;margin-bottom:6px;text-align:center;">このあとの予定</div>
+      ${rest.map(r => `<div style="font-size:15px;font-weight:800;color:#0077b6;text-align:center;line-height:1.7;">${esc(_fmtUpcomingRow(r))}</div>`).join('')}
+    </div>`;
+    el.style.display = '';
+  } catch (e) { console.warn('upcoming lessons', e); }
 }
 
 function toast(msg, type='') {
