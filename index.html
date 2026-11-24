@@ -3849,6 +3849,13 @@ let _parentSelf = null;
 let _prtChildId = null;
 let _prtChildNextAt = null;
 let _prtParentLineId = null;
+// 保護者画面の「次回のレッスン日」チケット。row は {lesson_date,start_time,end_time}、null なら未定表示
+function _prtTicketHtml(row) {
+  const head = '<div class="prt-new-ticket"><div class="prt-new-ticket-grad"><div class="prt-new-ticket-dots"></div><div class="prt-new-ticket-dots-r"></div><div class="prt-new-ticket-lbl">次回のレッスン日</div>';
+  const sep = '<div class="prt-new-ticket-sep"><div class="prt-new-ticket-sep-l"></div><div class="prt-new-ticket-sep-dash"></div><div class="prt-new-ticket-sep-r"></div></div></div>';
+  if (!row) return head + '<div class="prt-new-ticket-date" style="font-size:16px;opacity:.7;margin-top:8px;">まだ予定がありません</div>' + sep + '<div class="prt-new-ticket-bot"><div class="prt-new-ticket-time" style="font-size:14px;color:#aaa;">—</div></div></div>';
+  return head + `<div class="prt-new-ticket-date">${_fmtLessonDate(row)}</div>` + sep + `<div class="prt-new-ticket-bot"><div class="prt-new-ticket-time">${_fmtLessonTime(row) || '—'}</div></div></div>`;
+}
 let _prtChildData = null;
 async function enterParent(studentData, selfData) {
   if (selfData) _parentSelf = selfData;
@@ -3869,27 +3876,15 @@ async function enterParent(studentData, selfData) {
 
   // 次のレッスン詳細（チケット型）
   const nlEl = document.getElementById('prtNextLesson');
-  if (s.next_lesson_at) {
-    const dt = new Date(s.next_lesson_at);
-    const m = dt.getMonth()+1, d = dt.getDate();
-    const dow = ['日','月','火','水','木','金','土'][dt.getDay()];
-    const hh = dt.getHours(), mm = String(dt.getMinutes()).padStart(2,'0');
-    // 所要時間が既定の1時間なら開始時刻だけ、それ以外（2時間など）だけ「開始〜終了」を出す
-    let prtTimeStr = `${hh}:${mm}`;
-    if (s.next_lesson_end_at) {
-      const durMin = (new Date(s.next_lesson_end_at) - dt) / 60000;
-      if (durMin !== 60) {
-        const edt = new Date(s.next_lesson_end_at);
-        prtTimeStr += `〜${edt.getHours()}:${String(edt.getMinutes()).padStart(2,'0')}`;
-      }
-    }
-    nlEl.innerHTML = `<div class="prt-new-ticket"><div class="prt-new-ticket-grad"><div class="prt-new-ticket-dots"></div><div class="prt-new-ticket-dots-r"></div><div class="prt-new-ticket-lbl">次回のレッスン日</div><div class="prt-new-ticket-date">${m}月${d}日（${dow}）</div><div class="prt-new-ticket-sep"><div class="prt-new-ticket-sep-l"></div><div class="prt-new-ticket-sep-dash"></div><div class="prt-new-ticket-sep-r"></div></div></div><div class="prt-new-ticket-bot"><div class="prt-new-ticket-time">${prtTimeStr}</div></div></div>`;
-  } else {
-    nlEl.innerHTML = `<div class="prt-new-ticket"><div class="prt-new-ticket-grad"><div class="prt-new-ticket-dots"></div><div class="prt-new-ticket-dots-r"></div><div class="prt-new-ticket-lbl">次回のレッスン日</div><div class="prt-new-ticket-date" style="font-size:16px;opacity:.7;margin-top:8px;">まだ予定がありません</div><div class="prt-new-ticket-sep"><div class="prt-new-ticket-sep-l"></div><div class="prt-new-ticket-sep-dash"></div><div class="prt-new-ticket-sep-r"></div></div></div><div class="prt-new-ticket-bot"><div class="prt-new-ticket-time" style="font-size:14px;color:#aaa;">—</div></div></div>`;
-  }
-  // このあとの予定（2件目以降の予約）
-  nlEl.insertAdjacentHTML('beforeend', '<div id="prtUpcoming" style="display:none;border-radius:0 0 14px 14px;overflow:hidden;margin-top:-4px;"></div>');
-  _loadUpcomingLessons(s.id, _prtParentLineId, s.next_lesson_at, 'prtUpcoming');
+  // 生徒画面と同じく、まず next_lesson_at で仮表示し、RPCで全予約が取れたら
+  // まだ終わっていない一番近い予約に差し替える（終わった・キャンセルされた予約は次が繰り上がる）
+  const _prtProv = (s.next_lesson_at && !s.next_lesson_cancelled) ? _rowFromNextLessonAt(s.next_lesson_at, s.next_lesson_end_at) : null;
+  nlEl.innerHTML = _prtTicketHtml(_prtProv && !_isLessonOver(_prtProv) ? _prtProv : null)
+    + '<div id="prtUpcoming" style="display:none;border-radius:0 0 14px 14px;overflow:hidden;margin-top:-4px;"></div>';
+  _loadUpcomingLessons(s.id, _prtParentLineId, 'prtUpcoming', row => {
+    const t = nlEl.querySelector('.prt-new-ticket');
+    if (t) t.outerHTML = _prtTicketHtml(row);
+  });
 
   // 直前キャンセル通知
   const cancelNoteEl = document.getElementById('prtCancelNote');
@@ -6358,69 +6353,104 @@ function renderNextLesson(data) {
   const areaEl = document.getElementById('homeNextLessonArea');
   if (areaEl) areaEl.style.display = 'flex';
   if (card) card.style.display = 'none';
+  const lineId = data.line_user_id || data.parent_line_id;
+  // まず手元の次回予約(next_lesson_at)で仮表示し、RPCで全予約が取れたら
+  // 「まだ終わっていない一番近い予約」で上書きする。次回予約がキャンセルされたり
+  // 終わったりすると、カレンダーに入っている次の予約が自動で繰り上がって出る。
+  const provisional = (data.next_lesson_at && !data.next_lesson_cancelled) ? _rowFromNextLessonAt(data.next_lesson_at, data.next_lesson_end_at) : null;
+  _setStudentNextLesson(provisional && !_isLessonOver(provisional) ? provisional : null, data);
+  _loadUpcomingLessons(data.id, lineId, 'rmUpcoming', row => _setStudentNextLesson(row, data));
+}
+
+// 生徒ホーム（とおばあちゃんモード）の「次回のレッスン日」チケットに1件を出す。null なら未定表示
+function _setStudentNextLesson(row, data) {
+  const dateEl = document.getElementById('homeNextLessonDate');
   const rmTm = document.getElementById('rmNextLessonTime');
   const rmDt = document.getElementById('rmNextLessonDate');
-  // 次回予約が無い、または予約日がもう過ぎている（先生がまだ次を入れていない）
-  // 場合は「予約してね」的な表示にする。単に「—」のままだと、過ぎた予約日が
-  // そのまま表示され続けているのか、本当に未定なのか生徒側から区別できなかった。
-  const isPastOnly = data.next_lesson_at && data.next_lesson_at.slice(0,10) < todayJST();
-  if (!data.next_lesson_at || isPastOnly) {
+  const eDate = document.getElementById('elderNextDate');
+  const eTime = document.getElementById('elderNextTime');
+  const elderOn = data && data.elder_mode;
+  // 次回予約が無い（または終わった）場合は「予約してね」的な表示にする。単に「—」のままだと、
+  // 過ぎた予約日がそのまま表示され続けているのか、本当に未定なのか生徒側から区別できなかった。
+  if (!row) {
     if (dateEl) dateEl.textContent = '未定';
     if (rmDt) rmDt.textContent = '未定';
     if (rmTm) rmTm.textContent = '先生に予約してね📅';
-    _loadUpcomingLessons(data.id, data.line_user_id || data.parent_line_id, null, 'rmUpcoming');
+    if (elderOn) { if (eDate) eDate.textContent = '未定'; if (eTime) eTime.textContent = ''; }
     return;
   }
-  const dt = new Date(data.next_lesson_at);
-  const dow = ['日','月','火','水','木','金','土'][dt.getDay()];
-  const dateStr2 = `${dt.getMonth()+1}月${dt.getDate()}日（${dow}）`;
-  if (dateEl) dateEl.textContent = dateStr2;
-  if (rmDt) rmDt.textContent = dateStr2;
-  const hh = dt.getHours(), mm = String(dt.getMinutes()).padStart(2,'0');
-  // 所要時間が既定の1時間なら開始時刻だけ、それ以外（2時間など）だけ「開始〜終了」を出す
-  let timeStr2 = `${hh}:${mm}`;
-  if (data.next_lesson_end_at) {
-    const durMin = (new Date(data.next_lesson_end_at) - dt) / 60000;
-    if (durMin !== 60) {
-      const edt = new Date(data.next_lesson_end_at);
-      timeStr2 += `〜${edt.getHours()}:${String(edt.getMinutes()).padStart(2,'0')}`;
-    }
+  const dateStr = _fmtLessonDate(row);
+  if (dateEl) dateEl.textContent = dateStr;
+  if (rmDt) rmDt.textContent = dateStr;
+  if (rmTm) rmTm.textContent = _fmtLessonTime(row) || '—';
+  if (elderOn) {
+    if (eDate) eDate.textContent = dateStr;
+    if (eTime) eTime.textContent = row.start_time ? _hmNoPad(row.start_time) + '〜' : '';
   }
-  if (rmTm) rmTm.textContent = timeStr2;
-  _loadUpcomingLessons(data.id, data.line_user_id || data.parent_line_id, data.next_lesson_at, 'rmUpcoming');
 }
 
-// ★ このあとの予定（2件目以降の予約）
-// 生徒・保護者は teacher_events を直接読めないので、本人確認つきRPCで自分（家族）の今後の予約だけ取得する
-function _fmtUpcomingRow(r) {
+// ★ 予約1件 = {lesson_date:'YYYY-MM-DD', start_time:'HH:MM', end_time:'HH:MM'}（RPCの戻りと同じ形）
+function _rowFromNextLessonAt(at, endAt) {
+  const dt = new Date(at);
+  const p = n => String(n).padStart(2, '0');
+  const row = {
+    lesson_date: `${dt.getFullYear()}-${p(dt.getMonth()+1)}-${p(dt.getDate())}`,
+    start_time: `${p(dt.getHours())}:${p(dt.getMinutes())}`,
+    end_time: null,
+  };
+  if (endAt) { const e = new Date(endAt); row.end_time = `${p(e.getHours())}:${p(e.getMinutes())}`; }
+  return row;
+}
+function _hmToMin(t) { const [h, m] = String(t).split(':').map(Number); return h*60 + m; }
+function _hmNoPad(t) { const [h, m] = String(t).split(':'); return `${Number(h)}:${m}`; }
+function _fmtLessonDate(r) {
   const [y, mo, d] = r.lesson_date.split('-').map(Number);
   const dow = ['日','月','火','水','木','金','土'][new Date(y, mo-1, d).getDay()];
-  const toMin = t => { const [h, m] = t.split(':').map(Number); return h*60 + m; };
-  const hm = t => { const [h, m] = t.split(':'); return `${Number(h)}:${m}`; };
-  let time = r.start_time ? hm(r.start_time) : '';
-  // 所要時間が既定の1時間なら開始時刻だけ、それ以外だけ「開始〜終了」
-  if (r.start_time && r.end_time && toMin(r.end_time) - toMin(r.start_time) !== 60) time += `〜${hm(r.end_time)}`;
-  return `${mo}月${d}日（${dow}）${time ? ' ' + time : ''}`;
+  return `${mo}月${d}日（${dow}）`;
 }
-async function _loadUpcomingLessons(studentId, lineId, mainAt, elId) {
+// 所要時間が既定の1時間なら開始時刻だけ、それ以外（2時間など）だけ「開始〜終了」を出す
+function _fmtLessonTime(r) {
+  if (!r.start_time) return '';
+  let t = _hmNoPad(r.start_time);
+  if (r.end_time && _hmToMin(r.end_time) - _hmToMin(r.start_time) !== 60) t += `〜${_hmNoPad(r.end_time)}`;
+  return t;
+}
+// レッスンが終わったか（日本時間）。終了時刻が無ければ開始＋1時間で判定、時刻が無ければその日いっぱい有効
+function _isLessonOver(r) {
+  const today = todayJST();
+  if (r.lesson_date < today) return true;
+  if (r.lesson_date > today || !r.start_time) return false;
+  const j = new Date(Date.now() + 9*3600*1000);
+  const nowMin = j.getUTCHours()*60 + j.getUTCMinutes();
+  const endMin = r.end_time ? _hmToMin(r.end_time) : _hmToMin(r.start_time) + 60;
+  return endMin <= nowMin;
+}
+
+// ★ 予約一覧（次回＋このあとの予定）
+// 生徒・保護者は teacher_events を直接読めないので、本人確認つきRPCで自分（家族）の今後の予約だけ取得する。
+// まだ終わっていない一番近い予約を onMain に渡して「次回のレッスン日」に出し、残りを elId の欄にスクロール表示する。
+// RPCが失敗したときは onMain を呼ばず、呼び出し側の仮表示（next_lesson_at）をそのまま残す。
+async function _loadUpcomingLessons(studentId, lineId, elId, onMain) {
   const el = document.getElementById(elId);
   if (!el) return;
   el.style.display = 'none';
   if (!studentId || !lineId) return;
   try {
     const {data: rows, error} = await sb.rpc('rpc_get_own_upcoming_lessons', {p_student_id: studentId, p_line_user_id: lineId});
-    if (error || !rows || !rows.length) return;
-    // メインのチケットに出している次回予約は除く
-    let mainKey = null;
-    if (mainAt) {
-      const dt = new Date(mainAt);
-      mainKey = `${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,'0')}-${String(dt.getDate()).padStart(2,'0')} ${String(dt.getHours()).padStart(2,'0')}:${String(dt.getMinutes()).padStart(2,'0')}`;
-    }
-    const rest = rows.filter(r => `${r.lesson_date} ${r.start_time}` !== mainKey).slice(0, 6);
-    if (!rest.length) return;
-    el.innerHTML = `<div style="padding:10px 18px 14px;background:#faf6ef;border-top:1px dashed #e5dccb;">
-      <div style="font-size:11px;font-weight:800;color:#8a7a5c;letter-spacing:.6px;margin-bottom:6px;text-align:center;">このあとの予定</div>
-      ${rest.map(r => `<div style="font-size:15px;font-weight:800;color:#0077b6;text-align:center;line-height:1.7;">${esc(_fmtUpcomingRow(r))}</div>`).join('')}
+    if (error || !rows) return;
+    const upcoming = rows.filter(r => !_isLessonOver(r))
+      .sort((a, b) => (a.lesson_date + (a.start_time || '')).localeCompare(b.lesson_date + (b.start_time || '')));
+    if (onMain) onMain(upcoming[0] || null);
+    const rest = upcoming.slice(1);
+    if (!rest.length) { el.innerHTML = ''; return; }
+    // 日付と時刻を2列のグリッドで縦に揃える。高さは1件半ぶんに抑え、半分見えている2件目で「下にスクロールできる」とわかるようにする
+    el.innerHTML = `<div style="padding:8px 18px 10px;background:#faf6ef;border-top:1px dashed #e5dccb;">
+      <div style="font-size:11px;font-weight:800;color:#8a7a5c;letter-spacing:.6px;margin-bottom:4px;text-align:center;">このあとの予定${rest.length > 1 ? `（${rest.length}件）` : ''}</div>
+      <div style="max-height:${rest.length > 1 ? 46 : 32}px;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;">
+        <div style="display:grid;grid-template-columns:max-content max-content;column-gap:16px;justify-content:center;font-size:15px;font-weight:800;color:#0077b6;line-height:30px;font-variant-numeric:tabular-nums;">
+          ${rest.map(r => `<div>${esc(_fmtLessonDate(r))}</div><div>${esc(_fmtLessonTime(r))}</div>`).join('')}
+        </div>
+      </div>
     </div>`;
     el.style.display = '';
   } catch (e) { console.warn('upcoming lessons', e); }
